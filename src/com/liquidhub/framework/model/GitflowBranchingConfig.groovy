@@ -8,13 +8,13 @@ import groovy.transform.ToString
  * @author Rahul Mishra, LiquidHub
  *
  */
-@ToString(includeNames=true)
+@ToString(includeNames=true, includePackage=false)
 class GitflowBranchingConfig  {
 
 	CoreJobConfig startConfig, finishConfig //The gitflow configuration is made of regular old core job configurations, so we merely delegate
 
-	def generatorClass
-
+	def generatorClass, regularEmailRecipients,escalationEmailREcipients
+	
 
 	def merge(GitflowBranchingConfig otherConfig){
 
