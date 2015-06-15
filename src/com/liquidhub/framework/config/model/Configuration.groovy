@@ -2,11 +2,6 @@ package com.liquidhub.framework.config.model
 
 import groovy.transform.ToString
 
-import com.liquidhub.framework.model.CoreJobConfig
-import com.liquidhub.framework.model.DeploymentJobConfig
-import com.liquidhub.framework.model.GitflowBranchingConfig
-import com.liquidhub.framework.model.RoleConfig
-
 @ToString(includeNames=true)
 /**
  * Represents the job generation related configuration elements. 
