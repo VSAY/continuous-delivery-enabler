@@ -1,4 +1,4 @@
-package com.liquidhub.framework.config
+package com.liquidhub.framework.config.model
 
 import groovy.transform.ToString
 

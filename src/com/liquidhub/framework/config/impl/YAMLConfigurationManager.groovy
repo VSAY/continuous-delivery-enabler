@@ -2,10 +2,10 @@ package com.liquidhub.framework.config.impl
 
 import com.esotericsoftware.yamlbeans.YamlReader
 import com.liquidhub.framework.ci.logger.Logger
-import com.liquidhub.framework.config.Configuration
-import com.liquidhub.framework.config.ConfigurationLevel
 import com.liquidhub.framework.config.ConfigurationManager
 import com.liquidhub.framework.config.JobGenerationWorkspaceUtils
+import com.liquidhub.framework.config.model.Configuration
+import com.liquidhub.framework.config.model.ConfigurationLevel
 import com.liquidhub.framework.model.SeedJobParameters
 
 class YAMLConfigurationManager implements ConfigurationManager{
