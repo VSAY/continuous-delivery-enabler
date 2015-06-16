@@ -10,7 +10,7 @@ import groovy.transform.ToString
  *
  */
 class Configuration {
-	
+
 	/*
 	 * Developer Note: All the property names below MUST correspond to the key in the corresponding configuration file.
 	 * 
@@ -18,16 +18,18 @@ class Configuration {
 	 * 
 	 */
 
-	CoreJobConfig continuousIntegrationConfig, codeQualityConfig
+	JobConfig continuousIntegrationConfig, codeQualityConfig
 
 	GitflowBranchingConfig gitflowFeatureBranchConfig,gitflowReleaseBranchConfig,gitflowHotfixBranchConfig
+
+	ConfigurableJobSections configurableJobSections
 
 	DeploymentJobConfig deploymentConfig
 
 	RoleConfig roleConfig
 
 	private Map notificationConfig, viewConfig, buildConfig
-	
+
 	private List buildPipelinePreferences
 
 	def buildEnvProperties = [:] //A mix of system environment variables and build enviroment variables.
@@ -39,7 +41,7 @@ class Configuration {
 
 	def merge(Configuration thatConfig){
 
-		CoreJobConfig.logger = logger
+		JobConfig.logger = logger
 
 		//An array of all configuration settings, these values below MUST sync with field names above
 		[
@@ -52,10 +54,15 @@ class Configuration {
 			'deploymentConfig',
 			'notificationConfig',
 			'viewConfig',
-			'buildPipelinePreferences'
+			'buildPipelinePreferences',
+			'configurableJobSections'
 		].each{
-			this[it] = merge(this[it], thatConfig[it])
-
+		
+		    def src = this[it]
+			def target = thatConfig[it]
+		
+			this[it] = merge(src, target)
+			
 			logger.debug it +' @ '+ thatConfig.level+': '+this[it]
 		}
 
@@ -83,6 +90,8 @@ class Configuration {
 
 	}
 
-	
+
+
+
 
 }

@@ -11,14 +11,19 @@ import groovy.transform.ToString
 @ToString(includeNames=true, includePackage=false)
 class GitflowBranchingConfig  {
 
-	CoreJobConfig startConfig, finishConfig //The gitflow configuration is made of regular old core job configurations, so we merely delegate
+	JobConfig startConfig, finishConfig //The gitflow configuration is made of regular old core job configurations, so we merely delegate
 
-	def generatorClass, regularEmailRecipients,escalationEmailREcipients
+	def generatorClass, regularEmailRecipients,escalationEmailRecipients
 	
 
 	def merge(GitflowBranchingConfig otherConfig){
 
 		this.startConfig.merge(otherConfig.startConfig)
 		this.finishConfig.merge(otherConfig.finishConfig)
+		
+		
+	
+		
+		
 	}
 }

@@ -9,7 +9,7 @@ import groovy.transform.ToString
  *
  */
 @ToString(includeNames=true, includePackage=false)
-class CoreJobConfig {
+class JobConfig {
 
 	def
 	disabled, //Indicates if the configuration element is disabled, if this value is true, this job is ignored
@@ -23,10 +23,9 @@ class CoreJobConfig {
 	pollSchedule, //The schedule with which the job polls the SCM for changes
 	projectDescriptionTemplatePath, //The path to a HTML template which adds a description for the project
 	regularEmailRecipients,  // The list of people who need to be informed about the activities of this job - success,failures
-	escalationEmailREcipients // The escalation email list 
+	escalationEmailRecipients // The escalation email list 
 
 	private static def logger
-	
 	
 	/**
 	 * Encapsulates the merge algorithm when this source config is merged with another incoming job configuration
@@ -57,4 +56,7 @@ class CoreJobConfig {
 
 		return this
 	}
+	
+	
+	
 }
