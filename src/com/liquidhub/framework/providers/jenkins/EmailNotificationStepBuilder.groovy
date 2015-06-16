@@ -9,9 +9,9 @@ class ExtendedEmailNotificationSectionConfigurer implements JobSectionConfigurer
 
 	Closure configure(JobGenerationContext context, JobConfig jobConfig, emailDefContext=null){
 		
-		def contributorEmails = emailDefContext.contributorEmails
-		def escalationEmails = emailDefContext.escalationEmails
-		def emailSubject = emailDefContext.emailSubject
+		def contributorEmails = emailDefContext['recipientEmails']
+		def escalationEmails = emailDefContext['escalationEmails']
+		def emailSubject = emailDefContext['emailSubject']
 
 		return {
 
