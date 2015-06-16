@@ -1,5 +1,6 @@
 package com.liquidhub.framework.model
 
+import com.liquidhub.framework.JobSectionConfigurer
 import com.liquidhub.framework.ci.JobGeneratorFactory
 import com.liquidhub.framework.ci.logger.Logger
 import com.liquidhub.framework.config.model.Configuration
@@ -26,13 +27,21 @@ class JobGenerationContext {
 	public def projectName(){
 		scmRepository?.projectKey
 	}
-	
+
 	public def buildToolConfig(){
 		configuration.buildConfig
 	}
-	
-	
-	public def configurers(providerKey){
-		configuration.configurableSections.provider(providerKey)
+
+
+	public JobSectionConfigurer configurers(providerKey){
+		configuration.configurableJobSections.provider(providerKey)
+	}
+
+	def  getDefaultRegularEmailRecipients(){
+		scmRepository.repositorySlug+configuration.notificationConfig.defaultRecipientEmailSuffix
+	}
+
+	def getDefaultEscalationEmailRecipients(){
+			scmRepository.repositorySlug+configuration.notificationConfig.defaultEscalationEmailSuffix
 	}
 }

@@ -17,7 +17,7 @@ enum SeedJobParameters {
 	REPO_ACCESS_CREDENTIALS('repositoryUserCredentials'),
 	REPO_IMPLEMENTATION('repositoryImplementation'),
 	RECIPIENT_EMAIL('recipientEmail'),
-	ESCALATION_EMAI('escalationEmail'),
+	ESCALATION_EMAIL('escalationEmail'),
 	FRAMEWORK_CONFIG_BASE_MOUNT('JOB_SEEDER_MOUNT_DIR'),
 	TARGET_PROJECT_BASE_MOUNT('TARGET_APP_MOUNT_DIR'),
 	USE_GITFLOW('useGitflow'),
