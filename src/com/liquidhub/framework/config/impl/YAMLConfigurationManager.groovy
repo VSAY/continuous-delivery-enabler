@@ -1,5 +1,7 @@
 package com.liquidhub.framework.config.impl
 
+import groovy.transform.Memoized
+
 import com.esotericsoftware.yamlbeans.YamlReader
 import com.liquidhub.framework.ci.logger.Logger
 import com.liquidhub.framework.config.ConfigurationManager
@@ -7,7 +9,18 @@ import com.liquidhub.framework.config.JobGenerationWorkspaceUtils
 import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.config.model.ConfigurationLevel
 import com.liquidhub.framework.model.SeedJobParameters
-
+/***
+ * YAML based implementation of configuration managament.
+ * 
+ * The configuration files are managed with a '.yml' extension. Configuration files can be provided at three levels
+ * 
+ *  - Default Project Level [This is provided by the framework, this file must exist for the framework to generate jobs properly]
+ *  - Repository Level [Provided by application teams, not mandatory but can be helpful for repository level customization]
+ *  - Branch Level [Provided by application teams, not mandatory but can be helpful for repository branch level customization]
+ * 
+ * @author Rahul Mishra, LiquidHub
+ *
+ */
 class YAMLConfigurationManager implements ConfigurationManager{
 
 	static Logger logger
@@ -19,19 +32,20 @@ class YAMLConfigurationManager implements ConfigurationManager{
 	Map buildEnvVars
 
 	private Configuration masterConfiguration
+	
+	/**
+	 * Loads the configuration for the specified project , branch combination
+	 * 
+	 * 
+	 */
 
-	@Override
+	@Memoized
 	public Configuration loadConfigurationForRepositoryBranch(projectName, branchName) {
 		
 		Configuration.logger = logger
 
 		logger.debug 'Enter.loadConfigurationForRepositoryBranch() >> '
 
-		if(masterConfiguration){
-			//If we already have a configuration, do not reload
-			masterConfiguration
-		}
-		
 		masterConfiguration = new Configuration(buildEnvProperties: [:] << System.getenv() << buildEnvVars, level: ConfigurationLevel.DEFAULT)
 
 		//The mount locations of core configuration and target app - relative to the job generation workspace
@@ -54,7 +68,6 @@ class YAMLConfigurationManager implements ConfigurationManager{
 	    updateMasterConfig(repositoryConfigFilePath, ConfigurationLevel.REPOSITORY) //Override with repository level settings
 		updateMasterConfig(branchConfigFilePath, ConfigurationLevel.BRANCH) //Override with branch level settings
 		
-		logger.debug 'final master config '+masterConfiguration
 		return masterConfiguration
 
 	}
