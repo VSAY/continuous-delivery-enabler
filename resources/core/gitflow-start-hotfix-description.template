@@ -1,0 +1,11 @@
+<h1>Start a hotfix branch for ${repositoryName}</h1>
+<p><strong>Internal command executed</strong>: jgitflow:jgitflow:hotfix-start $pluginArgs</p>
+<p><strong>Description</strong>: Prepares the project for a hotfix. Creates a hotfix branch and updates poms with the hotfix version.</p>
+<p><strong>Arguments to the plugin</strong>: ${pluginArgs}</p>
+<ul>
+<li> Pushes hotfix branches to the remote upstream</li>
+<li> Fails when it finds any snapshot dependencies of the start point.</li>
+<li> Automatically assigns the parents version to the maven sub modules</li>
+</ul>
+
+   

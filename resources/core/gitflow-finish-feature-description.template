@@ -1,0 +1,9 @@
+<h1>Finish a feature branch for ${repositoryName}</h1>
+<p><strong>Internal command executed</strong>: jgitflow:jgitflow:feature-finish $pluginArgs</p>
+<p><strong>Description</strong>:  Finishes the feature. Builds the project, Merges the feature branch (as per git-flow), and updates pom(s) to previous develop version</p>
+<p><strong>Arguments to the plugin</strong>: ${pluginArgs}</p>
+<ul>
+<li> Retains the feature branch after it has been finished. If required, the branch <strong>MUST</strong> be deleted manually </li>
+<li> Fails when it finds any snapshot dependencies of the start point.</li>
+</ul>
+   

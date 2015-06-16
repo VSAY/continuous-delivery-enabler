@@ -1,0 +1,10 @@
+<h1>Finish a hotfix branch for ${repositoryName}</h1>
+<p><strong>Internal command executed</strong>: jgitflow:jgitflow:hotfix-finish $pluginArgs</p>
+<p><strong>Description</strong>:   Releases the project. Builds the project, Merges the hotfix branch (as per git-flow), pushes changes and updates pom(s) to previous version</p>
+<p><strong>Arguments to the plugin</strong>: ${pluginArgs}</p>
+<ul>
+<li> Does not delete the hotfix branch from the remote upstream, this <strong>MUST</strong> be done manually to ensure better control over branching</li>
+<li> Fails when it finds any snapshot dependencies while finishing the hotfix</li>
+<li> Automatically assigns the parents version to the maven sub modules</li>
+</ul>
+   

@@ -1,0 +1,10 @@
+<h1>Finish a release for ${repositoryName}</h1>
+<p><strong>Internal command executed</strong>: jgitflow:jgitflow:release-finish $pluginArgs</p>
+<p><strong>Description</strong>:Releases the project. Builds the project, Merges the release branch (as per git-flow), optionally pushes changes and updates pom(s) to new development version</p>
+<p><strong>Arguments to the plugin</strong>: ${pluginArgs}</p>
+<ul>
+<li> Retains the release branch after it has been finished. The release branch <strong>MUST</strong> be deleted manually before the next release is started </li>
+<li> Fails when it finds any snapshot dependencies during release</li>
+<li> Automatically assigns submodules the parent version</li>
+</ul>
+   

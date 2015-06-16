@@ -1,0 +1,14 @@
+<p>
+Allows you to deploy your code to  <b> ${envName} </b> environment.Your artifacts will be downloaded from our repository at <a href="${artifactRepositoryUrl}">${artifactRepositoryUrl}</a>.
+<p>
+We will download the artifact from the repository based on the following criteria
+<ul> 
+  <li><b>Group Id: </b>${groupId} 
+  <li><b>Artifact Id:</b> ${artifactId}
+  <li><b>Artifact Type:</b> ${artifactType}
+</ul>
+You will need to choose the version of the artifact you intend to deploy. You will also be required to select the target server(s) for deployment
+
+If you think you should be able to run this job but you do not have that capability, please contact your <a href="mailto:jenkinssysadmin@ibx.com?subject=Need Deployment Privileges for ${artifactId}">Jenkins Admin</a>
+
+ 

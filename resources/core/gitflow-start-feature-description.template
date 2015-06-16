@@ -1,0 +1,11 @@
+<h1>Start a feature branch for ${repositoryName}</h1>
+<p><strong>Internal command executed</strong>: jgitflow:jgitflow:feature-finish $pluginArgs</p>
+<p><strong>Description</strong>: Prepares the project for a new feature. Creates a feature branch and updates poms with the feature version.</p>
+<p><strong>Arguments to the plugin</strong>: ${pluginArgs}</p>
+<ul>
+<li> Pushes feature branches to the remote upstream for sharing</li>
+<li> Fails when it finds any snapshot dependencies of the start point.</li>
+<li> Appends the feature name to the version on the feature branch.This helps avoid maven version conflicts across branches</li>
+<li> Automatically assigns the parents version to the maven sub modules</li>
+</ul>
+   

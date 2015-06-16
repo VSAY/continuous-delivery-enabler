@@ -1,0 +1,2 @@
+<p>A collection of all jobs (across branches) for the $repositoryName repository. This view was generated on ${generationDateTime}<p>
+<p><b>Note:</b>If your repository branch should be listed here and isn't, just generate the jobs for your repository branch again, this view will be updated automatically</p>
