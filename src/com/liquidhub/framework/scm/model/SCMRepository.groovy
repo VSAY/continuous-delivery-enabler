@@ -9,7 +9,8 @@ interface SCMRepository {
 	def getRepositorySlug()//A semantic name for the repository which is embedded in the repo url
 	def getAuthorizedUserDigest() //The a base 64 encoded digest of the username password style credentials
 	def getChangeSetUrl() //The url which shows the diff for the repository
-
+	def getBranchType()
+	def getCredentialsId() //A reference to a pre configured credentials identifier on the system
 	
 	
 }
