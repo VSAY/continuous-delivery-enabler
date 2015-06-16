@@ -1,0 +1,66 @@
+repositoryAPIConfig:
+
+  - apiName: restrictRepositoryAccess
+    httpMethod: PUT
+    uri: /rest/api/1.0/projects/${projectKey}/repos/${repositorySlug}/permissions/groups?permission=REPO_WRITE&name=frontoffice-dev-contributors
+    autoInvoke: true
+
+  - apiName: defineProjectAdmin
+    httpMethod: PUT
+    uri: /rest/api/1.0/projects/${projectKey}/repos/${repositorySlug}/permissions/groups?permission=REPO_ADMIN&name=frontoffice-project-admin
+    autoInvoke: true
+
+  - apiName: configureJenkinsWebHook
+    httpMethod: PUT
+    uri: rest/api/1.0/projects/${projectKey}/repos/${repositorySlug}/settings/hooks/com.nerdwin15.stash-stash-webhook-jenkins:jenkinsPostReceiveHook/enabled
+    autoInvoke: true
+    payload: |
+      {
+       "jenkinsBase" : "${JENKINS_URL}",
+       "gitRepoUrl" : "${gitRepoUrl}",
+       "ignoreCerts": "true",
+       "ignoreCommitters": "srv-cibuilder"
+      }
+  
+  - apiName: configureForcePushRejectionHook
+    httpMethod: PUT
+    uri: rest/api/1.0/projects/${projectKey}/repos/${repositorySlug}/settings/hooks/com.atlassian.stash.stash-bundled-hooks:force-push-hook/enabled
+    autoInvoke: true
+    
+  - apiName: createBranch
+    httpMethod: POST
+    autoInvoke: true  
+    uri: rest/branch-utils/1.0/projects/${projectKey}/repos/${repositorySlug}/branches
+    payload: |
+     {
+      "name": "develop",
+      "startPoint": "refs/heads/master"
+     }
+       
+ 
+  - apiName: configureDefaultBranch
+    httpMethod: PUT
+    uri: rest/api/1.0/projects/${projectKey}/repos/${repositorySlug}/branches/default
+    autoInvoke: true
+    payload: |
+     {
+      "id": "refs/heads/develop"
+     }  
+     
+  - apiName: modifyBranchPermissions
+    httpMethod: POST
+    uri: rest/branch-permissions/1.0/projects/${projectKey}/repos/${repositorySlug}/restricted
+    autoInvoke: true
+    payload: |
+      {
+        "type": "BRANCH",
+        "value": "refs/heads/master",
+        "users": ["srv-cibuilder"]
+      }
+      
+  - apiName: listRepositoryBranches
+    httpMethod: GET
+    uri: 'rest/api/1.0/projects/${projectKey}/repos/${repositorySlug}/branches?details=false&orderBy=MODIFICATION'
+
+  
+ 
