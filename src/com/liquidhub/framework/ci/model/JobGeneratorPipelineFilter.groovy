@@ -2,7 +2,7 @@ package com.liquidhub.framework.ci.model
 
 import com.liquidhub.framework.ci.job.generator.JobGenerator
 import com.liquidhub.framework.ci.logger.Logger
-import com.liquidhub.framework.config.model.Configuration
+import com.liquidhub.framework.config.model.JobConfig;
 import com.liquidhub.framework.scm.model.GitFlowBranchTypes
 
 /**
@@ -15,107 +15,101 @@ import com.liquidhub.framework.scm.model.GitFlowBranchTypes
  *  - Release
  *  - HotFix
  * 
- * There is physically no difference in these branch types, the differences exist based on usage context. This approach allows us to a unique policy per usage context.
+ * There is physically no difference in these branch types, the differences exist based on usage context. This approach allows us to 
+ * customize the jobs we generate for a given branch name/branch type
  *  
  * @author Rahul Mishra,LiquidHub
  *
  */
 class JobGeneratorPipelineFilter {
 
-	JobGenerator[] configueredJobGenerators= []
-	
 	private static Logger logger
+
+	List configuredJobGenerators = []
 
 	JobGeneratorPipelineFilter(JobGenerationContext context){
 
 		logger = JobGenerationContext.logger
 
 		def currentBranch = context.scmRepository.repoBranchName
-		
-		Configuration configuration = context.configuration
 
+		def buildPipelinePreferences = context.configuration.buildPipelinePreferences
 
-		//Step 1 : See if any branch name specific job generations have been configured
-		def repositoryBranchPipelineSettings = configuration.buildPipelinePreferences.grep({it.branchName == currentBranch})
+		//Step 1 : See if any branch name specific job generations have been configured, find the first not null result
+		def repositoryBranchPipelineSettings = buildPipelinePreferences.findResult {it?.branchName == currentBranch ? it : null}
 
 		//Step 2: See if any job generators have been configured against this branch type
 		if(!repositoryBranchPipelineSettings){
 			logger.debug 'No Job generators were configured against the branch name, evaluating branch types'
-			repositoryBranchPipelineSettings = configuration.buildPipelinePreferences.grep({it.branchType == context.scmRepository.branchType})
+			repositoryBranchPipelineSettings = buildPipelinePreferences.findResult {it?.branchType == context.scmRepository.branchType ? it: null}
 		}
+
 
 		//Should we even be considerate about gitflow job generation? YES, if the branch has a control over setting up repository level configuration
 		final boolean factorGitflowJobGeneration = GitFlowBranchTypes.type(currentBranch)?.requiresRepositorySetup()
-		
+
 		//This doesn't matter if gitflow job generation is not even a factor
-		final boolean useGitflow = context.variable([SeedJobParameters.USE_GITFLOW])?.toBoolean() 
+		final boolean useGitflow = context.variable([SeedJobParameters.USE_GITFLOW])?.toBoolean()
 
 		logger.debug 'Should gitflow job generation decisions be made ? '+factorGitflowJobGeneration
-		logger.debug 'Is Gitflow job generation enabled ? '+useGitflow?.toBoolean()
-		
-		
-		repositoryBranchPipelineSettings.each{
-			println it
+		logger.debug 'Is Gitflow job generation enabled ? '+useGitflow
+
+
+		findGenerators(repositoryBranchPipelineSettings){generatorClass ->
+
+			logger.debug 'Now looking for an instance of '+generatorClass.value
+
+			JobGenerator generator = JobGeneratorRegistry.findGenerator(generatorClass.value)
+
+			if(!generator){
+				logger.warn 'No generator found. Please verify that the class name is correct. If your class name is correct, please add your generator to the registry'
+				throw new RuntimeException('No generator in JobGeneratorRegistry configured for class '+generatorClass)
+			}
+
+			/*
+			 * If this is a gitflow base generator, then the fact whether we generate the jobs depends on the instruction
+			 * If gitflow job generation is not even a factor, include the generator
+			 */
+			final boolean includeGenerator = factorGitflowJobGeneration ? (generator.supportsGitflow() ? useGitflow : true) : true
+
+			logger.debug 'Is '+ generator.class.simpleName+' being included ? '+includeGenerator
+
+			if(includeGenerator){
+				configuredJobGenerators << generator
+			}
+
+
 		}
-		//When the branch indicates repository set up, we consider whether we should allow gitflow style job management
-//		repositoryBranchPipelineSettings.pipeline.each{setting->
-//			setting.each{configuration->
-//
-////				def generator = JOB_BUILDER_FACTORY[configuration.generatorClass]
-////				def gitflowBasedGenerator = generator instanceof BaseGitflowJobGenerationTemplateSupport
-////
-////				logger.debug 'Is '+ configuration.generatorClass+' a gitflow based generator ? '+gitflowBasedGenerator
-////
-////				boolean includeGenerator = true
-////				/*
-////				 * Our rule section which indicates when a generator can/ cannot become a part of a generation pipeline. 
-////				 * The configuration section just 'expresses' an intent, we need to validate if the intent aligns with the rules we want
-////				 * Include gitflow jobs only when gitflow job generation is a factor, the generator is gitflow based AND a preference to use gitflow has been
-////				 * indicated
-////				 */
-////
-////				if( factorGitflowJobGeneration){
-////					//If this is a gitflow base generator, then the fact whether we generate the jobs depends on the instruction
-////					includeGenerator = gitflowBasedGenerator ? useGitflow : true
-////
-////				}else{ //If gitflow job generation is not even a factor, include the generator
-////					includeGenerator = true
-////
-////				}
-////
-////               logger.debug 'final decision on inclusion '+includeGenerator
-////				if(includeGenerator){
-////					logger.debug 'Including '+generator.class.getSimpleName()
-////					configueredJobGenerators.push(generator)
-////				}else{
-////					logger.debug 'Did not include '+generator.class.getSimpleName()
-////				}
-////			}
-//			
-//		}
-		
-//		//Step 3: If still no match
-//		if(configueredJobGenerators.isEmpty()){
-//			logger.debug 'No Job generators were configured against the branch type or the branch name, reverting to internal defaults'
-//			configueredJobGenerators.push(JOB_BUILDER_FACTORY['com.ibx.frontoffice.jenkins.job.generator.impl.ContinuousIntegrationJobGenerator'])
-//		}
+
+		logger.debug 'Generators being used '+configuredJobGenerators
+
+		//Step 3: If still no match, lets think defaults
+		if(configuredJobGenerators.isEmpty()){
+
+			logger.debug 'No Job generators were configured against the branch type or the branch name, reverting to internal defaults'
+			configuredJobGenerators << JobGeneratorRegistry.CI_JOB_GENERATOR.instance
+
+		}
 
 
 	}
 
-//	/*
-//	 * Manages a static mapping of the class name against the class instance.
-//	 *
-//	 * Helps avoid using a class loader and we don't need that level of dynamic behavior yet.
-//	 */
-//	def static JOB_BUILDER_FACTORY = [
-//		'com.ibx.frontoffice.jenkins.job.generator.impl.ContinuousIntegrationJobGenerator': new ContinuousIntegrationJobGenerator(),
-//		'com.ibx.frontoffice.jenkins.job.generator.impl.CodeQualityJobGenerator': new CodeQualityJobGenerator(),
-//		'com.ibx.frontoffice.jenkins.job.generator.impl.GitflowReleaseBranchJobGenerator':new GitflowReleaseBranchJobGenerator(),
-//		'com.ibx.frontoffice.jenkins.job.generator.impl.IntegrationTestJobGenerator':new IntegrationTestJobGenerator(),
-//		'com.ibx.frontoffice.jenkins.job.generator.impl.DeploymentJobGenerator':new DeploymentJobGenerator(),
-//		'com.ibx.frontoffice.jenkins.job.generator.impl.GitflowFeatureBranchJobGenerator':new GitflowFeatureBranchJobGenerator(),
-//		'com.ibx.frontoffice.jenkins.job.generator.impl.GitflowHotfixBranchJobGenerator':new GitflowHotfixBranchJobGenerator()
-//	]
+	/**
+	 * Finds the generators configured in the pipeline settings and applies the the inclusion filter criteria
+	 * 
+	 * @param repositoryBranchPipelineSettings
+	 * @param generatorInclusionFilter
+	 * 
+	 * @return
+	 */
+	protected def findGenerators(repositoryBranchPipelineSettings, generatorInclusionFilter){
+
+		if(repositoryBranchPipelineSettings){ //If the branch settings exist, apply the filter criteria on them
+			repositoryBranchPipelineSettings.pipeline.find{key,value -> key == 'generatorClass'}.each(generatorInclusionFilter)
+		}else null
+
+
+	}
+
 
 }
