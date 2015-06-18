@@ -274,8 +274,10 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 
 
 	/**
-	 * Extension point for subclasses to control the algorithm for job name, the job name is based on a pattern of
-	 * ${jobPrefix}{baseName}${jobSuffix}
+	 * Extension point for subclasses to control the pattern for the job name. 
+	 * A pattern is utilized if an explicit job name is not provided by configuration
+	 * 
+	 * The job name is based on a pattern of ${jobPrefix}{baseName}${jobSuffix}
 	 * 
 	 * The job prefix and suffic can be provided via configuration. Also see 'determineJobBaseName'
 	 *
@@ -288,7 +290,7 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 	 */
 	protected def determineJobName(JobGenerationContext ctx, JobConfig jobConfig){
 
-		def baseName= determineJobBaseName(ctx)
+		def baseName= jobConfig?.jobName ?: determineJobBaseName(ctx, jobConfig)
 
 		[jobConfig?.jobPrefix, baseName, jobConfig?.jobSuffix].findAll().join('')
 
@@ -297,6 +299,8 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 
 	/**
 	 * Extension point for subclasses to determine the base name of the job generated
+	 * 
+	 * We first look if the job configuration specifies a name, if it doesn't we resort to using the one 
 	 *
 	 * @param ctx
 	 * @param jobConfig
@@ -305,8 +309,8 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 	 *
 	 *
 	 */
-	protected def determineJobBaseName(JobGenerationContext ctx){
-		ctx.projectName
+	protected def determineJobBaseName(JobGenerationContext ctx, JobConfig jobConfig){
+		ctx.repositoryName+'-'+ctx.repositoryBranchName
 	}
 
 	/**
