@@ -1,32 +1,33 @@
 package com.liquidhub.framework.ci.job.generator.impl
 
-import static com.liquidhub.framework.model.JobPermissions.ItemBuild
-import static com.liquidhub.framework.model.JobPermissions.ItemCancel
-import static com.liquidhub.framework.model.JobPermissions.ItemConfigure
-import static com.liquidhub.framework.model.JobPermissions.ItemDiscover
-import static com.liquidhub.framework.model.JobPermissions.ItemRead
-import static com.liquidhub.framework.model.JobPermissions.ItemWorkspace
-import static com.liquidhub.framework.model.JobPermissions.RunDelete
-import static com.liquidhub.framework.model.JobPermissions.RunUpdate
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemBuild
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemCancel
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemConfigure
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemDiscover
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemRead
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemWorkspace
+import static com.liquidhub.framework.ci.model.JobPermissions.RunDelete
+import static com.liquidhub.framework.ci.model.JobPermissions.RunUpdate
 
 import com.liquidhub.framework.ci.job.generator.JobGenerator
 import com.liquidhub.framework.ci.logger.Logger
-import com.liquidhub.framework.config.model.BuildEnvironmentVariables
+import com.liquidhub.framework.ci.model.BuildEnvironmentVariables
+import com.liquidhub.framework.ci.model.Email
+import com.liquidhub.framework.ci.model.JobGenerationContext
+import com.liquidhub.framework.ci.model.JobPermissions
+import com.liquidhub.framework.ci.model.SeedJobParameters
 import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.config.model.JobConfig
 import com.liquidhub.framework.config.model.RoleConfig
-import com.liquidhub.framework.model.JobGenerationContext
-import com.liquidhub.framework.model.SeedJobParameters
 
 
 /**
- * A base template for generating jobs for front office projects
+ * A base template for generating jobs. The template can be partially or fully overriden by sub classes
  * 
- * Base Assumptions:
+ * Base Assumptions(for now):
  *  
- *   1. All projects use JAVA
+ *   1. All projects use JAVA 
  *   2. All projects use maven (can be overriden with any other build tool if its set up on the build node and referenced in the build step)
- * 
  * 
  * 
  * @author Rahul Mishra,LiquidHub
@@ -35,7 +36,8 @@ import com.liquidhub.framework.model.SeedJobParameters
 abstract class BaseJobGenerationTemplate implements JobGenerator{
 
 	/**
-	 * Primary API which is invoked by job dsl factory to generate a job
+	 * Outlines the job definition template, the template can be overriden completely or partly based on requirements.
+	 * 
 	 */
 
 	@Override
@@ -55,13 +57,14 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 
 			description configureDescription(ctx, jobConfig)
 
-			jdk ctx.buildToolConfig.compilerLanguage.name
+			jdk ctx.buildToolConfig.languageRuntime.name
 
 			logRotator(
-					2,//daysToKeep
-					7,//numToKeep
-					1,//artifactDaysToKeep
-					2)//artifactNumToKeep
+					masterConfig.buildDiscardPolicy['daysToKeep'] as Integer,
+					masterConfig.buildDiscardPolicy['numToKeep'] as Integer,
+					masterConfig.buildDiscardPolicy['artifactDaysToKeep'] as Integer,
+					masterConfig.buildDiscardPolicy['artifactNumToKeep'] as Integer
+					)
 
 			scm  ctx.configurers('scm').configure(ctx, jobConfig, ignoreCommitNotifications())
 
@@ -71,39 +74,26 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 
 			publishers configurePublishers(ctx, jobConfig)
 
-			def jobParameters = configureParameters(ctx, jobConfig)
+			parameters configureParameters(ctx, jobConfig)
 
-			if(jobParameters){
-				parameters jobParameters
+			createPermissionRoleMappings(ctx){grantedPermission, allowedRole ->
+				authorization { permission(grantedPermission, allowedRole) }
 			}
 
-			def rolePermissionMappings = createPermissionRoleMappings(ctx)
 
-			rolePermissionMappings.each{rolePermissionMapping ->
-
-				def allowedRole = rolePermissionMapping.key
-				def permissions = rolePermissionMapping.value
-
-				permissions.each{grantedPermission->
-					authorization{
-						permission(grantedPermission.longForm, allowedRole)
-					}
-
-				}
-			}
 
 			wrappers configureWrappers()
-
 		}
 
-		ctx.logger.info('Finished fabricating '+job.name)
-
-		return job
+		ctx.logger.info('Finished fabricating '+jobName)
 	}
 
 
 	/**
-	 * @return the key against which the configuration for this job is stored
+	 * @return the key configuration for which the job is being generated, the configured is stored inside this master config
+	 * 
+	 * Most Implementations will simply extract the appropriate nested object
+	 * 
 	 */
 	abstract def getJobConfig(Configuration configuration);
 
@@ -113,6 +103,7 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 	 * 
 	 * @param ctx
 	 * @param jobConfig
+	 * 
 	 * @return
 	 */
 	protected def configureDescription(ctx, JobConfig jobConfig){
@@ -120,14 +111,31 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 	}
 
 
+	/**
+	 * Configure the build steps for this job, by default we assume a maven step and directly use the goals configured
+	 * 
+	 * 
+	 * @param ctx
+	 * @param jobConfig
+	 * 
+	 * @return
+	 */
 	protected def configureSteps(JobGenerationContext ctx, JobConfig jobConfig){
 		return {
-			maven configureMavenCommand(ctx.mvn, jobConfig.goals)
+			maven ctx.configurers('maven').configure(ctx, jobConfig)
 		}
 	}
 
-	protected def createPermissionRoleMappings(JobGenerationContext ctx){
-		
+	/**
+	 * Creates a default Role-Permission Mapping for this context. This mappings helps restrict access previleges
+	 * 
+	 * @param ctx
+	 * @param authorizationClosure
+	 * 
+	 * @return
+	 */
+	protected def createPermissionRoleMappings(JobGenerationContext ctx, Closure authorizationClosure){
+
 		RoleConfig roleConfig = ctx.configuration.roleConfig
 
 		def mappings = [
@@ -142,29 +150,59 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 			def existingMappings = mappings[role] ?: []
 			existingMappings.addAll(additionalMappings[role])
 		}
-		return mappings
 
+
+		mappings.each{rolePermissionMapping ->
+
+			def allowedRole = rolePermissionMapping.key, permissions = rolePermissionMapping.value
+
+			permissions.each{JobPermissions permission->
+				authorizationClosure(permission.longForm, allowedRole)
+			}
+		}
 	}
 
 
+	/**
+	 * Implemented by subclasses when they want to add job specific permissions. The permissions returned are in ADDITION to the 
+	 * permissions which the base template provides
+	 * 
+	 * @param ctx
+	 * @return
+	 */
 	protected Map grantAdditionalPermissions(JobGenerationContext ctx){
 		[:]
 	}
 
 
-	protected def configureSCM(JobGenerationContext ctx){
-
-	}
-
+	/**
+	 * @return true if the job being generated should be oblivious to commit notifications.
+	 */
 	protected def ignoreCommitNotifications(){
 		true
 	}
 
+	/**
+	 * Extension point for subclasses to add job specific parameters
+	 * 
+	 * @param ctx
+	 * @param jobConfig
+	 * @return
+	 */
 	protected def configureParameters(JobGenerationContext ctx,JobConfig jobConfig){
 
+		return {
+		} as Closure
 	}
 
 
+	/**
+	 * Adds post build steps/publishers to the job definition
+	 *
+	 * @param ctx
+	 * @param jobConfig
+	 * @return
+	 */
 	protected def configurePublishers(JobGenerationContext ctx, JobConfig jobConfig){
 
 		def regularEmailRecipients = determineRegularEmailRecipients(ctx, jobConfig)
@@ -172,36 +210,39 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 		def escalationEmails = determineEscalationEmailRecipients(ctx, jobConfig)
 
 		def emailSubject = determineEmailSubject(ctx, jobConfig)
-		
-		def emailDefnExt = ['recipientEmails': regularEmailRecipients, 'escalationEmails':escalationEmails,'emailSubject': emailSubject]
+
+		def email = new Email(sendTo: regularEmailRecipients, escalateTo: escalationEmails, subject: emailSubject)
 
 		return configureAdditionalPublishers(ctx, jobConfig) >>
-				ctx.configurers('email').configure(ctx, jobConfig, emailDefnExtn)
-
-
-
+				ctx.configurers('email').configure(ctx, jobConfig, email)
 	}
 
 
 	protected def determineRegularEmailRecipients(JobGenerationContext ctx, JobConfig jobConfig){
-		
+
 		def notificationConfig = ctx.configuration.notificationConfig
-	
-		def recipientEmail = ctx.configuration.buildEnvProperties[SeedJobParameters.RECIPIENT_EMAIL.bindingName]
-		
+
+		def recipientEmail = ctx.getVariable(SeedJobParameters.RECIPIENT_EMAIL)
+
+		ctx.logger.debug 'Recipient Emails [bindVariable: '+recipientEmail+', jobConfig: '+jobConfig.regularEmailRecipients+', notificationConfig: '+notificationConfig?.regularEmailRecipients+', default: '+ctx.defaultRegularEmailRecipients+']'
+
 		//These are our options to find regular email recipients, ranked by preference, we break on first not null result
-		[recipientEmail, jobConfig.regularEmailRecipients, notificationConfig?.regularEmailRecipients, ctx.getDefaultRegularEmailRecipients()].findResult {it!=null}
+		[recipientEmail, jobConfig.regularEmailRecipients, notificationConfig?.regularEmailRecipients, ctx.defaultRegularEmailRecipients].findResult {it?.trim() ? it:null}
 
 	}
 
 
 
 	protected def determineEscalationEmailRecipients(JobGenerationContext ctx, JobConfig jobConfig){
-		
-		def escalationEmail = ctx.configuration.buildEnvProperties[SeedJobParameters.ESCALATION_EMAIL.bindingName]
-		
+
+		def escalationEmail = ctx.getVariable(SeedJobParameters.ESCALATION_EMAIL)
+
+		def notificationConfig = ctx.configuration.notificationConfig
+
+		ctx.logger.debug 'Escalation Emails [bindVariable: '+escalationEmail+', jobConfig: '+jobConfig.escalationEmailRecipients+', notificationConfig: '+notificationConfig?.escalationEmailRecipients+', default: '+ctx.defaultEscalationEmailRecipients+']'
+
 		//These are our options to find regular email recipients, ranked by preference, we break on first not null result
-		[escalationEmail, jobConfig.escalationEmailRecipients, ctx.configuration.notificationConfig?.escalationEmailRecipients, ctx.getDefaultEscalationEmailRecipients()].findResult {it!=null}
+		[escalationEmail, jobConfig.escalationEmailRecipients, notificationConfig?.escalationEmailRecipients, ctx.defaultEscalationEmailRecipients].findResult {it?.trim() ? it:null}
 
 	}
 
@@ -210,6 +251,13 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 		BuildEnvironmentVariables.PROJECT_NAME.paramValue+' - Build # '+BuildEnvironmentVariables.BUILD_NUMBER.paramValue+' - '+BuildEnvironmentVariables.BUILD_STATUS.paramValue+'!'
 	}
 
+	/**
+	 * Extension point for subclasses to add additional publishers (besides the email publisher provided by this base template)
+	 *
+	 * @param ctx
+	 * @param jobConfig
+	 * @return
+	 */
 	protected def configureAdditionalPublishers(JobGenerationContext ctx, JobConfig jobConfig){
 		return {}
 	}
@@ -225,7 +273,19 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 	}
 
 
-
+	/**
+	 * Extension point for subclasses to control the algorithm for job name, the job name is based on a pattern of
+	 * ${jobPrefix}{baseName}${jobSuffix}
+	 * 
+	 * The job prefix and suffic can be provided via configuration. Also see 'determineJobBaseName'
+	 *
+	 * @param ctx
+	 * @param jobConfig
+	 * 
+	 * @return
+	 * 
+	 *
+	 */
 	protected def determineJobName(JobGenerationContext ctx, JobConfig jobConfig){
 
 		def baseName= determineJobBaseName(ctx)
@@ -235,11 +295,23 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 
 	}
 
+	/**
+	 * Extension point for subclasses to determine the base name of the job generated
+	 *
+	 * @param ctx
+	 * @param jobConfig
+	 *
+	 * @return
+	 *
+	 *
+	 */
 	protected def determineJobBaseName(JobGenerationContext ctx){
 		ctx.projectName
 	}
-	
-	
+
+	/**
+	 *  @return true if the generator is a gitflow supporting generator. Defaults to false
+	 */
 	boolean supportsGitflow(){
 		false
 	}
