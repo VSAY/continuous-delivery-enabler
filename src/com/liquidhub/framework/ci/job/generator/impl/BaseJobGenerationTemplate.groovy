@@ -220,9 +220,11 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 		def emailSubject = determineEmailSubject(ctx, jobConfig)
 
 		def email = new Email(sendTo: regularEmailRecipients, escalateTo: escalationEmails, subject: emailSubject)
+		
+		def mavenPOMVersionExtractorScript = mavenPOMVersionExtractionScript.getScript()
 
 		return configureAdditionalPublishers(ctx, jobConfig) >>
-				groovyPostBuild(mavenPOMVersionExtractionScript.getScript()) >> ctx.configurers('email').configure(ctx, jobConfig, email)
+				 { groovyPostBuild(mavenPOMVersionExtractorScript) } >> ctx.configurers('email').configure(ctx, jobConfig, email)
 	}
 
 
