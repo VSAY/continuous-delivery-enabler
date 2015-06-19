@@ -23,13 +23,13 @@ import com.liquidhub.framework.config.model.RoleConfig
 
 /**
  * A base template for generating jobs. The template can be partially or fully overriden by sub classes
- * 
+ *
  * Base Assumptions(for now):
- *  
- *   1. All projects use JAVA 
+ *
+ *   1. All projects use JAVA
  *   2. All projects use maven (can be overriden with any other build tool if its set up on the build node and referenced in the build step)
- * 
- * 
+ *
+ *
  * @author Rahul Mishra,LiquidHub
  *
  */
@@ -37,7 +37,7 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 
 	/**
 	 * Outlines the job definition template, the template can be overriden completely or partly based on requirements.
-	 * 
+	 *
 	 */
 
 	@Override
@@ -74,15 +74,21 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 
 			publishers configurePublishers(ctx, jobConfig)
 
-			parameters configureParameters(ctx, jobConfig)
+			def jobParameters = configureParameters(ctx, jobConfig)
+			
+			if(jobParameters){
+				parameters jobParameters
+			}
 
 			createPermissionRoleMappings(ctx){grantedPermission, allowedRole ->
 				authorization { permission(grantedPermission, allowedRole) }
 			}
 
-
-
 			wrappers configureWrappers()
+
+			configure {
+				configureExtensions(delegate, ctx, jobConfig)
+			}
 		}
 
 		ctx.logger.info('Finished fabricating '+jobName)
@@ -91,19 +97,19 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 
 	/**
 	 * @return the key configuration for which the job is being generated, the configured is stored inside this master config
-	 * 
+	 *
 	 * Most Implementations will simply extract the appropriate nested object
-	 * 
+	 *
 	 */
 	abstract def getJobConfig(Configuration configuration);
 
 	/**
 	 * Configure the description for this job, the extension allows for styling description more dynamically.
 	 * This base implementation sets the job description based on a configuration file.
-	 * 
+	 *
 	 * @param ctx
 	 * @param jobConfig
-	 * 
+	 *
 	 * @return
 	 */
 	protected def configureDescription(ctx, JobConfig jobConfig){
@@ -113,11 +119,11 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 
 	/**
 	 * Configure the build steps for this job, by default we assume a maven step and directly use the goals configured
-	 * 
-	 * 
+	 *
+	 *
 	 * @param ctx
 	 * @param jobConfig
-	 * 
+	 *
 	 * @return
 	 */
 	protected def configureSteps(JobGenerationContext ctx, JobConfig jobConfig){
@@ -128,10 +134,10 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 
 	/**
 	 * Creates a default Role-Permission Mapping for this context. This mappings helps restrict access previleges
-	 * 
+	 *
 	 * @param ctx
 	 * @param authorizationClosure
-	 * 
+	 *
 	 * @return
 	 */
 	protected def createPermissionRoleMappings(JobGenerationContext ctx, Closure authorizationClosure){
@@ -164,13 +170,13 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 
 
 	/**
-	 * Implemented by subclasses when they want to add job specific permissions. The permissions returned are in ADDITION to the 
+	 * Implemented by subclasses when they want to add job specific permissions. The permissions returned are in ADDITION to the
 	 * permissions which the base template provides
-	 * 
+	 *
 	 * @param ctx
 	 * @return
 	 */
-	protected Map grantAdditionalPermissions(JobGenerationContext ctx){
+	protected Map grantAdditionalPermissions(JobGenerationContext ctx, RoleConfig roleConfig){
 		[:]
 	}
 
@@ -184,15 +190,13 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 
 	/**
 	 * Extension point for subclasses to add job specific parameters
-	 * 
+	 *
 	 * @param ctx
 	 * @param jobConfig
 	 * @return
 	 */
 	protected def configureParameters(JobGenerationContext ctx,JobConfig jobConfig){
-
-		return {
-		} as Closure
+	
 	}
 
 
@@ -274,18 +278,18 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 
 
 	/**
-	 * Extension point for subclasses to control the pattern for the job name. 
+	 * Extension point for subclasses to control the pattern for the job name.
 	 * A pattern is utilized if an explicit job name is not provided by configuration
-	 * 
+	 *
 	 * The job name is based on a pattern of ${jobPrefix}{baseName}${jobSuffix}
-	 * 
+	 *
 	 * The job prefix and suffic can be provided via configuration. Also see 'determineJobBaseName'
 	 *
 	 * @param ctx
 	 * @param jobConfig
-	 * 
+	 *
 	 * @return
-	 * 
+	 *
 	 *
 	 */
 	protected def determineJobName(JobGenerationContext ctx, JobConfig jobConfig){
@@ -299,8 +303,8 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 
 	/**
 	 * Extension point for subclasses to determine the base name of the job generated
-	 * 
-	 * We first look if the job configuration specifies a name, if it doesn't we resort to using the one 
+	 *
+	 * We first look if the job configuration specifies a name, if it doesn't we resort to using the one
 	 *
 	 * @param ctx
 	 * @param jobConfig
@@ -318,6 +322,25 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 	 */
 	boolean supportsGitflow(){
 		false
+	}
+
+
+	protected def configureExtensions(delegationContext, JobGenerationContext context, JobConfig jobConfig){
+
+		def parameterExtensions = configureJobParameterExtensions(context, jobConfig)
+
+		delegationContext.with{
+
+			if(parameterExtensions){
+				root / 'properties' / 'hudson.model.ParametersDefinitionProperty' / 'parameterDefinitions'(parameterExtensions)
+			}
+
+		}
+
+	}
+
+	protected def configureJobParameterExtensions(JobGenerationContext context, JobConfig jobCofig){
+		
 	}
 
 
