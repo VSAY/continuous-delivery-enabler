@@ -8,7 +8,7 @@ import groovy.transform.ToString
  * @author Rahul Mishra, LiquidHub
  *
  */
-@ToString(includeNames=true, includePackage=false)
+@ToString(includeNames=true)
 class DeploymentJobConfig extends JobConfig {
 
 	def name //A logical name to the deployment config, should be the environment name when used as environments

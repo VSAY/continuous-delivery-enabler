@@ -28,13 +28,17 @@ class Configuration {
 
 	RoleConfig roleConfig
 
-	private Map notificationConfig, viewConfig, buildConfig
+	Map notificationConfig, viewConfig , buildDiscardPolicy
+	
+	BuildConfig buildConfig
 
-	private List buildPipelinePreferences
+	List buildPipelinePreferences
 
 	def buildEnvProperties = [:] //A mix of system environment variables and build enviroment variables.
 
 	private ConfigurationLevel level
+	
+	private String jobSeederName
 
 	private static logger
 
@@ -55,14 +59,16 @@ class Configuration {
 			'notificationConfig',
 			'viewConfig',
 			'buildPipelinePreferences',
-			'configurableJobSections'
+			'configurableJobSections',
+			'buildConfig',
+			'buildDiscardPolicy'
 		].each{
-		
-		    def src = this[it]
+	
+			def src = this[it]
 			def target = thatConfig[it]
-		
+
 			this[it] = merge(src, target)
-			
+
 			logger.debug it +' @ '+ thatConfig.level+': '+this[it]
 		}
 
@@ -79,13 +85,13 @@ class Configuration {
 
 		if(src){
 			if(target){
-				src instanceof Map ? src << target : src.merge(target)
+				return src instanceof Map ? src << target : src.merge(target)
 			}else{
-				src
+				return src
 			}
 
 		}else{
-			target
+			return target
 		}
 
 	}

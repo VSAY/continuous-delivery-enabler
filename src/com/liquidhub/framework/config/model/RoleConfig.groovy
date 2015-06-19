@@ -2,7 +2,7 @@ package com.liquidhub.framework.config.model
 
 import groovy.transform.ToString
 
-@ToString(includeNames=true, includePackage=false)
+@ToString(includeNames=true)
 class RoleConfig {
 
 	def developerRole, releaseManagerRole,deploymentManagerRole, projectAdminRole, qaAdminRole

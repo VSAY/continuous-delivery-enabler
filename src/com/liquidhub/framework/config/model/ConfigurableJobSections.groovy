@@ -11,7 +11,7 @@ import com.liquidhub.framework.JobSectionConfigurer
  * @author Rahul Mishra, LiquidHub
  *
  */
-@ToString(includeNames=true, includePackage=false)
+@ToString(includeNames=true)
 class ConfigurableJobSections {
 	
 	def scm,maven,trigger,email //The name MUST match the key in the configuration file
@@ -24,12 +24,16 @@ class ConfigurableJobSections {
 	 * @return
 	 */
 	JobSectionConfigurer provider(sectionName){
-		
+	
 		//This is the value configured against the key in the confinguration file
 		def providerName = this[sectionName]
 		
+		if(!providerName){
+			throw new RuntimeException('No provider has been configured for the ['+sectionName+'] section. Add a JobSectionConfigurer for this section against the "configurableJobSections" property')
+		}
+		
 		//This is the provider instance being returned
-		JobSectionConfigurers.valueOf(sectionName)
+		JobSectionConfigurers.valueOf(providerName)?.provider
 	}
 
 }

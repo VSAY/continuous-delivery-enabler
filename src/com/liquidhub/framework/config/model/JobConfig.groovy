@@ -8,11 +8,12 @@ import groovy.transform.ToString
  * @author Rahul Mishra, LiquidHub
  *
  */
-@ToString(includeNames=true, includePackage=false)
+@ToString(includeNames=true)
 class JobConfig {
 
+	boolean disabled //Indicates if the configuration element is disabled, if this value is true, this job is ignored
 	def
-	disabled, //Indicates if the configuration element is disabled, if this value is true, this job is ignored
+	jobName,
 	jobPrefix, 
 	jobSuffix,
 	steps,
@@ -37,8 +38,10 @@ class JobConfig {
 	def merge(otherJobConfig){
 
 		if(!otherJobConfig)return this
+		
+		JobConfig.declaredFields.findAll{!it.synthetic}
 
-		[
+		[	'jobName',
 			'disabled',
 			'jobPrefix',
 			'jobSuffix',
@@ -49,7 +52,7 @@ class JobConfig {
 			'pollSchedule',
 			'projectDescriptionTemplatePath',
 			'regularEmailRecipients',
-			'escalationEmailREcipients'
+			'escalationEmailRecipients'
 		].each{property ->
 			this[property] = otherJobConfig[property] ?:  this[property]
 		}
