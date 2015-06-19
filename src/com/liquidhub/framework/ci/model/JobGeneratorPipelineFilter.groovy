@@ -25,7 +25,7 @@ class JobGeneratorPipelineFilter {
 
 	private static Logger logger
 
-	List configuredJobGenerators = []
+	List<JobGenerator> configuredJobGenerators = []
 
 	JobGeneratorPipelineFilter(JobGenerationContext context){
 
@@ -49,7 +49,7 @@ class JobGeneratorPipelineFilter {
 		final boolean factorGitflowJobGeneration = GitFlowBranchTypes.type(currentBranch)?.requiresRepositorySetup()
 
 		//This doesn't matter if gitflow job generation is not even a factor
-		final boolean useGitflow = context.variable([SeedJobParameters.USE_GITFLOW])?.toBoolean()
+		final boolean useGitflow = context.getVariable([SeedJobParameters.USE_GITFLOW])?.toBoolean()
 
 		logger.debug 'Should gitflow job generation decisions be made ? '+factorGitflowJobGeneration
 		logger.debug 'Is Gitflow job generation enabled ? '+useGitflow
@@ -57,9 +57,9 @@ class JobGeneratorPipelineFilter {
 
 		findGenerators(repositoryBranchPipelineSettings){generatorClass ->
 
-			logger.debug 'Now looking for an instance of '+generatorClass.value
+			logger.debug 'Now looking for an instance of '+generatorClass
 
-			JobGenerator generator = JobGeneratorRegistry.findGenerator(generatorClass.value)
+			JobGenerator generator = JobGeneratorRegistry.findGenerator(generatorClass)
 
 			if(!generator){
 				logger.warn 'No generator found. Please verify that the class name is correct. If your class name is correct, please add your generator to the registry'
@@ -105,11 +105,15 @@ class JobGeneratorPipelineFilter {
 	protected def findGenerators(repositoryBranchPipelineSettings, generatorInclusionFilter){
 
 		if(repositoryBranchPipelineSettings){ //If the branch settings exist, apply the filter criteria on them
-			repositoryBranchPipelineSettings.pipeline.find{key,value -> key == 'generatorClass'}.each(generatorInclusionFilter)
-		}else null
-
+			repositoryBranchPipelineSettings.pipeline.each{findGeneratorClasses(it, 'generatorClass', generatorInclusionFilter)  }
+		}
 
 	}
 
+
+
+	protected def findGeneratorClasses(Map map, Object key, generatorInclusionFilter ) {
+		map.get(key) ? generatorInclusionFilter(map[key]) : map.findResults { String k, v -> if( k.matches('startConfig|finishConfig')) findGeneratorClasses(v, key, generatorInclusionFilter) }
+	}
 
 }
