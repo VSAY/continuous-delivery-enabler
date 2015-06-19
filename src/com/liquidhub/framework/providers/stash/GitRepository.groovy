@@ -1,9 +1,13 @@
 package com.liquidhub.framework.providers.stash
 
-import com.liquidhub.framework.model.SeedJobParameters
+
+import groovy.transform.ToString
+
+import com.liquidhub.framework.ci.model.SeedJobParameters
 import com.liquidhub.framework.scm.model.GitFlowBranchTypes
 import com.liquidhub.framework.scm.model.SCMRepository
 
+@ToString(includeNames=true, includeFields=true)
 class GitRepository implements SCMRepository {
 
 	private def repoUrl,baseUrl,repoBranchName,projectKey,repositorySlug,authorizedUserDigest,changeSetUrl,branchType
@@ -13,11 +17,11 @@ class GitRepository implements SCMRepository {
 		def repoBranchName = bindingVariables[SeedJobParameters.REPO_BRANCH_NAME.bindingName]
 		def repoUrl = bindingVariables[SeedJobParameters.SCM_REPO_URL.bindingName]
 		def repositoryUserCredentials = bindingVariables[SeedJobParameters.REPO_ACCESS_CREDENTIALS.bindingName]
-		def repositoryType = bindingVariables[SeedJobParameters.REPO_IMPLEMENTATION.bindingName]
+		def repositoryType = bindingVariables[SeedJobParameters.REPO_IMPLEMENTATION.bindingName] ?: 'STASH'//By default, we assume its a stash repository
 		
 		def gitRepoURLPattern = GitRepositories.valueOf(repositoryType.toUpperCase()).urlPattern
 
-		def matcher = ( repoUrl =~  gitRepoURLPattern)//Git URL Repo Pattern
+		def matcher = ( repoUrl =~  gitRepoURLPattern )//Git URL Repo Pattern
 
 		if(!matcher.matches()){
 			throw new RuntimeException('Not a Standard Git URL. The URL provided is'+repoUrl+'. The provided URL did not match the configure pattern '+gitRepoURLPattern);
@@ -35,7 +39,7 @@ class GitRepository implements SCMRepository {
 		this.repositorySlug = matcher[0][4]
 		this.authorizedUserDigest= repositoryUserCredentials.bytes.encodeBase64()
 		this.repoUrl = repoUrl
-		this.changeSetUrl = createChangeSetUrl(getBaseUrl, getProjectKey, getRepositorySlug)
+		this.changeSetUrl = createChangeSetUrl(baseUrl, projectKey, repositorySlug)
 		this.branchType = GitFlowBranchTypes.type(repoBranchName)
 	
 	}
@@ -94,7 +98,7 @@ class GitRepository implements SCMRepository {
 	private enum GitRepositories {
 
 
-		STASH('/(http://)(.*)/scm/([A-z0-9]+)/(.*).git/')
+		STASH('(http://)(.*)/scm/([A-z0-9]+)/(.*).git')
 		
 
 		public GitRepositories(urlPattern){
