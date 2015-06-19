@@ -22,23 +22,27 @@ enum GitFlowBranchTypes {
 	public GitFlowBranchTypes(String prefix){
 		this.prefix = prefix
 	}
-	
-	
-	
+
+
+
 	public boolean requiresRepositorySetup(){
-		
+
 		if(this == GitFlowBranchTypes.MASTER){
 			return true
 		}
-		
+
 		return false
 	}
 
 
-	public static GitFlowBranchTypes type(branchName){
-		GitFlowBranchTypes.values().findResult{branchName.toLowerCase().startsWith(it.prefix) ? it : null}
-
+	public static GitFlowBranchTypes type(prefixOrName){
+		
+		if(!prefixOrName)return null
+		
+		GitFlowBranchTypes.values().findResult{prefixOrName.toLowerCase().startsWith(it.prefix) ? it : null}
 	}
+
+	
 
 
 }

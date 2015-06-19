@@ -12,5 +12,4 @@ interface SCMRepository {
 	def getBranchType()
 	def getCredentialsId() //A reference to a pre configured credentials identifier on the system
 	
-	
 }
