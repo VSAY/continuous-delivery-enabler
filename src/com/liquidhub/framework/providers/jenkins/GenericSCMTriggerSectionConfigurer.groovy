@@ -1,10 +1,8 @@
 package com.liquidhub.framework.providers.jenkins
 
-import groovy.lang.Closure;
-
-import com.liquidhub.framework.JobSectionConfigurer;
-import com.liquidhub.framework.config.model.JobConfig;
-import com.liquidhub.framework.model.JobGenerationContext;
+import com.liquidhub.framework.JobSectionConfigurer
+import com.liquidhub.framework.ci.model.JobGenerationContext
+import com.liquidhub.framework.config.model.JobConfig
 
 class GenericSCMTriggerSectionConfigurer implements JobSectionConfigurer{
 

@@ -1,28 +1,31 @@
 package com.liquidhub.framework.providers.jenkins
 
 import com.liquidhub.framework.JobSectionConfigurer
+import com.liquidhub.framework.ci.model.Email
+import com.liquidhub.framework.ci.model.JobGenerationContext
 import com.liquidhub.framework.config.model.JobConfig
-import com.liquidhub.framework.model.JobGenerationContext
 
 class ExtendedEmailNotificationSectionConfigurer implements JobSectionConfigurer {
 
 
-	Closure configure(JobGenerationContext context, JobConfig jobConfig, emailDefContext=null){
+	Closure configure(JobGenerationContext context, JobConfig jobConfig, Email email=null){
 		
-		def contributorEmails = emailDefContext['recipientEmails']
-		def escalationEmails = emailDefContext['escalationEmails']
-		def emailSubject = emailDefContext['emailSubject']
+		context.logger.debug 'Email definition context is '+email
+
+		def regularEmailRecipients = email.sendTo
+		def escalationEmailRecipients = email.escalateTo
+		def emailSubject = email.subject
 
 		return {
 
-			extendedEmail(contributorEmails, emailSubject) {
+			extendedEmail(regularEmailRecipients, emailSubject) {
 
 				trigger(triggerName: 'Success', sendToRecipientList: true, sendToDevelopers:true)
 				//Only to dev contributors
 				trigger(triggerName: 'FirstFailure', includeCulprits: true, sendToRecipientList: true, sendToDevelopers:true, subject : 'Action Required!!!'+emailSubject)
 				//To everyone who was explicitly specified using a list
 
-				def failureEmailList  = [contributorEmails, escalationEmails].join(",")
+				def failureEmailList  = [regularEmailRecipients, escalationEmailRecipients].join(",")
 
 				trigger(triggerName: 'Failure', recipientList: failureEmailList, sendToRecipientList: true, sendToDevelopers:true,includeCulprits: true, subject : 'Action Required!!!'+emailSubject)
 				configure { node ->
@@ -35,8 +38,5 @@ class ExtendedEmailNotificationSectionConfigurer implements JobSectionConfigurer
 
 	}
 
-	def configureEmailNotifications(contributorEmails, escalationEmails, emailSubject){
 
-
-	}
 }
