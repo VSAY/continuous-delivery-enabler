@@ -38,7 +38,7 @@ class JobGenerationContext {
 	final BuildConfig buildToolConfig
 	
 	final JobViewSupport viewHelper
-
+	
 	JobGenerationContext(JobFactory jobFactory, JenkinsWorkspaceUtils workspaceUtils,Configuration configuration,SCMRepository scmRepository, JobViewSupport jobViewSupport){
 
 		this.workspaceUtils = workspaceUtils
@@ -76,6 +76,6 @@ class JobGenerationContext {
 	 * @return true if the context generation is happening on a windows machine
 	 */
 	boolean isGeneratingOnWindows(){
-		
+		false
 	}
 }
