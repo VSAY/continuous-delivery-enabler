@@ -27,7 +27,7 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 				shell('git checkout feature/${featureName}')
 			}
 
-			ctx.configurers('maven').configure(ctx, jobConfig)
+			maven ctx.configurers('maven').configure(ctx, jobConfig)
 		}
 	}
 
@@ -52,6 +52,6 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 		def valueScript = valueListingProvider.getScript(['requestParam':request])
 
-		context.viewHelper.createChoiceOptionsView(GeneratedJobParameters.FEATURE_NAME , 'Select the feature you intend to finish', valueScript, descriptionScript)
+		context.viewHelper.createChoiceOptionsView(GeneratedJobParameters.FEATURE_NAME , 'Select the feature you intend to finish', valueScript, descriptionScript,[:])
 	}
 }
