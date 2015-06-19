@@ -12,7 +12,6 @@ class JenkinsOSCommandAdapter implements OSCommandAdapter{
 		//Unix  substitution characters ${var} needs to be replaced by windows substitution characters %var%
 		substituteParameters(cmd, parameters){command ->
 			command = windowsOS ? command.replace('${','%').replace('}','%') : command
-			println command
         	windowsOS ? { batchFile(command) } : { shell(command) }
 		}
 	}
@@ -37,7 +36,7 @@ class JenkinsOSCommandAdapter implements OSCommandAdapter{
 
 		def adapter = new JenkinsOSCommandAdapter()
 
-		println adapter.adapt(cmd, parameters)
+		println adapter.adapt(cmd)
 	}
 
 }
