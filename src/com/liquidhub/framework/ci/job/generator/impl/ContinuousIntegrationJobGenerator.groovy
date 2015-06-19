@@ -1,16 +1,16 @@
 package com.liquidhub.framework.ci.job.generator.impl
 
-import static com.liquidhub.framework.model.JobPermissions.ItemBuild
-import static com.liquidhub.framework.model.JobPermissions.ItemCancel
-import static com.liquidhub.framework.model.JobPermissions.ItemWorkspace
-import static com.liquidhub.framework.model.JobPermissions.RunDelete
-import static com.liquidhub.framework.model.JobPermissions.RunUpdate
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemBuild
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemCancel
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemWorkspace
+import static com.liquidhub.framework.ci.model.JobPermissions.RunDelete
+import static com.liquidhub.framework.ci.model.JobPermissions.RunUpdate
 
-import com.liquidhub.framework.config.model.BuildEnvironmentVariables
+import com.liquidhub.framework.ci.model.BuildEnvironmentVariables
+import com.liquidhub.framework.ci.model.JobGenerationContext
 import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.config.model.JobConfig
 import com.liquidhub.framework.config.model.RoleConfig
-import com.liquidhub.framework.model.JobGenerationContext
 
 /**
  * Generates the continuous integration job for a Repository Branch

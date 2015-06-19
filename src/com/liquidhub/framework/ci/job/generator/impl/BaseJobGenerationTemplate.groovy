@@ -9,6 +9,7 @@ import static com.liquidhub.framework.ci.model.JobPermissions.ItemWorkspace
 import static com.liquidhub.framework.ci.model.JobPermissions.RunDelete
 import static com.liquidhub.framework.ci.model.JobPermissions.RunUpdate
 
+import com.liquidhub.framework.ci.EmbeddedScriptProvider
 import com.liquidhub.framework.ci.job.generator.JobGenerator
 import com.liquidhub.framework.ci.logger.Logger
 import com.liquidhub.framework.ci.model.BuildEnvironmentVariables
@@ -19,6 +20,7 @@ import com.liquidhub.framework.ci.model.SeedJobParameters
 import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.config.model.JobConfig
 import com.liquidhub.framework.config.model.RoleConfig
+import com.liquidhub.framework.providers.jenkins.MavenPOMVersionExtractionScriptProvider
 
 
 /**
@@ -34,12 +36,14 @@ import com.liquidhub.framework.config.model.RoleConfig
  *
  */
 abstract class BaseJobGenerationTemplate implements JobGenerator{
+	
+	private EmbeddedScriptProvider mavenPOMVersionExtractionScript = new MavenPOMVersionExtractionScriptProvider([:])
+	
 
 	/**
 	 * Outlines the job definition template, the template can be overriden completely or partly based on requirements.
 	 *
 	 */
-
 	@Override
 	public Object generateJob(JobGenerationContext ctx) {
 
@@ -218,7 +222,7 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 		def email = new Email(sendTo: regularEmailRecipients, escalateTo: escalationEmails, subject: emailSubject)
 
 		return configureAdditionalPublishers(ctx, jobConfig) >>
-				ctx.configurers('email').configure(ctx, jobConfig, email)
+				groovyPostBuild(mavenPOMVersionExtractionScript.getScript()) >> ctx.configurers('email').configure(ctx, jobConfig, email)
 	}
 
 
