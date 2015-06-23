@@ -1,11 +1,15 @@
 package com.liquidhub.framework.ci.job.generator.impl
 
 import com.liquidhub.framework.ci.model.BuildEnvironmentVariables
-import com.liquidhub.framework.ci.model.GeneratedJobParameters
+import com.liquidhub.framework.ci.model.GitflowJobParameter
 import com.liquidhub.framework.ci.model.JobGenerationContext
+import com.liquidhub.framework.ci.view.ViewElementTypes
 import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.config.model.JobConfig
 import com.liquidhub.framework.scm.model.SCMRepository
+
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.FEATURE_NAME
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.START_COMMIT
 
 
 
@@ -16,23 +20,25 @@ class GitflowStartFeatureJobGenerator extends BaseGitflowJobGenerationTemplateSu
 		return configuration.gitflowFeatureBranchConfig.startConfig
 	}
 
+	protected def defineJobParameters(JobGenerationContext context, JobConfig jobConfig){
 
-	protected def configureJobParameterExtensions(JobGenerationContext context, JobConfig jobConfig){
+		def parameters = [] 
 
 		SCMRepository scmRepository = context.scmRepository
 
-		def featureNameDescription = 'The name of the feature you intend to start.Please do not prefix feature/  .It is done automatically'
+		parameters << new GitflowJobParameter(
+				name: FEATURE_NAME,
+				description: 'The name of the feature you intend to start.Please do not prefix feature/  .It is done automatically',
+				elementType: ViewElementTypes.TEXT_FIELD
+				)
 
-		def commitDescription = generateCommitDescription(scmRepository.changeSetUrl)
-
-		def featureNameParam = context.viewHelper.createSimpleTextBox(GeneratedJobParameters.FEATURE_NAME, featureNameDescription,'',false)
-
-		def startCommitParam = context.viewHelper.createSimpleTextBox(GeneratedJobParameters.START_COMMIT, commitDescription,'',false)
-		
-		def configureBranchJobs = addChoiceToLaunchConfiguredBranchJob(context)
-
-		featureNameParam >> startCommitParam >> configureBranchJobs
+		parameters << new GitflowJobParameter(
+				name: START_COMMIT,
+				description: generateCommitDescription(scmRepository.changeSetUrl),
+				elementType: ViewElementTypes.TEXT_FIELD
+				)
 	}
+
 
 
 
@@ -42,13 +48,12 @@ class GitflowStartFeatureJobGenerator extends BaseGitflowJobGenerationTemplateSu
 	}
 
 
-	def configureSteps(JobGenerationContext ctx, JobConfig jobConfig){
+	def configureBuildSteps(JobGenerationContext ctx, JobConfig jobConfig){
 
 		return {
 			shell ('git checkout develop')
 			maven ctx.configurers('maven').configure(ctx, jobConfig)
-
-		} >> addConditionalStepsForDownstreamJobLaunch(ctx, jobConfig)
+		}
 	}
 
 
@@ -63,5 +68,9 @@ class GitflowStartFeatureJobGenerator extends BaseGitflowJobGenerationTemplateSu
 		   |at <a href='${gitRepoChangeSetUrl}/commits' target='_blank'>List of Commits on develop branch </a>.Avoid typing the commit, prefer copy and paste.
 		""".stripMargin()
 	}
+
+	protected boolean configuresBranchInitiatingJob() {
+		true
+	};
 }
 

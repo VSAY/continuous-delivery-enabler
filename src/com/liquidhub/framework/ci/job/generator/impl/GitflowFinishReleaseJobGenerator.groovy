@@ -1,20 +1,23 @@
 package com.liquidhub.framework.ci.job.generator.impl
 
 
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.NEXT_MILESTONE_DEV_VERSION
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_BRANCH
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_VERSION
+
 import com.liquidhub.framework.ci.EmbeddedScriptProvider
-import com.liquidhub.framework.ci.OSCommandAdapter
 import com.liquidhub.framework.ci.model.BuildEnvironmentVariables
-import com.liquidhub.framework.ci.model.GeneratedJobParameters
+import com.liquidhub.framework.ci.model.GitflowJobParameter
 import com.liquidhub.framework.ci.model.JobGenerationContext
+import com.liquidhub.framework.ci.model.ParameterListingScript
 import com.liquidhub.framework.ci.model.VersionDeterminationRequest
+import com.liquidhub.framework.ci.view.ViewElementTypes
 import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.config.model.JobConfig
-import com.liquidhub.framework.providers.jenkins.OperatingSystemCommandConfigurer
 import com.liquidhub.framework.scm.MilestoneVersionDeterminationScriptProvider
 import com.liquidhub.framework.scm.ReleaseChoiceOptionsScriptProvider
 import com.liquidhub.framework.scm.model.SCMRemoteRefListingRequest
 import com.liquidhub.framework.scm.model.SCMRepository
-
 
 
 class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateSupport {
@@ -29,8 +32,11 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 		configuration.gitflowReleaseBranchConfig.finishConfig
 	}
 
-	@Override
-	protected def configureJobParameterExtensions(JobGenerationContext context, JobConfig jobConfig){
+
+	protected def defineJobParameters(JobGenerationContext context, JobConfig jobConfig){
+		
+		
+		def parameters = []
 
 		SCMRepository repository = context.scmRepository
 
@@ -47,32 +53,45 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 		def valueScript = valueListingProvider.getScript(['requestParam':request])
 
+		parameters << new GitflowJobParameter(
+				name: RELEASE_BRANCH,
+				description : 'The release you intend to finish',
+				valueListingScript: new ParameterListingScript(text:valueScript),
+				labelListingScript: new ParameterListingScript(text:descriptionScript),
+				elementType: ViewElementTypes.SINGLE_SELECT_CHOICES
+				)
+		
 		def versionDeterminationRequest = new VersionDeterminationRequest(gitRepoUrl: repoUrl, authorizedUserDigest : authDigest, versionNamingStrategy: MILESTONE_NAMING_STRATEGY)
+	
 
 		def releaseChoicesScript = releaseOptionsProvider.getScript(['requestParam':versionDeterminationRequest])
+		
+		parameters << new GitflowJobParameter(
+				name: RELEASE_VERSION,
+				description : 'The version you intend to release, a milestone or the final build? If you do not see any options above, your project has already had a final release',
+				valueListingScript: new ParameterListingScript(text:releaseChoicesScript)
+				)
 
-		def vh = context.viewHelper
 
-		def releaseBranchParam = vh.createChoiceOptionsView(GeneratedJobParameters.RELEASE_BRANCH , 'The release you intend to finish', valueScript, descriptionScript, null)
-		def releaseVersionParam = vh.createChoiceOptionsView(GeneratedJobParameters.RELEASE_VERSION , 'The version you intend to release, a milestone or the final build? If you do not see any options above, your project has already had a final release', releaseChoicesScript, null,null)
+		def developmentVersionDeterminationScript = nextMilestoneChoiceProvider.getScript(['requestParam':versionDeterminationRequest])
 
-		def nextMilestoneParamDescription = '''
+		parameters << new GitflowJobParameter(
+				name: NEXT_MILESTONE_DEV_VERSION,
+				description : '''
 					|This is the next development version after you make this milestone release. If you are making a general/final release
                     |this field does not apply, your development version will be guided by the version on the develop branch.
 					|You cannot edit this field, but if you think the value in this field is incorrect, please contact your administrator
 
-					'''.stripMargin()
-
-		def developmentVersionDeterminationScript = nextMilestoneChoiceProvider.getScript(['requestParam':versionDeterminationRequest])
-
-		def nextMilestoneVersionParam = vh.createSimpleTextBox(GeneratedJobParameters.NEXT_MILESTONE_DEV_VERSION, nextMilestoneParamDescription,developmentVersionDeterminationScript,true)
-
-		releaseBranchParam >> releaseVersionParam >> nextMilestoneVersionParam
+					'''.stripMargin(),
+				valueListingScript: new ParameterListingScript(text:developmentVersionDeterminationScript),
+				editable:false
+				)
 	}
 
 
+
 	@Override
-	protected def configureSteps(JobGenerationContext ctx, JobConfig jobConfig){
+	def configureBuildSteps(JobGenerationContext ctx, JobConfig jobConfig){
 
 		def mvnConfigurer = ctx.configurers('maven')
 		def osConfigurer = ctx.configurers('os')
@@ -97,8 +116,9 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 			configureOSCommand(COMMIT_ALL_FILES)
 
-			conditionalSteps{//Run the following steps for a milestone release
-				
+			conditionalSteps{
+				//Run the following steps for a milestone release
+
 				condition{ expression('.*(M|RC|m|rc).*','${ENV,var="releaseVersion"}') } //We do not want variable substitution before it is embedded into configuration
 				runner("DontRun") //For any other values, look at runner classes of Run Condition Plugin
 
