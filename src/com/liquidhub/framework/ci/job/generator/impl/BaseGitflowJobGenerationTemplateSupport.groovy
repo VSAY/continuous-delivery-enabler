@@ -85,7 +85,7 @@ abstract class BaseGitflowJobGenerationTemplateSupport extends BaseJobGeneration
 		throw new RuntimeException('Not Yet Implemented')
 	}
 
-	
+
 	protected final def configureJobParameterExtensions(JobGenerationContext context,JobConfig jobConfig){
 
 		def parameters = defineJobParameters(context, jobConfig)
@@ -98,28 +98,20 @@ abstract class BaseGitflowJobGenerationTemplateSupport extends BaseJobGeneration
 					|Do you want to generate the jobs for this branch after the branch is created? You can always create them later
 					|using our job seeder, just pick the repository and enter the branch name.
 					'''.stripMargin(),
-					elementType: ViewElementTypes.BOOLEAN_CHOICE
+					elementType: ViewElementTypes.BOOLEAN_CHOICE,
+					defaultValue: true
 					)
 		}
 
 		JenkinsJobViewSupport.logger = context.logger
 
 		def parameterDefinitions = {}
-		
+
 		parameters.reverse().each{GitflowJobParameter jobParameter ->
-			context.logger.debug 'parameter name is '+jobParameter.name
 			parameterDefinitions = parameterDefinitions << context.viewHelper.defineParameter(jobParameter)
-			
-			def writer = new StringWriter()
-			def builder = new groovy.xml.MarkupBuilder(writer)
-			
-			parameterDefinitions.delegate = builder
-			parameterDefinitions()
-			
-			context.logger.debug '--------------'+writer.toString()
 		}
 
-    	return parameterDefinitions
+		return parameterDefinitions
 	}
 
 	protected def defineJobParameters(JobGenerationContext context,JobConfig jobConfig){
