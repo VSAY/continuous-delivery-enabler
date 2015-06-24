@@ -3,8 +3,8 @@ package com.liquidhub.framework.ci.model
 import com.liquidhub.framework.JobSectionConfigurer
 import com.liquidhub.framework.ci.BuildEnvironmentAwareTemplateEngine
 import com.liquidhub.framework.ci.JobFactory
-import com.liquidhub.framework.ci.job.JobViewSupport
 import com.liquidhub.framework.ci.logger.Logger
+import com.liquidhub.framework.ci.view.JobViewSupport
 import com.liquidhub.framework.config.JobGenerationWorkspaceUtils
 import com.liquidhub.framework.config.model.BuildConfig
 import com.liquidhub.framework.config.model.Configuration
@@ -33,12 +33,14 @@ class JobGenerationContext {
 
 	final def repositoryName, defaultRegularEmailRecipients,defaultEscalationEmailRecipients,repositoryBranchName, jobSeederName
 	
+	final boolean generatingOnWindows
+
 	final BuildEnvironmentAwareTemplateEngine templateEngine
-	
+
 	final BuildConfig buildToolConfig
-	
+
 	final JobViewSupport viewHelper
-	
+
 	JobGenerationContext(JobFactory jobFactory, JenkinsWorkspaceUtils workspaceUtils,Configuration configuration,SCMRepository scmRepository, JobViewSupport jobViewSupport){
 
 		this.workspaceUtils = workspaceUtils
@@ -55,6 +57,7 @@ class JobGenerationContext {
 		this.buildToolConfig = configuration.buildConfig
 		this.templateEngine = new BuildEnvironmentAwareTemplateEngine(this)
 		this.jobSeederName = configuration.jobSeederName
+		this.generatingOnWindows = workspaceUtils.isRunningOnWindows()
 	}
 
 
@@ -67,15 +70,18 @@ class JobGenerationContext {
 		configuration.configurableJobSections.provider(providerKey)
 	}
 
+	JobSectionConfigurer cmdBuildStepConfigurer(){
+		configuration.configurableJobSections.provider('os')
+	}
+
+	JobSectionConfigurer mavenBuildStepConfigurer(){
+		configuration.configurableJobSections.provider('maven')
+	}
+
 
 	def getVariable(SeedJobParameters jobParameter){
 		configuration.buildEnvProperties[jobParameter.bindingName]
 	}
+
 	
-	/**
-	 * @return true if the context generation is happening on a windows machine
-	 */
-	boolean isGeneratingOnWindows(){
-		false
-	}
 }
