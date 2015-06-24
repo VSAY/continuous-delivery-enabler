@@ -5,7 +5,11 @@ package com.liquidhub.framework.ci.model
 import com.liquidhub.framework.ci.job.generator.JobGenerator
 import com.liquidhub.framework.ci.job.generator.impl.ContinuousIntegrationJobGenerator
 import com.liquidhub.framework.ci.job.generator.impl.GitflowFinishFeatureJobGenerator
+import com.liquidhub.framework.ci.job.generator.impl.GitflowFinishHotfixJobGenerator
+import com.liquidhub.framework.ci.job.generator.impl.GitflowFinishReleaseJobGenerator
 import com.liquidhub.framework.ci.job.generator.impl.GitflowStartFeatureJobGenerator
+import com.liquidhub.framework.ci.job.generator.impl.GitflowStartHotfixJobGenerator
+import com.liquidhub.framework.ci.job.generator.impl.GitflowStartReleaseJobGenerator
 
 
 /**
@@ -20,10 +24,13 @@ enum JobGeneratorRegistry {
 
 	CI_JOB_GENERATOR(new ContinuousIntegrationJobGenerator()),
 	GITFLOW_FEATURE_START_JOB_GENERATOR(new GitflowStartFeatureJobGenerator()),
-	GITFLOW_FEATURE_FINISH_JOB_GENERATOR(new GitflowFinishFeatureJobGenerator())
-	//GITFLOW_FEATURE_JOB_GENERATOR(new GitflowFeatureBranchJobGenerator())
+	GITFLOW_FEATURE_FINISH_JOB_GENERATOR(new GitflowFinishFeatureJobGenerator()),
+	GITFLOW_RELEASE_START_JOB_GENERATOR(new GitflowStartReleaseJobGenerator()),
+	GITFLOW_RELEASE_FINISH_JOB_GENERATOR(new GitflowFinishReleaseJobGenerator()),
+	GITFLOW_HOTFIX_START_JOB_GENERATOR(new GitflowStartHotfixJobGenerator()),
+	GITFLOW_HOTFIX_FINISH_JOB_GENERATOR(new GitflowFinishHotfixJobGenerator())
 	
-
+	
 	static {
 		values().each{jobGenerator-> 
 			classInstanceMapping[jobGenerator.instance.class.name] = jobGenerator.instance
