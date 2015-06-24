@@ -1,6 +1,9 @@
 package com.liquidhub.framework.ci.job.generator.impl
 
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.FEATURE_NAME
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.KEEP_FEATURE_BRANCH
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SKIP_FEATURE_MERGE_TO_DEVELOP
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SQUASH_COMMITS
 
 import com.liquidhub.framework.ci.model.BuildEnvironmentVariables
 import com.liquidhub.framework.ci.model.GitflowJobParameter
@@ -26,8 +29,8 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 	def configureBuildSteps(JobGenerationContext ctx, JobConfig jobConfig){
 
 		return {
-			ctx.configurers('os').configure(ctx, jobConfig, 'git checkout feature/${featureName}')
-			maven ctx.configurers('maven').configure(ctx, jobConfig)
+			ctx.cmdBuildStepConfigurer().configure(ctx, jobConfig, CHECK_OUT_FEATURE)
+			maven ctx.mavenBuildStepConfigurer().configure(ctx, jobConfig)
 		}
 	}
 
@@ -62,5 +65,29 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 				valueListingScript: new ParameterListingScript(text: valueScript),
 				labelListingScript: new ParameterListingScript(text: descriptionScript)
 				)
+
+		parameters << new GitflowJobParameter(
+				name: KEEP_FEATURE_BRANCH,
+				elementType: ViewElementTypes.BOOLEAN_CHOICE,
+				editable:false,
+				defaultValue:true
+				)
+
+		parameters << new GitflowJobParameter(
+				name: SKIP_FEATURE_MERGE_TO_DEVELOP,
+				elementType: ViewElementTypes.BOOLEAN_CHOICE,
+				editable:false,
+				valueListingScript: new ParameterListingScript(text: false)
+				)
+
+
+		parameters << new GitflowJobParameter(
+				name: SQUASH_COMMITS,
+				elementType: ViewElementTypes.BOOLEAN_CHOICE,
+				editable:true,
+				defaultValue:false
+				)
 	}
+
+	private static final String CHECK_OUT_FEATURE = 'git checkout feature/${featureName}'
 }

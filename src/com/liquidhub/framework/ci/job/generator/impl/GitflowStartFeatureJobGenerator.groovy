@@ -1,17 +1,19 @@
 package com.liquidhub.framework.ci.job.generator.impl
 
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.ALLOW_SNAPSHOTS_WHILE_CREATING_FEATURE
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.ENABLE_FEATURE_VERSIONS
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.FEATURE_NAME
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.PUSH_FEATURES
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.START_COMMIT
+
 import com.liquidhub.framework.ci.model.BuildEnvironmentVariables
 import com.liquidhub.framework.ci.model.GitflowJobParameter
 import com.liquidhub.framework.ci.model.JobGenerationContext
+import com.liquidhub.framework.ci.model.ParameterListingScript
 import com.liquidhub.framework.ci.view.ViewElementTypes
 import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.config.model.JobConfig
 import com.liquidhub.framework.scm.model.SCMRepository
-
-import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.FEATURE_NAME
-import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.START_COMMIT
-
-
 
 class GitflowStartFeatureJobGenerator extends BaseGitflowJobGenerationTemplateSupport {
 
@@ -22,24 +24,34 @@ class GitflowStartFeatureJobGenerator extends BaseGitflowJobGenerationTemplateSu
 
 	protected def defineJobParameters(JobGenerationContext context, JobConfig jobConfig){
 
-		def parameters = [] 
-
+		def parameters = []
+		
 		SCMRepository scmRepository = context.scmRepository
 
 		parameters << new GitflowJobParameter(
-				name: FEATURE_NAME,
-				description: 'The name of the feature you intend to start.Please do not prefix feature/  .It is done automatically',
-				elementType: ViewElementTypes.TEXT_FIELD
-				)
+		name: FEATURE_NAME,
+		description: 'The name of the feature you intend to start.Please do not prefix feature/  .It is done automatically',
+		elementType: ViewElementTypes.TEXT_FIELD
+		)
 
 		parameters << new GitflowJobParameter(
-				name: START_COMMIT,
-				description: generateCommitDescription(scmRepository.changeSetUrl),
-				elementType: ViewElementTypes.TEXT_FIELD
-				)
+		name: START_COMMIT,
+		description: generateCommitDescription(scmRepository.changeSetUrl),
+		elementType: ViewElementTypes.TEXT_FIELD
+		)
+
+
+		parameters << [ALLOW_SNAPSHOTS_WHILE_CREATING_FEATURE, ENABLE_FEATURE_VERSIONS, PUSH_FEATURES].collect{
+			new GitflowJobParameter(
+			name: it,
+			elementType: ViewElementTypes.BOOLEAN_CHOICE,
+			editable:false,
+			valueListingScript:new ParameterListingScript(text: true) 
+			)
+		}
+
+		
 	}
-
-
 
 
 	protected def determineEmailSubject(JobGenerationContext ctx,JobConfig jobConfig){
@@ -51,8 +63,8 @@ class GitflowStartFeatureJobGenerator extends BaseGitflowJobGenerationTemplateSu
 	def configureBuildSteps(JobGenerationContext ctx, JobConfig jobConfig){
 
 		return {
-			shell ('git checkout develop')
-			maven ctx.configurers('maven').configure(ctx, jobConfig)
+			ctx.cmdBuildStepConfigurer().configure(ctx, jobConfig, 'git checkout develop')
+			maven ctx.mavenBuildStepConfigurer().configure(ctx, jobConfig)
 		}
 	}
 
