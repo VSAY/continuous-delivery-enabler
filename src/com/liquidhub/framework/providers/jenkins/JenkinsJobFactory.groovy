@@ -16,5 +16,9 @@ class JenkinsJobFactory implements JobFactory {
 	    jenkinsDSLFactory.freeStyleJob(name, jobConfig)
 	}
 	
+	def getImpl(){
+		jenkinsDSLFactory
+	}
+	
 	
 }
