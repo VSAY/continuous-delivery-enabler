@@ -1,12 +1,12 @@
 package com.liquidhub.framework.providers.jenkins
 
 import com.liquidhub.framework.ci.JobFactory
-import com.liquidhub.framework.ci.job.JobViewSupport
 import com.liquidhub.framework.ci.logger.Logger
 import com.liquidhub.framework.ci.logger.PrintStreamLogger
 import com.liquidhub.framework.ci.model.JobGenerationContext
 import com.liquidhub.framework.ci.model.JobGeneratorPipelineFilter
 import com.liquidhub.framework.ci.model.SeedJobParameters
+import com.liquidhub.framework.ci.view.JobViewSupport
 import com.liquidhub.framework.config.ConfigurationManager
 import com.liquidhub.framework.config.JobGenerationWorkspaceUtils
 import com.liquidhub.framework.config.impl.YAMLConfigurationManager
