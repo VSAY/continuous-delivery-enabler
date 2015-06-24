@@ -6,7 +6,7 @@ import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_VERSION
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.ALLOW_SNAPSHOTS_WHILE_FINISHING_RELEASE
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.KEEP_RELEASE_BRANCH
-import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.MERGE_RELEASE_BRANCH
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SKIP_RELEASE_BRANCH_MERGE
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SQUASH_COMMITS
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_TAG_MESSAGE
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SKIP_RELEASE_TAGGING
@@ -76,7 +76,8 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 		parameters << new GitflowJobParameter(
 				name: RELEASE_VERSION,
 				description : 'The version you intend to release, a milestone or the final build? If you do not see any options above, your project has already had a final release',
-				valueListingScript: new ParameterListingScript(text:releaseChoicesScript)
+				valueListingScript: new ParameterListingScript(text:releaseChoicesScript),
+				elementType: ViewElementTypes.SINGLE_SELECT_CHOICES
 				)
 
 
@@ -91,6 +92,7 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 					'''.stripMargin(),
 				valueListingScript: new ParameterListingScript(text:developmentVersionDeterminationScript),
+				elementType: ViewElementTypes.TEXT_FIELD,
 				editable:false
 				)
 
@@ -109,9 +111,9 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 				)
 
 		parameters << new GitflowJobParameter(
-				name: MERGE_RELEASE_BRANCH,
+				name: SKIP_RELEASE_BRANCH_MERGE,
 				elementType: ViewElementTypes.BOOLEAN_CHOICE,
-				defaultValue: true,
+				defaultValue: false,
 				editable:true
 				)
 
@@ -122,16 +124,18 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 				defaultValue:false
 				)
 
-		parameters << new GitflowJobParameter(
-				name: RELEASE_TAG_MESSAGE,
-				elementType: ViewElementTypes.TEXT_FIELD,
-				)
+
 
 		parameters << new GitflowJobParameter(
 				name: SKIP_RELEASE_TAGGING,
 				elementType: ViewElementTypes.BOOLEAN_CHOICE,
 				editable:false,
 				valueListingScript: new ParameterListingScript(text:false),
+				)
+
+		parameters << new GitflowJobParameter(
+				name: RELEASE_TAG_MESSAGE,
+				elementType: ViewElementTypes.TEXT_FIELD,
 				)
 	}
 
@@ -167,18 +171,20 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 				condition{ expression('.*(M|RC|m|rc).*','${ENV,var="releaseVersion"}') } //We do not want variable substitution before it is embedded into configuration
 				runner("DontRun") //For any other values, look at runner classes of Run Condition Plugin
+				
+				def releasePushUrlParams = [releasePushUrl: ctx.scmRepository.releasePushUrl]
 
-				def substitutionParameters = [releasePushUrl: ctx.scmRepository.repoUrl]
-
-				def performMilestoneReleaseCmd = adapt(PERFORM_MILESTONE_VERSION_RELEASE, substitutionParameters)
+				def performMilestoneReleaseCmd = adapt(PERFORM_MILESTONE_VERSION_RELEASE, releasePushUrlParams)
 
 				ctx.generatingOnWindows ? batchFile(performMilestoneReleaseCmd) : shell(performMilestoneReleaseCmd)
 
 				maven configureMavenCommand(DEPLOY_TO_RELEASE_REPOSITORY)
 
 				maven configureMavenCommand(UPDATE_TO_NEXT_MILESTONE_VERSION)
+				
+				def commitAllFilesCommand = adapt(COMMIT_ALL_FILES_AND_PUSH, releasePushUrlParams)
 
-				ctx.generatingOnWindows ? batchFile(adapt(COMMIT_ALL_FILES_AND_PUSH)):shell(COMMIT_ALL_FILES_AND_PUSH)
+				ctx.generatingOnWindows ? batchFile(commitAllFilesCommand):shell(commitAllFilesCommand)
 
 			}
 
@@ -192,7 +198,7 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 				ctx.generatingOnWindows ? batchFile(adapt(CHECKOUT_MASTER_BRANCH)):shell(CHECKOUT_MASTER_BRANCH)
 
-				maven configureMavenCommand(UPDATE_TO_NEXT_MILESTONE_VERSION) //Lets push this to the artifact repository
+				maven configureMavenCommand(DEPLOY) //Lets push this to the artifact repository
 
 			}
 		}
@@ -231,6 +237,8 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 	static final def DEPLOY_TO_RELEASE_REPOSITORY = 'deploy -DupdateReleaseInfo=true'
 
 	static final def UPDATE_TO_NEXT_MILESTONE_VERSION='versions:set -DnewVersion=${nextMilestoneDevelopmentVersion} versions:commit'
+	
+	static final def DEPLOY='deploy'
 
 
 }
