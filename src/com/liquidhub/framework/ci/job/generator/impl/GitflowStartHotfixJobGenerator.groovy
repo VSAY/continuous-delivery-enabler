@@ -1,55 +1,58 @@
-//package com.liquidhub.framework.ci.job.generator.impl
-//
-//import com.liquidhub.framework.ci.model.JobGenerationContext
-//import com.liquidhub.framework.config.model.Configuration
-//import com.liquidhub.framework.config.model.JobConfig
-//
-//
-//class GitflowStartHotfixJobGenerator extends BaseGitflowJobGenerationTemplateSupport{
-//
-//	@Override
-//	def getJobConfig(Configuration configuration){
-//		configuration.gitflowHotfixBranchConfig.startConfig
-//	}
-//
-//
-//	protected def configureJobParameterExtensions(JobGenerationContext context, JobConfig jobConfig){
-//
-//		def vh = context.viewHelper
-//
-//		def hotfixVersionParam = vh.createSimpleTextBox(GeneratedJobParameters.HOTFIX_VERSION, GeneratedJobParameters.HOTFIX_VERSION.description,'',false)
-//
-//		def startCommitParam = vh.createSimpleTextBox(GeneratedJobParameters.START_COMMIT, 'This is the branch from which the hotfix branch is created.This value cannot be edited', 'master',true)
-//
-//		def allowSnapshotsParam = vh.createSimpleCheckBox(GeneratedJobParameters.ALLOW_SNAPSHOTS,GeneratedJobParameters.ALLOW_SNAPSHOTS.description ,false)
-//
-//		def pushHotfixParam = vh.createSimpleCheckBox(GeneratedJobParameters.PUSH_HOTFIXES,GeneratedJobParameters.PUSH_HOTFIXES.description ,true)
-//		
-//		def configureBranchJobs = addChoiceToLaunchConfiguredBranchJob(context)
-//
-//		hotfixVersionParam >> startCommitParam >> allowSnapshotsParam >> pushHotfixParam >> configureBranchJobs
-//	}
-//
-//
-//
-//	
-//
-//	def configureSteps(JobGenerationContext ctx, JobConfig jobConfig){
-//
-//		return {
-//			shell ('git checkout hotfix/${hotfixVersion}')
-//			maven ctx.configurers('maven').configure(ctx, jobConfig)
-//
-//		} >> addConditionalStepsForDownstreamJobLaunch(ctx, jobConfig)
-//	}
-//	
-//	
-//
-//
-//	
-//	protected def preparePropertiesForDownstreamJobLaunch(JobGenerationContext context){
-//		[gitRepoUrl: context.scmRepository.repoUrl, repoBranchName: 'hotfix/${hotfixVersion}']
-//	}
-//
-//	
-//}
+package com.liquidhub.framework.ci.job.generator.impl
+
+import com.liquidhub.framework.ci.model.GitflowJobParameter
+import com.liquidhub.framework.ci.model.GitflowJobParameters
+import com.liquidhub.framework.ci.model.JobGenerationContext
+import com.liquidhub.framework.ci.model.ParameterListingScript
+import com.liquidhub.framework.ci.view.ViewElementTypes
+import com.liquidhub.framework.config.model.Configuration
+import com.liquidhub.framework.config.model.JobConfig
+import com.liquidhub.framework.scm.model.SCMRepository
+
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.ALLOW_SNAPSHOTS_WHILE_CREATING_HOTFIX
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.PUSH_HOTFIXES
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_VERSION
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.START_COMMIT
+
+import static com.liquidhub.framework.providers.jenkins.OperatingSystemCommandAdapter.adapt
+
+class GitflowStartHotfixJobGenerator extends BaseGitflowJobGenerationTemplateSupport{
+	
+	
+	@Override
+	def getJobConfig(Configuration configuration){
+		configuration.gitflowHotfixBranchConfig.startConfig
+	}
+
+	protected def defineJobParameters(JobGenerationContext context, JobConfig jobConfig){
+
+		GitflowJobParameters parameters = new GitflowJobParameters()
+
+		parameters.newTextField(name:START_COMMIT)
+		parameters.newTextField(name:RELEASE_VERSION)
+		parameters.newTextField(name:ALLOW_SNAPSHOTS_WHILE_CREATING_HOTFIX, defaultValue: 'develop', editable:false)
+		parameters.newBooleanParam(name:PUSH_HOTFIXES, defaultValue: true, editable:false)
+
+
+	}
+
+
+	def configureBuildSteps(JobGenerationContext ctx, JobConfig jobConfig){
+
+		return {
+			ctx.generatingOnWindows ? batchFile(CHECK_OUT_DEVELOP) : shell(CHECK_OUT_DEVELOP)
+			maven ctx.mavenBuildStepConfigurer().configure(ctx, jobConfig)
+
+		}
+	}
+	
+	protected boolean configuresBranchInitiatingJob() {
+		true
+	}
+	
+	protected def preparePropertiesForDownstreamJobLaunch(JobGenerationContext context){
+		[gitRepoUrl: context.scmRepository.repoUrl, repoBranchName: 'hotfix/${releaseVersion}']
+	}
+	
+	private static final String CHECK_OUT_DEVELOP = 'git checkout develop'
+}
