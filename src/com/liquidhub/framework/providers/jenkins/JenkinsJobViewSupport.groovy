@@ -1,48 +1,84 @@
 package com.liquidhub.framework.providers.jenkins
 
+import static com.liquidhub.framework.ci.view.ViewElementTypes.BOOLEAN_CHOICE
+import static com.liquidhub.framework.ci.view.ViewElementTypes.SINGLE_SELECT_CHOICES
+import static com.liquidhub.framework.ci.view.ViewElementTypes.TEXT_FIELD
 import static java.util.UUID.randomUUID
 
-import com.liquidhub.framework.ci.job.JobViewSupport
-import com.liquidhub.framework.ci.model.GeneratedJobParameters
-
+import com.liquidhub.framework.ci.logger.Logger
+import com.liquidhub.framework.ci.model.GitflowJobParameter
+import com.liquidhub.framework.ci.model.ParameterListingScript
+import com.liquidhub.framework.ci.view.JobViewSupport
 
 class JenkinsJobViewSupport implements JobViewSupport{
+  
+	private static Logger logger
 
-	@Override
-	public def createChoiceOptionsView(GeneratedJobParameters parameter, parameterDescription, choicesGroovyScriptText, choicesDescriptionGroovyScriptText, bindings) {
+	def defineParameter(GitflowJobParameter parameter){
 
-		def param = createExtendedParameter(parameter.parameterName, parameterDescription, choicesGroovyScriptText, choicesDescriptionGroovyScriptText, bindings, 'PT_RADIO')
+		def name = parameter.name
+		def description = parameter?.description
+		boolean editable = parameter?.editable
+		
+		def parameterClosure = {}
+
+		switch(parameter.elementType){
+
+			case SINGLE_SELECT_CHOICES:
+				parameterClosure = createChoiceOptionsView(name, description,parameter.valueListingScript, parameter.labelListingScript)
+				break
+
+			case BOOLEAN_CHOICE:
+				parameterClosure = parameter?.valueListingScript||!editable ? createDynamicBooleanChoice(name, description, parameter.valueListingScript, editable) : createStaticBooleanChoice(name, description, parameter?.defaultValue)
+				break
+
+			case TEXT_FIELD:
+				parameterClosure =  createSimpleTextBox(name, description, parameter.valueListingScript, editable)
+				break
+		}
+		
+		return parameterClosure
+	}
+
+
+	protected def createChoiceOptionsView(String name,String parameterDescription, ParameterListingScript valueListingScript, ParameterListingScript labelListingScript) {
+    	def choicesGroovyScriptText = valueListingScript?.text
+		def choicesDescriptionGroovyScriptText = labelListingScript?.text
+		def bindings = valueListingScript.bindings
+
+		def param = createExtendedParameter(name, parameterDescription, choicesGroovyScriptText, choicesDescriptionGroovyScriptText, bindings, 'PT_RADIO')
 
 		return { 'com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition'(plugin:'extended-choice-parameter@0.36', param) }
 	}
 
-	@Override
-	public def createSimpleTextBox(GeneratedJobParameters parameter, parameterDescription, scriptText,readOnly) {
+	protected def createSimpleTextBox(String parameter,String parameterDescription, ParameterListingScript valueListingScript ,editable) {
+		def scriptText = valueListingScript?.text
+		boolean readOnly = !editable
 
-		def param = createDynamicParameter(parameter.parameterName, parameterDescription, scriptText, readOnly)
+		def param = createDynamicParameter(parameter, parameterDescription, scriptText, readOnly)
 
 		return {
 			'com.seitenbau.jenkins.plugins.dynamicparameter.StringParameterDefinition'(plugin:'dynamicparameter@0.2.0',param)
 		}
 	}
 
-	@Override
-	public Object createSimpleBooleanChoice(GeneratedJobParameters parameter, parameterDescription, boolean checkedByDefault) {
-
+	protected Object createStaticBooleanChoice(String parameter, String parameterDescription, def checkedByDefault) {
 		return {
 
 			'hudson.model.BooleanParameterDefinition'{
-				delegate.createNode('name', parameter.parameterName)
+				delegate.createNode('name', parameter)
 				description(parameterDescription)
-				defaultValue(checkedByDefault)
+				defaultValue(checkedByDefault.toBoolean())
 			}
 		}
 	}
 
-	@Override
-	public Object createSimpleCheckBox(GeneratedJobParameters parameter, parameterDescription, scriptText,readOnly) {
+	protected Object createDynamicBooleanChoice(String parameter, String parameterDescription,ParameterListingScript listingScript,editable) {
 
-		def param = createDynamicParameter(parameter.parameterName, parameterDescription, scriptText,readOnly)
+		def scriptText = listingScript?.text
+		def readOnly = !editable
+
+		def param = createDynamicParameter(parameter, parameterDescription, scriptText,readOnly)
 
 		return {
 			'com.seitenbau.jenkins.plugins.dynamicparameter.StringParameterDefinition'(plugin:'dynamicparameter@0.2.0', param)
@@ -80,7 +116,6 @@ class JenkinsJobViewSupport implements JobViewSupport{
 	 * @return
 	 */
 	protected def createDynamicParameter(parameterName, descriptionText, scriptText, readOnly=true){
-
 		return {
 			delegate.createNode('name', parameterName)
 			description(descriptionText)
@@ -99,5 +134,6 @@ class JenkinsJobViewSupport implements JobViewSupport{
 
 		}
 	}
+
 
 }
