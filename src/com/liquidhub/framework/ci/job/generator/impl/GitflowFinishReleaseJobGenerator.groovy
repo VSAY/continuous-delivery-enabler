@@ -4,6 +4,12 @@ package com.liquidhub.framework.ci.job.generator.impl
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.NEXT_MILESTONE_DEV_VERSION
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_BRANCH
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_VERSION
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.ALLOW_SNAPSHOTS_WHILE_FINISHING_RELEASE
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.KEEP_RELEASE_BRANCH
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.MERGE_RELEASE_BRANCH
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SQUASH_COMMITS
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_TAG_MESSAGE
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SKIP_RELEASE_TAGGING
 
 import com.liquidhub.framework.ci.EmbeddedScriptProvider
 import com.liquidhub.framework.ci.model.BuildEnvironmentVariables
@@ -18,6 +24,7 @@ import com.liquidhub.framework.scm.MilestoneVersionDeterminationScriptProvider
 import com.liquidhub.framework.scm.ReleaseChoiceOptionsScriptProvider
 import com.liquidhub.framework.scm.model.SCMRemoteRefListingRequest
 import com.liquidhub.framework.scm.model.SCMRepository
+import static com.liquidhub.framework.providers.jenkins.OperatingSystemCommandAdapter.adapt
 
 
 class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateSupport {
@@ -34,8 +41,8 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 
 	protected def defineJobParameters(JobGenerationContext context, JobConfig jobConfig){
-		
-		
+
+
 		def parameters = []
 
 		SCMRepository repository = context.scmRepository
@@ -60,12 +67,12 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 				labelListingScript: new ParameterListingScript(text:descriptionScript),
 				elementType: ViewElementTypes.SINGLE_SELECT_CHOICES
 				)
-		
+
 		def versionDeterminationRequest = new VersionDeterminationRequest(gitRepoUrl: repoUrl, authorizedUserDigest : authDigest, versionNamingStrategy: MILESTONE_NAMING_STRATEGY)
-	
+
 
 		def releaseChoicesScript = releaseOptionsProvider.getScript(['requestParam':versionDeterminationRequest])
-		
+
 		parameters << new GitflowJobParameter(
 				name: RELEASE_VERSION,
 				description : 'The version you intend to release, a milestone or the final build? If you do not see any options above, your project has already had a final release',
@@ -86,6 +93,46 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 				valueListingScript: new ParameterListingScript(text:developmentVersionDeterminationScript),
 				editable:false
 				)
+
+		parameters << new GitflowJobParameter(
+				name: ALLOW_SNAPSHOTS_WHILE_FINISHING_RELEASE,
+				elementType: ViewElementTypes.BOOLEAN_CHOICE,
+				valueListingScript: new ParameterListingScript(text:false),
+				editable:false
+				)
+
+		parameters << new GitflowJobParameter(
+				name: KEEP_RELEASE_BRANCH,
+				elementType: ViewElementTypes.BOOLEAN_CHOICE,
+				valueListingScript: new ParameterListingScript(text:true),
+				editable:false
+				)
+
+		parameters << new GitflowJobParameter(
+				name: MERGE_RELEASE_BRANCH,
+				elementType: ViewElementTypes.BOOLEAN_CHOICE,
+				defaultValue: true,
+				editable:true
+				)
+
+		parameters << new GitflowJobParameter(
+				name: SQUASH_COMMITS,
+				elementType: ViewElementTypes.BOOLEAN_CHOICE,
+				editable:true,
+				defaultValue:false
+				)
+
+		parameters << new GitflowJobParameter(
+				name: RELEASE_TAG_MESSAGE,
+				elementType: ViewElementTypes.TEXT_FIELD,
+				)
+
+		parameters << new GitflowJobParameter(
+				name: SKIP_RELEASE_TAGGING,
+				elementType: ViewElementTypes.BOOLEAN_CHOICE,
+				editable:false,
+				valueListingScript: new ParameterListingScript(text:false),
+				)
 	}
 
 
@@ -94,7 +141,6 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 	def configureBuildSteps(JobGenerationContext ctx, JobConfig jobConfig){
 
 		def mvnConfigurer = ctx.configurers('maven')
-		def osConfigurer = ctx.configurers('os')
 
 		def configureOSCommand = {command,parameters=[:] ->
 			osConfigurer.configure(ctx, jobConfig, command, parameters)
@@ -110,11 +156,11 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 		return{
 
-			configureOSCommand(CHECKOUT_RELEASE_BRANCH)
+			ctx.generatingOnWindows ? batchFile(adapt(CHECKOUT_RELEASE_BRANCH)) : shell(CHECKOUT_RELEASE_BRANCH)
 
 			maven configureMavenCommand(UPDATE_RELEASE_BRANCH_VERSION)
 
-			configureOSCommand(COMMIT_ALL_FILES)
+			ctx.generatingOnWindows ? batchFile(adapt(COMMIT_ALL_FILES)) : shell(COMMIT_ALL_FILES)
 
 			conditionalSteps{
 				//Run the following steps for a milestone release
@@ -124,13 +170,15 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 				def substitutionParameters = [releasePushUrl: ctx.scmRepository.repoUrl]
 
-				configureOSCommand(PERFORM_MILESTONE_VERSION_RELEASE, substitutionParameters)
+				def performMilestoneReleaseCmd = adapt(PERFORM_MILESTONE_VERSION_RELEASE, substitutionParameters)
+
+				ctx.generatingOnWindows ? batchFile(performMilestoneReleaseCmd) : shell(performMilestoneReleaseCmd)
 
 				maven configureMavenCommand(DEPLOY_TO_RELEASE_REPOSITORY)
 
 				maven configureMavenCommand(UPDATE_TO_NEXT_MILESTONE_VERSION)
 
-				configureOSCommand(COMMIT_ALL_FILES_AND_PUSH)
+				ctx.generatingOnWindows ? batchFile(adapt(COMMIT_ALL_FILES_AND_PUSH)):shell(COMMIT_ALL_FILES_AND_PUSH)
 
 			}
 
@@ -142,14 +190,14 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 				maven configureMavenCommand(jobConfig)
 
-				configureOSCommand(CHECKOUT_MASTER_BRANCH)
+				ctx.generatingOnWindows ? batchFile(adapt(CHECKOUT_MASTER_BRANCH)):shell(CHECKOUT_MASTER_BRANCH)
 
 				maven configureMavenCommand(UPDATE_TO_NEXT_MILESTONE_VERSION) //Lets push this to the artifact repository
 
 			}
 		}
-	}
 
+	}
 
 	protected def determineEmailSubject(ctx, jobConfig){
 

@@ -14,7 +14,7 @@ import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.config.model.JobConfig
 import com.liquidhub.framework.scm.model.SCMRemoteRefListingRequest
 import com.liquidhub.framework.scm.model.SCMRepository
-
+import static com.liquidhub.framework.providers.jenkins.OperatingSystemCommandAdapter.adapt
 
 class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateSupport {
 
@@ -74,7 +74,8 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 	@Override
 	def configureBuildSteps(JobGenerationContext ctx, JobConfig jobConfig){
 
-		ctx.cmdBuildStepConfigurer().configure(ctx, jobConfig, CHECK_OUT_FEATURE) >> {
+		return {
+			ctx.generatingOnWindows ? batchFile(adapt(CHECK_OUT_FEATURE)) : shell(CHECK_OUT_FEATURE)
 			maven ctx.mavenBuildStepConfigurer().configure(ctx, jobConfig)
 		}
 	}
