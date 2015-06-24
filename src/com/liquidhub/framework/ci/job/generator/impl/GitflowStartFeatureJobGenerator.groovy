@@ -13,7 +13,10 @@ import com.liquidhub.framework.ci.model.ParameterListingScript
 import com.liquidhub.framework.ci.view.ViewElementTypes
 import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.config.model.JobConfig
+
 import com.liquidhub.framework.scm.model.SCMRepository
+
+import static com.liquidhub.framework.providers.jenkins.OperatingSystemCommandAdapter.adapt
 
 class GitflowStartFeatureJobGenerator extends BaseGitflowJobGenerationTemplateSupport {
 
@@ -60,7 +63,8 @@ class GitflowStartFeatureJobGenerator extends BaseGitflowJobGenerationTemplateSu
 
 	def configureBuildSteps(JobGenerationContext ctx, JobConfig jobConfig){
 
-		ctx.cmdBuildStepConfigurer().configure(ctx, jobConfig, 'git checkout develop') >> {
+	return {		  
+			ctx.generatingOnWindows ? batchFile(adapt(CHECK_OUT_DEVELOP)) : shell(CHECK_OUT_DEVELOP)
 			maven ctx.mavenBuildStepConfigurer().configure(ctx, jobConfig)
 		}
 	}
@@ -80,6 +84,9 @@ class GitflowStartFeatureJobGenerator extends BaseGitflowJobGenerationTemplateSu
 
 	protected boolean configuresBranchInitiatingJob() {
 		true
-	};
+	}
+	
+	
+	final String CHECK_OUT_DEVELOP = 'git checkout develop'
 }
 
