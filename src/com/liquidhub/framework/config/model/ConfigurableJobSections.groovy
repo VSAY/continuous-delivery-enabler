@@ -14,7 +14,7 @@ import com.liquidhub.framework.JobSectionConfigurer
 @ToString(includeNames=true)
 class ConfigurableJobSections {
 	
-	def scm,maven,trigger,email,os //The name MUST match the key in the configuration file
+	def scm,maven,trigger,email //The name MUST match the key in the configuration file
 	
 	/**
 	 * Returns the provider instance for the specified section
