@@ -6,7 +6,7 @@ import com.liquidhub.framework.providers.jenkins.ExtendedEmailNotificationSectio
 import com.liquidhub.framework.providers.jenkins.GenericSCMSectionConfigurer
 import com.liquidhub.framework.providers.jenkins.GenericSCMTriggerSectionConfigurer
 import com.liquidhub.framework.providers.jenkins.MavenSectionConfigurer
-import com.liquidhub.framework.providers.jenkins.OperatingSystemCommandConfigurer;
+import com.liquidhub.framework.providers.jenkins.OperatingSystemCommandAdapter;
 
 
 /**
@@ -24,8 +24,7 @@ enum JobSectionConfigurers {
 	MAVEN_SECTION_CONFIGURER(new MavenSectionConfigurer()),
 	GENERIC_SCM_TRIGGER_SECTION_CONFIGURER(new GenericSCMTriggerSectionConfigurer()),
 	EXTENDED_EMAIL_SECTION_CONFIGURER(new ExtendedEmailNotificationSectionConfigurer()),
-	JENKINS_OS_COMMAND_CONFIGURER(new OperatingSystemCommandConfigurer())
-
+	
 	JobSectionConfigurers(JobSectionConfigurer provider){
 		this.provider = provider
 	}
