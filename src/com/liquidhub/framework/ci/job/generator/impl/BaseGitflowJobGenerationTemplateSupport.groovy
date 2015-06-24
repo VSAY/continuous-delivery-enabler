@@ -21,6 +21,8 @@ import com.liquidhub.framework.providers.jenkins.JenkinsJobViewSupport
 import com.liquidhub.framework.scm.DescriptiveBranchNamesListingScriptProvider
 import com.liquidhub.framework.scm.ShortBranchNamesListingScriptProvider
 
+
+
 /**
  * A basic template to generate gitflow jobs. Provides extension points for subclasses.
  * 
@@ -44,10 +46,11 @@ abstract class BaseGitflowJobGenerationTemplateSupport extends BaseJobGeneration
 		ctx.templateEngine.withContentFromTemplate(workspaceRelativeTemplatePath, templateParams << jobConfig.goalArgs)
 	}
 
-
+	@Override
 	protected Map grantAdditionalPermissions(JobGenerationContext ctx,RoleConfig roleConfig){
-
-		[:].put(roleConfig.projectAdminRole, [ItemBuild, ItemCancel, ItemDiscover, ItemRead, RunUpdate, RunDelete, ItemWorkspace])
+		def parameters = [:]
+		parameters.put(roleConfig.projectAdminRole, [ItemBuild, ItemCancel, ItemDiscover, ItemRead, RunUpdate, RunDelete, ItemWorkspace])
+		return parameters
 	}
 
 
@@ -107,7 +110,7 @@ abstract class BaseGitflowJobGenerationTemplateSupport extends BaseJobGeneration
 
 		def parameterDefinitions = {}
 
-		parameters.reverse().each{GitflowJobParameter jobParameter ->
+		parameters.flatten().reverse().each{GitflowJobParameter jobParameter ->
 			parameterDefinitions = parameterDefinitions << context.viewHelper.defineParameter(jobParameter)
 		}
 
