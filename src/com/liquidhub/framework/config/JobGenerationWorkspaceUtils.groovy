@@ -4,4 +4,6 @@ interface JobGenerationWorkspaceUtils {
 
 	def fileReader(filePath)
 	
+	def isRunningOnWindows()
+	
 }
