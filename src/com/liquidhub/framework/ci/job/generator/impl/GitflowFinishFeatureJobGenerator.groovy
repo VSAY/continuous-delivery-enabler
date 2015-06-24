@@ -24,22 +24,6 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 		return configuration.gitflowFeatureBranchConfig.finishConfig
 	}
 
-
-	@Override
-	def configureBuildSteps(JobGenerationContext ctx, JobConfig jobConfig){
-
-		return {
-			ctx.cmdBuildStepConfigurer().configure(ctx, jobConfig, CHECK_OUT_FEATURE)
-			maven ctx.mavenBuildStepConfigurer().configure(ctx, jobConfig)
-		}
-	}
-
-	@Override
-	protected def determineEmailSubject(JobGenerationContext ctx,JobConfig jobConfig){
-		'Feature # ${PROJECT_VERSION} finish '+ BuildEnvironmentVariables.BUILD_STATUS.paramValue+'!'
-	}
-
-
 	protected def defineJobParameters(JobGenerationContext context, JobConfig jobConfig){
 
 		SCMRepository repository = context.scmRepository
@@ -60,7 +44,7 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 		parameters << new GitflowJobParameter(
 				name: FEATURE_NAME,
-				description:  'Select the feature you intend to finish',
+				description:  'Select the feature you intend to finish. If you see too many items, consider deleting the oldest completed features',
 				elementType: ViewElementTypes.SINGLE_SELECT_CHOICES,
 				valueListingScript: new ParameterListingScript(text: valueScript),
 				labelListingScript: new ParameterListingScript(text: descriptionScript)
@@ -70,16 +54,14 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 				name: KEEP_FEATURE_BRANCH,
 				elementType: ViewElementTypes.BOOLEAN_CHOICE,
 				editable:false,
-				defaultValue:true
+				valueListingScript: new ParameterListingScript(text: true)
 				)
 
 		parameters << new GitflowJobParameter(
 				name: SKIP_FEATURE_MERGE_TO_DEVELOP,
 				elementType: ViewElementTypes.BOOLEAN_CHOICE,
-				editable:false,
-				valueListingScript: new ParameterListingScript(text: false)
+				defaultValue:false
 				)
-
 
 		parameters << new GitflowJobParameter(
 				name: SQUASH_COMMITS,
@@ -88,6 +70,22 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 				defaultValue:false
 				)
 	}
+
+	@Override
+	def configureBuildSteps(JobGenerationContext ctx, JobConfig jobConfig){
+
+		ctx.cmdBuildStepConfigurer().configure(ctx, jobConfig, CHECK_OUT_FEATURE) >> {
+			maven ctx.mavenBuildStepConfigurer().configure(ctx, jobConfig)
+		}
+	}
+
+	@Override
+	protected def determineEmailSubject(JobGenerationContext ctx,JobConfig jobConfig){
+		'Feature # ${PROJECT_VERSION} finish '+ BuildEnvironmentVariables.BUILD_STATUS.paramValue+'!'
+	}
+
+
+
 
 	private static final String CHECK_OUT_FEATURE = 'git checkout feature/${featureName}'
 }

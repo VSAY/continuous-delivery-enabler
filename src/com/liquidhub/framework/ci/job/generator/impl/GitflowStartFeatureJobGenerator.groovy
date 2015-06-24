@@ -25,32 +25,30 @@ class GitflowStartFeatureJobGenerator extends BaseGitflowJobGenerationTemplateSu
 	protected def defineJobParameters(JobGenerationContext context, JobConfig jobConfig){
 
 		def parameters = []
-		
+
 		SCMRepository scmRepository = context.scmRepository
 
 		parameters << new GitflowJobParameter(
-		name: FEATURE_NAME,
-		description: 'The name of the feature you intend to start.Please do not prefix feature/  .It is done automatically',
-		elementType: ViewElementTypes.TEXT_FIELD
-		)
+				name: FEATURE_NAME,
+				description: 'The name of the feature you intend to start.Please do not prefix feature/  .It is done automatically',
+				elementType: ViewElementTypes.TEXT_FIELD
+				)
 
 		parameters << new GitflowJobParameter(
-		name: START_COMMIT,
-		description: generateCommitDescription(scmRepository.changeSetUrl),
-		elementType: ViewElementTypes.TEXT_FIELD
-		)
+				name: START_COMMIT,
+				description: generateCommitDescription(scmRepository.changeSetUrl),
+				elementType: ViewElementTypes.TEXT_FIELD
+				)
 
 
 		parameters << [ALLOW_SNAPSHOTS_WHILE_CREATING_FEATURE, ENABLE_FEATURE_VERSIONS, PUSH_FEATURES].collect{
 			new GitflowJobParameter(
-			name: it,
-			elementType: ViewElementTypes.BOOLEAN_CHOICE,
-			editable:false,
-			valueListingScript:new ParameterListingScript(text: true) 
-			)
+					name: it,
+					elementType: ViewElementTypes.BOOLEAN_CHOICE,
+					editable:false,
+					valueListingScript:new ParameterListingScript(text: true)
+					)
 		}
-
-		
 	}
 
 
@@ -62,8 +60,7 @@ class GitflowStartFeatureJobGenerator extends BaseGitflowJobGenerationTemplateSu
 
 	def configureBuildSteps(JobGenerationContext ctx, JobConfig jobConfig){
 
-		return {
-			ctx.cmdBuildStepConfigurer().configure(ctx, jobConfig, 'git checkout develop')
+		ctx.cmdBuildStepConfigurer().configure(ctx, jobConfig, 'git checkout develop') >> {
 			maven ctx.mavenBuildStepConfigurer().configure(ctx, jobConfig)
 		}
 	}
