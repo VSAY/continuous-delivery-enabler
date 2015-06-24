@@ -1,4 +1,4 @@
-roleConfig:
+roleConfig: 
   developerRole: frontoffice-dev-contributors
   releaseManagerRole: frontoffice-release-managers
   deploymentManagerRole: frontoffice-deployment-managers
@@ -9,6 +9,9 @@ configurableJobSections:
  scm: GENERIC_SCM_SECTION_CONFIGURER
  trigger: GENERIC_SCM_TRIGGER_SECTION_CONFIGURER
  email: EXTENDED_EMAIL_SECTION_CONFIGURER
+ maven: MAVEN_SECTION_CONFIGURER
+
+ 
  
 notificationConfig:   
   defaultRecipientEmailSuffix: -recipients@ibx.com
@@ -16,28 +19,28 @@ notificationConfig:
 
 viewConfig:
   sectionViews:
-    projectDescriptionTemplatePath: resources/generic/section-view-description.template
+    projectDescriptionTemplatePath: resources/core/section-view-description.template
+    
+jobSeederName: frontoffice-job-seeder
     
     
 buildConfig:
-  tools:
-    maven:
+   maven: 
       name: maven3
-      settings: frontoffice-maven-settings
-    scm: 
+      settings: frontoffice-maven-settings 
+   scm:  
       name: git222
       credentials: STASH_ACCESS
-      changeSetUrlPattern: http://${baseStashUrl}/projects/${projectKey}/repos/${repositorySlug}
-      releasePushUrlPattern: http://${gitUser}:${gitPassword}@${baseStashUrl}/scm/${projectKey}/${repositorySlug}.git    
-    jdk:
-      name: jdk8u31
+   languageRuntime: 
+        type: java  
+        name: jdk8u31
       
       
 continuousIntegrationConfig: &continuousIntegrationConfig
   goals: clean install test deploy -P ci
   pollSchedule: 
   jobSuffix: -ci
-  generatorClass: com.ibx.frontoffice.jenkins.job.generator.impl.ContinuousIntegrationJobGenerator
+  generatorClass: com.liquidhub.framework.ci.job.generator.impl.ContinuousIntegrationJobGenerator
   description: The CI job for the repository, fires on every commit to the repository
   
   
@@ -52,30 +55,33 @@ codeQualityConfig:
 gitflowFeatureBranchConfig: &gitflowFeatureBranchConfig
   startConfig:
     goals: clean install test jgitflow:feature-start -B -Pgitflow
-    goalArgs: {featureName: $featureName, enableFeatureVersions: true}
+    goalArgs: {featureName: $featureName,startCommit: $startCommit}
     jobPrefix: StartFeature_
-    projectDescriptionTemplatePath: resources/generic/gitflow-start-feature-description.template
+    projectDescriptionTemplatePath: resources/core/gitflow-start-feature-description.template
+    generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowStartFeatureJobGenerator
   finishConfig: 
     goals: clean install test jgitflow:feature-finish -B -Pgitflow
-    goalArgs: {keepBranch: true,  featureName: $featureName, autoVersionSubmodules: true}
-    projectDescriptionTemplatePath: resources/generic/gitflow-finish-feature-description.template
-    jobPrefix: FinishFeature_     
-  generatorClass: com.ibx.frontoffice.jenkins.job.generator.impl.GitflowFeatureBranchJobGenerator
+    goalArgs: {keepBranch: $keepBranch,  featureName: $featureName, noFeatureMerge: $skipFeatureMergeToDevelop, squash: $squashCommits}
+    projectDescriptionTemplatePath: resources/core/gitflow-finish-feature-description.template
+    jobPrefix: FinishFeature_
+    generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowFinishFeatureJobGenerator     
+ 
   
   
 gitflowReleaseBranchConfig: &gitflowReleaseBranchConfig
   startConfig:
     goals: clean install test jgitflow:release-start -B -Pgitflow,ci
-    goalArgs: {autoVersionSubmodules: true, startCommit: $releaseFromBranch}
+    goalArgs: {autoVersionSubmodules: true, startCommit: $startCommit}
     jobPrefix: StartRelease_
-    projectDescriptionTemplatePath: resources/generic/gitflow-start-release-description.template
+    projectDescriptionTemplatePath: resources/core/gitflow-start-release-description.template
+    generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowStartReleaseJobGenerator
       
   finishConfig:
     goals: clean test jgitflow:release-finish -B -Pgitflow,ci
     goalArgs: {autoVersionSubmodules: true, keepBranch: true, featureName: $featureName}
     jobPrefix: FinishRelease_
-    projectDescriptionTemplatePath: resources/generic/gitflow-finish-release-description.template
-  generatorClass: com.ibx.frontoffice.jenkins.job.generator.impl.GitflowReleaseBranchJobGenerator
+    projectDescriptionTemplatePath: resources/core/gitflow-finish-release-description.template
+    generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowFinishReleaseJobGenerator
   
   
   
@@ -85,7 +91,7 @@ gitflowHotfixBranchConfig: &gitflowHotfixBranchConfig
     goalArgs:
       autoVersionSubmodules: true
     jobPrefix: StartHotfix_
-    projectDescriptionTemplatePath: resources/generic/gitflow-start-hotfix-description.template
+    projectDescriptionTemplatePath: resources/core/gitflow-start-hotfix-description.template
   finishConfig:
     goals: clean install test jgitflow:hotfix-finish -B -Pgitflow
     goalArgs:
@@ -93,14 +99,14 @@ gitflowHotfixBranchConfig: &gitflowHotfixBranchConfig
       keepBranch: true
       featureName: $featureName
     jobPrefix: FinishHotfix_
-    projectDescriptionTemplatePath: resources/generic/gitflow-finish-hotfix-description.template
+    projectDescriptionTemplatePath: resources/core/gitflow-finish-hotfix-description.template
   generatorClass: com.ibx.frontoffice.jenkins.job.generator.impl.GitflowHotfixBranchJobGenerator
  
   
   
 deploymentConfig: &deploymentConfig
   artifactRepositoryUrl: http://repo.test.ibx.com/
-  projectDescriptionTemplatePath: resources/generic/default-deployment-project-description.template
+  projectDescriptionTemplatePath: resources/core/default-deployment-project-description.template
   appConfigurationArtifactIdentificationPattern: .*conf.*
   generatorClass: com.ibx.frontoffice.jenkins.job.generator.impl.DeploymentJobGenerator
   releaseVersionCountToDisplay: 5
@@ -108,11 +114,20 @@ deploymentConfig: &deploymentConfig
   environments:
     - name: dev
       servers: 1,2,3
+      
+buildDiscardPolicy: 
+  daysToKeep: 2
+  numToKeep: 7
+  artifactDaysToKeep: 1
+  artifactNumToKeep: 2
     
 buildPipelinePreferences:
 - branchName: develop
   pipeline:
   - *continuousIntegrationConfig
+  - *gitflowFeatureBranchConfig
+  - *gitflowReleaseBranchConfig 
+  
 - branchName: master
   pipeline:
   - *gitflowFeatureBranchConfig
