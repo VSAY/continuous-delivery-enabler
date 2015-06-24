@@ -61,7 +61,8 @@ class Configuration {
 			'buildPipelinePreferences',
 			'configurableJobSections',
 			'buildConfig',
-			'buildDiscardPolicy'
+			'buildDiscardPolicy',
+			'jobSeederName'
 		].each{
 	
 			def src = this[it]
