@@ -14,6 +14,8 @@ interface JobFactory {
 	
 	def job(name, Closure jobConfig)
 	
+	def getImpl()
+	
 	
 
 }
