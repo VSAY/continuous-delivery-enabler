@@ -27,14 +27,18 @@ class OperatingSystemCommandAdapter{
 
 	public static void main(String[] args){
 
-		def cmd = 'git checkout develop'
+		def cmd = '''
+			|git tag ${releaseVersion}
+			|git push #releasePushUrl#  HEAD:release/${releaseBranch}
+			|git push #releasePushUrl# ${releaseVersion}
+		'''.stripMargin()
 
 		def adapter = new OperatingSystemCommandAdapter()
 		
 		def writer = new StringWriter()
 		def builder = new groovy.xml.MarkupBuilder(writer)
 		
-		def body = adapter.adapt(cmd)
+		def body = adapter.adapt(cmd,['releasePushUrl':'www'])
 		 println body
 	}
 
