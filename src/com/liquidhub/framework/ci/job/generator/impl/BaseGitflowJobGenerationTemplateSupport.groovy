@@ -18,8 +18,7 @@ import com.liquidhub.framework.ci.view.ViewElementTypes
 import com.liquidhub.framework.config.model.JobConfig
 import com.liquidhub.framework.config.model.RoleConfig
 import com.liquidhub.framework.providers.jenkins.JenkinsJobViewSupport
-import com.liquidhub.framework.scm.DescriptiveBranchNamesListingScriptProvider
-import com.liquidhub.framework.scm.ShortBranchNamesListingScriptProvider
+import com.liquidhub.framework.scm.BranchNamesListingProvider
 
 
 
@@ -33,9 +32,7 @@ import com.liquidhub.framework.scm.ShortBranchNamesListingScriptProvider
  */
 abstract class BaseGitflowJobGenerationTemplateSupport extends BaseJobGenerationTemplate{
 
-	protected EmbeddedScriptProvider descriptionListingProvider = new DescriptiveBranchNamesListingScriptProvider()
-	protected EmbeddedScriptProvider  valueListingProvider = new ShortBranchNamesListingScriptProvider()
-
+	protected EmbeddedScriptProvider branchNamesListingProvider = new BranchNamesListingProvider()
 
 	protected def configureDescription(JobGenerationContext ctx,JobConfig jobConfig){
 
