@@ -37,7 +37,7 @@ class GitflowStartReleaseJobGenerator extends BaseGitflowJobGenerationTemplateSu
 		parameters << new GitflowJobParameter(
 				name: START_COMMIT,
 				description: 'This is the starting point of the release branch.For now, this value cannot be edited',
-				defaultValue: 'develop',
+				defaultValue: "'develop'",
 				elementType:READ_ONLY_TEXT
 				)
 
