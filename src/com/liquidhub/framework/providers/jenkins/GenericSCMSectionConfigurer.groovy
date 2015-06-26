@@ -16,7 +16,7 @@ class GenericSCMSectionConfigurer implements JobSectionConfigurer{
 			git {
 				remote{
 					url(scmRepository.repoUrl)
-					credentials(scmRepository.credentialsId) //This should point to an existing Credential Description
+					credentials(context.scmCredentialsId) //This should point to an existing Credential Description
 				}
 				branch('*/'+scmRepository.repoBranchName) //Align to the ref spec
 				browser {
