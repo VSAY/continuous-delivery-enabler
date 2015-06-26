@@ -62,7 +62,7 @@ class GitflowStartHotfixJobGenerator extends BaseGitflowJobGenerationTemplateSup
 		"""
            |Your branch diverges/begins at this point. Enter a commit(SHA/short SHA) on a tag in the master branch or enter the branch name 'master' 
 		   |(without the quotes) to branch off the latest master copy. You can copy the desired short SHA (from the commits column)
-		   |at <a href='${gitRepoChangeSetUrl}/commits' target='_blank'>List of Commits on Master branch </a>.Avoid typing the commit, prefer copy and paste.
+		   |at <a href='${gitRepoChangeSetUrl}/commits?until=refs/heads/master' target='_blank'>List of Commits on Master branch </a>.Avoid typing the commit, prefer copy and paste.
 		""".stripMargin()
 	}
 

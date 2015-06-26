@@ -13,10 +13,17 @@ import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SQUASH_C
 import com.liquidhub.framework.ci.model.GitflowJobParameter
 import com.liquidhub.framework.ci.model.JobGenerationContext
 import com.liquidhub.framework.ci.model.ParameterListingScript
+import com.liquidhub.framework.ci.view.ViewElementTypes
 import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.config.model.JobConfig
 import com.liquidhub.framework.scm.model.SCMRemoteRefListingRequest
 import com.liquidhub.framework.scm.model.SCMRepository
+
+import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_BOOLEAN_CHOICE
+import static com.liquidhub.framework.ci.view.ViewElementTypes.TEXT
+import static com.liquidhub.framework.ci.view.ViewElementTypes.BOOLEAN_CHOICE
+
+import static com.liquidhub.framework.providers.jenkins.OperatingSystemCommandAdapter.adapt
 
 class GitflowFinishHotfixJobGenerator extends BaseGitflowJobGenerationTemplateSupport{
 
@@ -25,8 +32,8 @@ class GitflowFinishHotfixJobGenerator extends BaseGitflowJobGenerationTemplateSu
 		configuration.gitflowHotfixBranchConfig.finishConfig
 	}
 
-
-	def defineParameters(JobGenerationContext context, JobConfig jobConfig){
+     @Override
+	def defineJobParameters(JobGenerationContext context, JobConfig jobConfig){
 
 		def parameters = []
 
@@ -34,33 +41,35 @@ class GitflowFinishHotfixJobGenerator extends BaseGitflowJobGenerationTemplateSu
 
 		def repoUrl = repository.repoUrl, authDigest = repository.authorizedUserDigest
 
-		SCMRemoteRefListingRequest request = new SCMRemoteRefListingRequest(
-				targetUrl: repoUrl,
-				authorizedUserDigest: authDigest,
-				branchFilterText:  'hotfix/'
-				)
+		SCMRemoteRefListingRequest request = new SCMRemoteRefListingRequest(targetUrl: repoUrl, authorizedUserDigest: authDigest, branchFilterText:  'hotfix/')
 
-		def descriptionScript = descriptionListingProvider.getScript(['requestParam':request])
+		request.listFullRefNames=true
+		def descriptionScript = branchNamesListingProvider.getScript(['requestParam':request])
 
-		def valueScript = valueListingProvider.getScript(['requestParam':request])
+		request.listFullRefNames=false
+		def valueScript = branchNamesListingProvider.getScript(['requestParam':request])
 
-		parameters << new GitflowJobParameter(
-				name: HOTFIX_BRANCH,
-				valueScript: new ParameterListingScript(text:valueScript),
-				descriptionScript: new ParameterListingScript(text:descriptionScript)
-				)
+		parameters << new GitflowJobParameter(name: HOTFIX_BRANCH, 
+			              valueListingScript: new ParameterListingScript(text:valueScript), 
+						  labelListingScript: new ParameterListingScript(text:descriptionScript),
+						  elementType: ViewElementTypes.SINGLE_SELECT_CHOICES)
 
-		parameters << new GitflowJobParameter(
-				name: DEVELOPMENT_VERSION,
-				description : 'What do you want the next development version to be?'
-				)
+		parameters << new GitflowJobParameter(name: DEVELOPMENT_VERSION,description : 'What do you want the next development version to be?', elementType:TEXT)
+		parameters << new GitflowJobParameter(name: KEEP_HOTFIX_BRANCH,elementType:READ_ONLY_BOOLEAN_CHOICE, defaultValue:true)
+		parameters << new GitflowJobParameter(name: SQUASH_COMMITS, elementType:BOOLEAN_CHOICE, defaultValue:false)
+			
+		parameters << [ALLOW_SNAPSHOTS_WHILE_FINISHING_HOTFIX, SKIP_HOTFIX_TAGGING].collect{
+			new GitflowJobParameter(name: it, elementType: READ_ONLY_BOOLEAN_CHOICE, defaultValue: false)
+		}
 	}
 
 	def configureBuildSteps(JobGenerationContext context, JobConfig jobConfig){
 
 		return{
-			context.configurers('os').configure(ctx, jobConfig,'git checkout hotfix/${hotfixVersion}')
+			context.generatingOnWindows ? batchFile(adapt(CHECK_OUT_HOTFIX)) : shell(CHECK_OUT_HOTFIX)
 			maven context.configurers('maven').configure(context, jobConfig)
 		}
 	}
+	
+	private static final def CHECK_OUT_HOTFIX = 'git checkout hotfix/${hotfixBranch}'
 }
