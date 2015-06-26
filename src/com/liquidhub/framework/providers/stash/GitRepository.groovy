@@ -3,6 +3,7 @@ package com.liquidhub.framework.providers.stash
 
 import groovy.transform.ToString
 
+import com.liquidhub.framework.ci.model.BuildEnvironmentVariables
 import com.liquidhub.framework.ci.model.SeedJobParameters
 import com.liquidhub.framework.scm.model.GitFlowBranchTypes
 import com.liquidhub.framework.scm.model.SCMRepository
@@ -10,7 +11,7 @@ import com.liquidhub.framework.scm.model.SCMRepository
 @ToString(includeNames=true, includeFields=true)
 class GitRepository implements SCMRepository {
 
-	private def repoUrl,baseUrl,repoBranchName,projectKey,repositorySlug,authorizedUserDigest,changeSetUrl,branchType
+	private def repoUrl,baseUrl,repoBranchName,projectKey,repositorySlug,authorizedUserDigest,changeSetUrl,branchType,releasePushUrl
 	
 	GitRepository(Map bindingVariables){
 
@@ -33,7 +34,8 @@ class GitRepository implements SCMRepository {
 
 
 		def transportScheme = matcher[0][1]
-		this.baseUrl = matcher[0][1]+matcher[0][2]
+		def serverHost = matcher[0][2]
+		this.baseUrl = transportScheme + serverHost
 		this.repoBranchName = repoBranchName
 		this.projectKey = matcher[0][3]
 		this.repositorySlug = matcher[0][4]
@@ -41,11 +43,20 @@ class GitRepository implements SCMRepository {
 		this.repoUrl = repoUrl
 		this.changeSetUrl = createChangeSetUrl(baseUrl, projectKey, repositorySlug)
 		this.branchType = GitFlowBranchTypes.type(repoBranchName)
+		
+		final def gitUserName = BuildEnvironmentVariables.GIT_REPOSITORY_USERNAME.paramValue
+		final def gitPassword =  BuildEnvironmentVariables.GIT_REPOSITORY_PASSWORD.paramValue
+		
+		releasePushUrl = createReleasePushUrl(gitUserName, gitPassword, serverHost, projectKey, repositorySlug)
 	
 	}
 
 	protected def createChangeSetUrl(baseUrl, projectKey, repositorySlug){
-		return "${baseUrl}/projects/${projectKey}/repos/${repositorySlug}"
+		"${baseUrl}/projects/${projectKey}/repos/${repositorySlug}"
+	}
+	
+	protected def createReleasePushUrl(gitUser, gitPassword, serverHost, projectKey, repositorySlug){
+		"http://${gitUser}:${gitPassword}@${serverHost}/scm/${projectKey}/${repositorySlug}.git"
 	}
 
 	@Override
@@ -87,11 +98,11 @@ class GitRepository implements SCMRepository {
 	public def getBranchType() {
 		this.branchType
 	}
+
 	
 	@Override
-	public def getCredentialsId() {
-		// TODO Auto-generated method stub
-		return null;
+	public def getReleasePushUrl() {
+		this.releasePushUrl
 	}
 
 
@@ -111,6 +122,12 @@ class GitRepository implements SCMRepository {
 	}
 
 
+	
+
+	static def void main(String[] args){
+		def x = new GitRepository(['gitRepoUrl':'http://stash.test.ibx.com/scm/mvn/parent-pom.git','repoBranchName':'develop','repositoryUserCredentials':'a:b']);
+		println x.toString()
+	}
 	
 
 }
