@@ -15,6 +15,10 @@ import com.liquidhub.framework.ci.view.ViewElementTypes
 import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.config.model.JobConfig
 import static com.liquidhub.framework.providers.jenkins.OperatingSystemCommandAdapter.adapt
+import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_BOOLEAN_CHOICE
+import static com.liquidhub.framework.ci.view.ViewElementTypes.TEXT
+import static com.liquidhub.framework.ci.view.ViewElementTypes.BOOLEAN_CHOICE
+import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_TEXT
 
 
 class GitflowStartReleaseJobGenerator extends BaseGitflowJobGenerationTemplateSupport {
@@ -34,35 +38,26 @@ class GitflowStartReleaseJobGenerator extends BaseGitflowJobGenerationTemplateSu
 				name: START_COMMIT,
 				description: 'This is the starting point of the release branch.For now, this value cannot be edited',
 				defaultValue: 'develop',
-				editable: true,
-				elementType: ViewElementTypes.TEXT_FIELD
+				elementType:READ_ONLY_TEXT
 				)
 
 		parameters << new GitflowJobParameter(
 				name: RELEASE_VERSION,
 				description: 'This is version which will be assigned to your final release artifact, this will also be the name of your release branch. Follow the maven versioning scheme',
-				elementType: ViewElementTypes.TEXT_FIELD
+				elementType: TEXT
 				)
 
 		parameters << new GitflowJobParameter(
 				name: DEVELOPMENT_VERSION,
 				description: 'This is version which will be assigned to your develop branch, so if your release version is 0.1.14, this version SHOULD be 0.1.15-SNAPSHOT to avoid version clashes across branches',
-				elementType: ViewElementTypes.TEXT_FIELD
+				elementType: TEXT
 				)
 
 
-		parameters << new GitflowJobParameter(
-				name: RELEASE_BRANCH_VERSION_SUFFIX,
-				elementType: ViewElementTypes.TEXT_FIELD
-				)
+		parameters << new GitflowJobParameter(name: RELEASE_BRANCH_VERSION_SUFFIX, elementType: TEXT)
 
 		parameters << [ALLOW_SNAPSHOTS_WHILE_CREATING_RELEASE, PUSH_RELEASES].collect {
-			new GitflowJobParameter(
-					name: it,
-					elementType: ViewElementTypes.BOOLEAN_CHOICE,
-					editable:false,
-					valueListingScript: new ParameterListingScript(text:true)
-					)
+			new GitflowJobParameter(name: it, elementType: READ_ONLY_BOOLEAN_CHOICE, defaultValue:true)
 		}
 	}
 

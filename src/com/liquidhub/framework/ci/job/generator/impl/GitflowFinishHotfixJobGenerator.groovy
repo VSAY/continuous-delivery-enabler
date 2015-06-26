@@ -1,8 +1,14 @@
 package com.liquidhub.framework.ci.job.generator.impl
 
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.DEVELOPMENT_VERSION
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.ALLOW_SNAPSHOTS_WHILE_FINISHING_HOTFIX
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.DEVELOPMENT_VERSION
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.HOTFIX_BRANCH
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.HOTFIX_VERSION
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.KEEP_HOTFIX_BRANCH
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.NO_DEPLOY
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SKIP_HOTFIX_TAGGING
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SQUASH_COMMITS
 
 import com.liquidhub.framework.ci.model.GitflowJobParameter
 import com.liquidhub.framework.ci.model.JobGenerationContext

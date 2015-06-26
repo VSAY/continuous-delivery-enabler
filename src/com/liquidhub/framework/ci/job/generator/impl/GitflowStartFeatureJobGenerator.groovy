@@ -6,6 +6,10 @@ import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.FEATURE_
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.PUSH_FEATURES
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.START_COMMIT
 
+import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_BOOLEAN_CHOICE
+import static com.liquidhub.framework.ci.view.ViewElementTypes.TEXT
+
+
 import com.liquidhub.framework.ci.model.BuildEnvironmentVariables
 import com.liquidhub.framework.ci.model.GitflowJobParameter
 import com.liquidhub.framework.ci.model.JobGenerationContext
@@ -31,26 +35,13 @@ class GitflowStartFeatureJobGenerator extends BaseGitflowJobGenerationTemplateSu
 
 		SCMRepository scmRepository = context.scmRepository
 
-		parameters << new GitflowJobParameter(
-				name: FEATURE_NAME,
-				description: 'The name of the feature you intend to start.Please do not prefix feature/  .It is done automatically',
-				elementType: ViewElementTypes.TEXT_FIELD
-				)
+		def featureParamDescription = 'The name of the feature you intend to start.Please do not prefix feature/  .It is done automatically'
 
-		parameters << new GitflowJobParameter(
-				name: START_COMMIT,
-				description: generateCommitDescription(scmRepository.changeSetUrl),
-				elementType: ViewElementTypes.TEXT_FIELD
-				)
-
+		parameters << new GitflowJobParameter(name: FEATURE_NAME, description: featureParamDescription, elementType: TEXT)
+		parameters << new GitflowJobParameter(name: START_COMMIT,description: generateCommitDescription(scmRepository.changeSetUrl),elementType: TEXT)
 
 		parameters << [ALLOW_SNAPSHOTS_WHILE_CREATING_FEATURE, ENABLE_FEATURE_VERSIONS, PUSH_FEATURES].collect{
-			new GitflowJobParameter(
-					name: it,
-					elementType: ViewElementTypes.BOOLEAN_CHOICE,
-					editable:false,
-					valueListingScript:new ParameterListingScript(text: true)
-					)
+			new GitflowJobParameter(name: it, elementType: READ_ONLY_BOOLEAN_CHOICE, defaultValue: true)
 		}
 	}
 
@@ -63,7 +54,7 @@ class GitflowStartFeatureJobGenerator extends BaseGitflowJobGenerationTemplateSu
 
 	def configureBuildSteps(JobGenerationContext ctx, JobConfig jobConfig){
 
-	return {		  
+		return {
 			ctx.generatingOnWindows ? batchFile(adapt(CHECK_OUT_DEVELOP)) : shell(CHECK_OUT_DEVELOP)
 			maven ctx.mavenBuildStepConfigurer().configure(ctx, jobConfig)
 		}
@@ -85,8 +76,8 @@ class GitflowStartFeatureJobGenerator extends BaseGitflowJobGenerationTemplateSu
 	protected boolean configuresBranchInitiatingJob() {
 		true
 	}
-	
-	
+
+
 	final String CHECK_OUT_DEVELOP = 'git checkout develop'
 }
 

@@ -25,6 +25,15 @@ import com.liquidhub.framework.scm.ReleaseChoiceOptionsScriptProvider
 import com.liquidhub.framework.scm.model.SCMRemoteRefListingRequest
 import com.liquidhub.framework.scm.model.SCMRepository
 import static com.liquidhub.framework.providers.jenkins.OperatingSystemCommandAdapter.adapt
+import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_BOOLEAN_CHOICE
+import static com.liquidhub.framework.ci.view.ViewElementTypes.TEXT
+import static com.liquidhub.framework.ci.view.ViewElementTypes.BOOLEAN_CHOICE
+
+import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_BOOLEAN_CHOICE
+import static com.liquidhub.framework.ci.view.ViewElementTypes.TEXT
+import static com.liquidhub.framework.ci.view.ViewElementTypes.BOOLEAN_CHOICE
+import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_TEXT
+
 
 
 class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateSupport {
@@ -92,51 +101,15 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 					'''.stripMargin(),
 				valueListingScript: new ParameterListingScript(text:developmentVersionDeterminationScript),
-				elementType: ViewElementTypes.TEXT_FIELD,
-				editable:false
+				elementType: READ_ONLY_TEXT
 				)
 
-		parameters << new GitflowJobParameter(
-				name: ALLOW_SNAPSHOTS_WHILE_FINISHING_RELEASE,
-				elementType: ViewElementTypes.BOOLEAN_CHOICE,
-				valueListingScript: new ParameterListingScript(text:false),
-				editable:false
-				)
-
-		parameters << new GitflowJobParameter(
-				name: KEEP_RELEASE_BRANCH,
-				elementType: ViewElementTypes.BOOLEAN_CHOICE,
-				valueListingScript: new ParameterListingScript(text:true),
-				editable:false
-				)
-
-		parameters << new GitflowJobParameter(
-				name: SKIP_RELEASE_BRANCH_MERGE,
-				elementType: ViewElementTypes.BOOLEAN_CHOICE,
-				defaultValue: false,
-				editable:true
-				)
-
-		parameters << new GitflowJobParameter(
-				name: SQUASH_COMMITS,
-				elementType: ViewElementTypes.BOOLEAN_CHOICE,
-				editable:true,
-				defaultValue:false
-				)
-
-
-
-		parameters << new GitflowJobParameter(
-				name: SKIP_RELEASE_TAGGING,
-				elementType: ViewElementTypes.BOOLEAN_CHOICE,
-				editable:false,
-				valueListingScript: new ParameterListingScript(text:false),
-				)
-
-		parameters << new GitflowJobParameter(
-				name: RELEASE_TAG_MESSAGE,
-				elementType: ViewElementTypes.TEXT_FIELD,
-				)
+		parameters << new GitflowJobParameter(name: ALLOW_SNAPSHOTS_WHILE_FINISHING_RELEASE, elementType: READ_ONLY_BOOLEAN_CHOICE, defaultValue:false)
+		parameters << new GitflowJobParameter(name: KEEP_RELEASE_BRANCH, elementType: READ_ONLY_BOOLEAN_CHOICE, defaultValue:true)
+		parameters << new GitflowJobParameter(name: SKIP_RELEASE_BRANCH_MERGE, elementType: BOOLEAN_CHOICE,defaultValue: false)
+		parameters << new GitflowJobParameter(name: SQUASH_COMMITS, elementType: BOOLEAN_CHOICE, defaultValue:false)
+		parameters << new GitflowJobParameter(name: SKIP_RELEASE_TAGGING, elementType: READ_ONLY_BOOLEAN_CHOICE, defaultValue:false)
+		parameters << new GitflowJobParameter(name: RELEASE_TAG_MESSAGE, elementType: TEXT)
 	}
 
 
@@ -145,10 +118,6 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 	def configureBuildSteps(JobGenerationContext ctx, JobConfig jobConfig){
 
 		def mvnConfigurer = ctx.configurers('maven')
-
-		def configureOSCommand = {command,parameters=[:] ->
-			osConfigurer.configure(ctx, jobConfig, command, parameters)
-		}
 
 		def configureMavenCommand = {goals ->
 
@@ -171,7 +140,7 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 				condition{ expression('.*(M|RC|m|rc).*','${ENV,var="releaseVersion"}') } //We do not want variable substitution before it is embedded into configuration
 				runner("DontRun") //For any other values, look at runner classes of Run Condition Plugin
-				
+
 				def releasePushUrlParams = [releasePushUrl: ctx.scmRepository.releasePushUrl]
 
 				def performMilestoneReleaseCmd = adapt(PERFORM_MILESTONE_VERSION_RELEASE, releasePushUrlParams)
@@ -181,7 +150,7 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 				maven configureMavenCommand(DEPLOY_TO_RELEASE_REPOSITORY)
 
 				maven configureMavenCommand(UPDATE_TO_NEXT_MILESTONE_VERSION)
-				
+
 				def commitAllFilesCommand = adapt(COMMIT_ALL_FILES_AND_PUSH, releasePushUrlParams)
 
 				ctx.generatingOnWindows ? batchFile(commitAllFilesCommand):shell(commitAllFilesCommand)
@@ -237,7 +206,7 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 	static final def DEPLOY_TO_RELEASE_REPOSITORY = 'deploy -DupdateReleaseInfo=true'
 
 	static final def UPDATE_TO_NEXT_MILESTONE_VERSION='versions:set -DnewVersion=${nextMilestoneDevelopmentVersion} versions:commit'
-	
+
 	static final def DEPLOY='deploy'
 
 

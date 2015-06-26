@@ -5,6 +5,10 @@ import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.KEEP_FEA
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SKIP_FEATURE_MERGE_TO_DEVELOP
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SQUASH_COMMITS
 
+import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_BOOLEAN_CHOICE
+import static com.liquidhub.framework.ci.view.ViewElementTypes.TEXT
+import static com.liquidhub.framework.ci.view.ViewElementTypes.BOOLEAN_CHOICE
+
 import com.liquidhub.framework.ci.model.BuildEnvironmentVariables
 import com.liquidhub.framework.ci.model.GitflowJobParameter
 import com.liquidhub.framework.ci.model.JobGenerationContext
@@ -50,22 +54,20 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 				labelListingScript: new ParameterListingScript(text: descriptionScript)
 				)
 
-		parameters << new GitflowJobParameter(
-				name: KEEP_FEATURE_BRANCH,
-				elementType: ViewElementTypes.BOOLEAN_CHOICE,
-				editable:false,
-				valueListingScript: new ParameterListingScript(text: true)
-				)
+		parameters << new GitflowJobParameter(name: KEEP_FEATURE_BRANCH,
+		elementType: READ_ONLY_BOOLEAN_CHOICE,
+		defaultValue:true
+		)
 
 		parameters << new GitflowJobParameter(
 				name: SKIP_FEATURE_MERGE_TO_DEVELOP,
-				elementType: ViewElementTypes.BOOLEAN_CHOICE,
+				elementType: BOOLEAN_CHOICE,
 				defaultValue:false
 				)
 
 		parameters << new GitflowJobParameter(
 				name: SQUASH_COMMITS,
-				elementType: ViewElementTypes.BOOLEAN_CHOICE,
+				elementType: BOOLEAN_CHOICE,
 				editable:true,
 				defaultValue:false
 				)
