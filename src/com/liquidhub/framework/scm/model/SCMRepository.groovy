@@ -10,6 +10,6 @@ interface SCMRepository {
 	def getAuthorizedUserDigest() //The a base 64 encoded digest of the username password style credentials
 	def getChangeSetUrl() //The url which shows the diff for the repository
 	def getBranchType()
-	def getCredentialsId() //A reference to a pre configured credentials identifier on the system
+	def getReleasePushUrl()//The URL at which the releases for the repository should be pushed. Similar to the clone url but contains auth information
 	
 }
