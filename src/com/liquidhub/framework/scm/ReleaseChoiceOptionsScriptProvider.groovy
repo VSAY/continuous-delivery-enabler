@@ -7,10 +7,14 @@ class ReleaseChoiceOptionsScriptProvider extends VersionDeterminationScriptProvi
 	def getVersionChoicesScript(gitRepoUrl, authorizedUserDigest, releaseNamingStrategy){
 
 		"""
-           |import com.ibx.frontoffice.stash.utils.GitRepositoryReleaseOptionsProvider
-           |def optionsProvider = new GitRepositoryReleaseOptionsProvider('${authorizedUserDigest}')
-           |optionsProvider.provideChoicesForNextRelease('${gitRepoUrl}', ${releaseNamingStrategy})
+           |import com.liquidhub.framework.git.ReleaseOptionsProvider
+           |ReleaseOptionsProvider.proposePostReleaseDevelopmentMilestone('${gitRepoUrl}', '${authorizedUserDigest}', ${releaseNamingStrategy})
  
         """.stripMargin()
+	}
+	
+	public static void main(String[] args){
+		MilestoneVersionDeterminationScriptProvider provider = new MilestoneVersionDeterminationScriptProvider()
+		println provider.getScript(['requestParam':[gitRepoUrl:'http://stash.ibx.com/scm/rca/roam-web.git',authorizedUserDigest: 'YWRtaW46YWRtaW4=','versionNamingStrategy':'m']])
 	}
 }
