@@ -31,7 +31,7 @@ class JobGenerationContext {
 
 	final SCMRepository scmRepository
 
-	final def repositoryName, defaultRegularEmailRecipients,defaultEscalationEmailRecipients,repositoryBranchName, jobSeederName
+	final def repositoryName, defaultRegularEmailRecipients,defaultEscalationEmailRecipients,repositoryBranchName, jobSeederName, scmCredentialsId
 	
 	final boolean generatingOnWindows
 
@@ -58,6 +58,7 @@ class JobGenerationContext {
 		this.templateEngine = new BuildEnvironmentAwareTemplateEngine(this)
 		this.jobSeederName = configuration.jobSeederName
 		this.generatingOnWindows = workspaceUtils.isRunningOnWindows()
+		this.scmCredentialsId = buildToolConfig.scm?.credentials
 	}
 
 
