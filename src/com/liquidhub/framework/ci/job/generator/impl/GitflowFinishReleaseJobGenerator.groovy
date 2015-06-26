@@ -64,10 +64,11 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 				branchFilterText:  'release/'
 				)
 
+        request.listFullRefNames = true
+		def descriptionScript = branchNamesListingProvider.getScript(['requestParam':request])
 
-		def descriptionScript = descriptionListingProvider.getScript(['requestParam':request])
-
-		def valueScript = valueListingProvider.getScript(['requestParam':request])
+		request.listFullRefNames = false
+		def valueScript = branchNamesListingProvider.getScript(['requestParam':request])
 
 		parameters << new GitflowJobParameter(
 				name: RELEASE_BRANCH,
@@ -78,7 +79,6 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 				)
 
 		def versionDeterminationRequest = new VersionDeterminationRequest(gitRepoUrl: repoUrl, authorizedUserDigest : authDigest, versionNamingStrategy: MILESTONE_NAMING_STRATEGY)
-
 
 		def releaseChoicesScript = releaseOptionsProvider.getScript(['requestParam':versionDeterminationRequest])
 
