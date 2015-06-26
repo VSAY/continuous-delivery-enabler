@@ -39,9 +39,11 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 				displayLabel: 'id'
 				)
 
-		def descriptionScript = descriptionListingProvider.getScript(['requestParam':request])
+		request.listFullRefNames=true
+		def descriptionScript = branchNamesListingProvider.getScript(['requestParam':request])
 
-		def valueScript = valueListingProvider.getScript(['requestParam':request])
+		request.listFullRefNames=false
+		def valueScript = branchNamesListingProvider.getScript(['requestParam':request])
 
 
 		def parameters = []
