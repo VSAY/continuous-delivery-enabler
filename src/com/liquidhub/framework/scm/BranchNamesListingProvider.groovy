@@ -43,6 +43,6 @@ class BranchNamesListingProvider implements EmbeddedScriptProvider {
 	
 	public static void main(String[] args){
 		BranchNamesListingProvider provider = new BranchNamesListingProvider()
-		println provider.getScript(['requestParam':[targetUrl:'http://stash.ibx.com/scm/rca/roam-web.git',authorizedUserDigest: 'YWRtaW46YWRtaW4=', branchFilterText: 'release']])
+		println provider.getScript(['requestParam':[targetUrl:'http://stash.ibx.com/scm/rca/roam-web.git',authorizedUserDigest: '', branchFilterText: 'release']])
 	}
 }

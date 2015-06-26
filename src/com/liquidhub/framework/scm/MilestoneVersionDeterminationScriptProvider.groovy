@@ -6,10 +6,14 @@ class MilestoneVersionDeterminationScriptProvider extends VersionDeterminationSc
 	@Override
 	public Object getVersionChoicesScript(gitRepoUrl, authorizedUserDigest, milestoneNamingStrategy) {
 		"""
-           |import com.ibx.frontoffice.stash.utils.GitRepositoryReleaseOptionsProvider
-           |def optionsProvider = new GitRepositoryReleaseOptionsProvider('${authorizedUserDigest}')
-           |optionsProvider.proposePostReleaseDevelopmentMilestone('${gitRepoUrl}', ${milestoneNamingStrategy})
+           |import com.liquidhub.framework.git.ReleaseOptionsProvider 
+           |ReleaseOptionsProvider.proposePostReleaseDevelopmentMilestone('${gitRepoUrl}', '${authorizedUserDigest}', ${milestoneNamingStrategy})
  
         """.stripMargin()
+	}
+
+	public static void main(String[] args){
+		MilestoneVersionDeterminationScriptProvider provider = new MilestoneVersionDeterminationScriptProvider()
+		println provider.getScript(['requestParam':[gitRepoUrl:'http://stash.ibx.com/scm/rca/roam-web.git',authorizedUserDigest: '','versionNamingStrategy':'m']])
 	}
 }
