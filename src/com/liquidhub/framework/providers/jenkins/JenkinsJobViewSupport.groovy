@@ -1,8 +1,10 @@
 package com.liquidhub.framework.providers.jenkins
 
 import static com.liquidhub.framework.ci.view.ViewElementTypes.BOOLEAN_CHOICE
+import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_BOOLEAN_CHOICE
+import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_TEXT
 import static com.liquidhub.framework.ci.view.ViewElementTypes.SINGLE_SELECT_CHOICES
-import static com.liquidhub.framework.ci.view.ViewElementTypes.TEXT_FIELD
+import static com.liquidhub.framework.ci.view.ViewElementTypes.TEXT
 import static java.util.UUID.randomUUID
 
 import com.liquidhub.framework.ci.logger.Logger
@@ -11,7 +13,7 @@ import com.liquidhub.framework.ci.model.ParameterListingScript
 import com.liquidhub.framework.ci.view.JobViewSupport
 
 class JenkinsJobViewSupport implements JobViewSupport{
-  
+
 	private static Logger logger
 
 	def defineParameter(GitflowJobParameter parameter){
@@ -19,7 +21,7 @@ class JenkinsJobViewSupport implements JobViewSupport{
 		def name = parameter.name
 		def description = parameter?.description
 		boolean editable = parameter?.editable
-		
+
 		def parameterClosure = {}
 
 		switch(parameter.elementType){
@@ -28,21 +30,31 @@ class JenkinsJobViewSupport implements JobViewSupport{
 				parameterClosure = createChoiceOptionsView(name, description,parameter.valueListingScript, parameter.labelListingScript)
 				break
 
-			case BOOLEAN_CHOICE:
-				parameterClosure = parameter?.valueListingScript||!editable ? createDynamicBooleanChoice(name, description, parameter.valueListingScript, editable) : createStaticBooleanChoice(name, description, parameter?.defaultValue)
+			case READ_ONLY_TEXT:
+				def valueListingScript = parameter.valueListingScript?: new ParameterListingScript(text:parameter.defaultValue)
+				parameterClosure = createSimpleTextBox(name, description,valueListingScript, false) //false represents not editable
 				break
 
-			case TEXT_FIELD:
-				parameterClosure =  createSimpleTextBox(name, description, parameter.valueListingScript, editable)
+			case BOOLEAN_CHOICE:
+				parameterClosure = createStaticBooleanChoice(name, description, parameter?.defaultValue)
+				break
+
+			case READ_ONLY_BOOLEAN_CHOICE:
+				def valueListingScript = new ParameterListingScript(text:parameter.defaultValue)
+				parameterClosure = createDynamicBooleanChoice(name, description, valueListingScript, false)//false represents not editable
+				break
+
+			case TEXT:
+				parameterClosure =  createSimpleTextBox(name, description, parameter.valueListingScript, true)//true represents editable
 				break
 		}
-		
+
 		return parameterClosure
 	}
 
 
 	protected def createChoiceOptionsView(String name,String parameterDescription, ParameterListingScript valueListingScript, ParameterListingScript labelListingScript) {
-    	def choicesGroovyScriptText = valueListingScript?.text
+		def choicesGroovyScriptText = valueListingScript?.text
 		def choicesDescriptionGroovyScriptText = labelListingScript?.text
 		def bindings = valueListingScript.bindings
 
