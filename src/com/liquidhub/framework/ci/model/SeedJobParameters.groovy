@@ -5,7 +5,8 @@ package com.liquidhub.framework.ci.model
  * generation environment. This is the contract between the process dsl and the environment
  * in which the dsl executes. 
  * 
- * An explicit enumeration helps avoid reliance on random string parameter names
+ * An explicit enumeration helps avoid reliance on random string parameter names. This also helps us enforce that these parameters MUST be provided
+ * as an argument to the seed job for it to work
  *
  * @author Rahul Mishra,LiquidHub
  *
@@ -22,6 +23,7 @@ enum SeedJobParameters {
 	TARGET_PROJECT_BASE_MOUNT('TARGET_APP_MOUNT_DIR'),
 	USE_GITFLOW('useGitflow'),
 	LOGGER_OUTPUT_STREAM('out')
+	
 
 	def bindingName //The actual name with which the parameter is bound to its environment, the enumeration name is logical, the binding name is actual
 
