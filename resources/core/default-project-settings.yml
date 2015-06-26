@@ -92,6 +92,7 @@ gitflowHotfixBranchConfig: &gitflowHotfixBranchConfig
       autoVersionSubmodules: true
     jobPrefix: StartHotfix_
     projectDescriptionTemplatePath: resources/core/gitflow-start-hotfix-description.template
+    generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowStartHotfixJobGenerator
   finishConfig:
     goals: clean install test jgitflow:hotfix-finish -B -Pgitflow
     goalArgs:
@@ -100,7 +101,7 @@ gitflowHotfixBranchConfig: &gitflowHotfixBranchConfig
       featureName: $featureName
     jobPrefix: FinishHotfix_
     projectDescriptionTemplatePath: resources/core/gitflow-finish-hotfix-description.template
-  generatorClass: com.ibx.frontoffice.jenkins.job.generator.impl.GitflowHotfixBranchJobGenerator
+  generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowFinishHotfixJobGenerator
  
   
   
@@ -127,6 +128,7 @@ buildPipelinePreferences:
   - *continuousIntegrationConfig
   - *gitflowFeatureBranchConfig
   - *gitflowReleaseBranchConfig 
+  - *gitflowHotfixBranchConfig
   
 - branchName: master
   pipeline:
