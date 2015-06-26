@@ -36,7 +36,6 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 				targetUrl: repository.repoUrl,
 				authorizedUserDigest: repository.authorizedUserDigest,
 				branchFilterText:  'feature/',
-				displayLabel: 'id'
 				)
 
 		request.listFullRefNames=true
@@ -56,23 +55,9 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 				labelListingScript: new ParameterListingScript(text: descriptionScript)
 				)
 
-		parameters << new GitflowJobParameter(name: KEEP_FEATURE_BRANCH,
-		elementType: READ_ONLY_BOOLEAN_CHOICE,
-		defaultValue:true
-		)
-
-		parameters << new GitflowJobParameter(
-				name: SKIP_FEATURE_MERGE_TO_DEVELOP,
-				elementType: BOOLEAN_CHOICE,
-				defaultValue:false
-				)
-
-		parameters << new GitflowJobParameter(
-				name: SQUASH_COMMITS,
-				elementType: BOOLEAN_CHOICE,
-				editable:true,
-				defaultValue:false
-				)
+		parameters << new GitflowJobParameter(name: KEEP_FEATURE_BRANCH,elementType: READ_ONLY_BOOLEAN_CHOICE, defaultValue:true)
+		parameters << new GitflowJobParameter(name: SKIP_FEATURE_MERGE_TO_DEVELOP, elementType: BOOLEAN_CHOICE,defaultValue:false)
+		parameters << new GitflowJobParameter(name: SQUASH_COMMITS, elementType: BOOLEAN_CHOICE, defaultValue:false)
 	}
 
 	@Override
