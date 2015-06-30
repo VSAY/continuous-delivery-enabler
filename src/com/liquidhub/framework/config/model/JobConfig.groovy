@@ -24,7 +24,8 @@ class JobConfig {
 	pollSchedule, //The schedule with which the job polls the SCM for changes
 	projectDescriptionTemplatePath, //The path to a HTML template which adds a description for the project
 	regularEmailRecipients,  // The list of people who need to be informed about the activities of this job - success,failures
-	escalationEmailRecipients // The escalation email list 
+	escalationEmailRecipients, // The escalation email list
+	activeMavenProfiles  
 
 	private static def logger
 	
@@ -52,7 +53,8 @@ class JobConfig {
 			'pollSchedule',
 			'projectDescriptionTemplatePath',
 			'regularEmailRecipients',
-			'escalationEmailRecipients'
+			'escalationEmailRecipients',
+			'activeMavenProfiles'
 		].each{property ->
 			this[property] = otherJobConfig[property] ?:  this[property]
 		}
