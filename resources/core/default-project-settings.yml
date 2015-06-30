@@ -51,6 +51,13 @@ codeQualityConfig:
   jobSuffix: -quality-Tests  
   generatorClass: com.ibx.frontoffice.jenkins.job.generator.impl.CodeQualityJobGenerator
   
+
+milestoneReleaseConfig: &milestoneReleaseConfig
+  jobPrefix: FinishMilestoneRelease_
+  projectDescriptionTemplatePath: resources/core/gitflow-finish-release-description.template  
+  generatorClass: com.liquidhub.framework.ci.job.generator.impl.MilestoneReleaseJobGenerator
+  activeMavenProfiles: release
+  
   
 gitflowFeatureBranchConfig: &gitflowFeatureBranchConfig
   startConfig:
@@ -77,11 +84,12 @@ gitflowReleaseBranchConfig: &gitflowReleaseBranchConfig
     generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowStartReleaseJobGenerator
       
   finishConfig:
-    goals: clean test jgitflow:release-finish -B -Pgitflow,ci
+    goals: clean test jgitflow:release-finish -B
     goalArgs: {autoVersionSubmodules: true, keepBranch: true, featureName: $featureName}
     jobPrefix: FinishRelease_
     projectDescriptionTemplatePath: resources/core/gitflow-finish-release-description.template
     generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowFinishReleaseJobGenerator
+    activeMavenProfiles: release,gitflow,ci
   
   
   
@@ -101,7 +109,7 @@ gitflowHotfixBranchConfig: &gitflowHotfixBranchConfig
       featureName: $featureName
     jobPrefix: FinishHotfix_
     projectDescriptionTemplatePath: resources/core/gitflow-finish-hotfix-description.template
-  generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowFinishHotfixJobGenerator
+    generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowFinishHotfixJobGenerator
  
   
   
@@ -112,9 +120,6 @@ deploymentConfig: &deploymentConfig
   generatorClass: com.ibx.frontoffice.jenkins.job.generator.impl.DeploymentJobGenerator
   releaseVersionCountToDisplay: 5
   snapshotVersionCountToDisplay: 5
-  environments:
-    - name: dev
-      servers: 1,2,3
       
 buildDiscardPolicy: 
   daysToKeep: 2
@@ -126,14 +131,13 @@ buildPipelinePreferences:
 - branchName: develop
   pipeline:
   - *continuousIntegrationConfig
-  - *gitflowFeatureBranchConfig
-  - *gitflowReleaseBranchConfig 
-  - *gitflowHotfixBranchConfig
+  - *deploymentConfig 
   
 - branchName: master
   pipeline:
   - *gitflowFeatureBranchConfig
   - *gitflowReleaseBranchConfig
   - *gitflowHotfixBranchConfig
+  - *milestoneReleaseConfig  
   - *deploymentConfig 
  
