@@ -1,4 +1,4 @@
-repositoryAPIConfig:
+scmRepositoryConfigurationInstructions: 
 
   - apiName: restrictRepositoryAccess
     httpMethod: PUT
@@ -61,6 +61,11 @@ repositoryAPIConfig:
   - apiName: listRepositoryBranches
     httpMethod: GET
     uri: 'rest/api/1.0/projects/${projectKey}/repos/${repositorySlug}/branches?details=false&orderBy=MODIFICATION'
+    
+    
+  - apiName: findCurrentProjectName
+    httpMethod: GET
+    uri: 'rest/api/1.0/projects/${projectKey}'
 
   
  
