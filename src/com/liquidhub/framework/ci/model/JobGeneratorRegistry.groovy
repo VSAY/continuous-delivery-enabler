@@ -10,6 +10,7 @@ import com.liquidhub.framework.ci.job.generator.impl.GitflowFinishReleaseJobGene
 import com.liquidhub.framework.ci.job.generator.impl.GitflowStartFeatureJobGenerator
 import com.liquidhub.framework.ci.job.generator.impl.GitflowStartHotfixJobGenerator
 import com.liquidhub.framework.ci.job.generator.impl.GitflowStartReleaseJobGenerator
+import com.liquidhub.framework.ci.job.generator.impl.MilestoneReleaseJobGenerator
 
 
 /**
@@ -28,7 +29,8 @@ enum JobGeneratorRegistry {
 	GITFLOW_RELEASE_START_JOB_GENERATOR(new GitflowStartReleaseJobGenerator()),
 	GITFLOW_RELEASE_FINISH_JOB_GENERATOR(new GitflowFinishReleaseJobGenerator()),
 	GITFLOW_HOTFIX_START_JOB_GENERATOR(new GitflowStartHotfixJobGenerator()),
-	GITFLOW_HOTFIX_FINISH_JOB_GENERATOR(new GitflowFinishHotfixJobGenerator())
+	GITFLOW_HOTFIX_FINISH_JOB_GENERATOR(new GitflowFinishHotfixJobGenerator()),
+	MILESTONE_RELEASE_JOB_GENERATOR(new MilestoneReleaseJobGenerator())
 	
 	
 	static {
