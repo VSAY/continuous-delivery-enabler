@@ -39,6 +39,8 @@ class Configuration {
 	private ConfigurationLevel level
 	
 	private String jobSeederName
+	
+	SCMRepositoryConfigurationInstruction[] scmRepositoryConfigurationInstructions //We won't merge instructions for now. TODO Re-evaluate in future
 
 	private static logger
 
