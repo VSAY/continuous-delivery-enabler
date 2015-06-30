@@ -44,7 +44,7 @@ abstract class BaseGitflowJobGenerationTemplateSupport extends BaseJobGeneration
 			
 			def additionalParams = jobConfig.goalArgs ?: [:] //Are there variables in the job config goals
 
-			ctx.templateEngine.withContentFromTemplate(workspaceRelativeTemplatePath, templateParams << additionalParams)
+			ctx.templateEngine.withContentFromTemplatePath(workspaceRelativeTemplatePath, templateParams << additionalParams)
 		}
 	}
 
