@@ -12,6 +12,7 @@ import com.liquidhub.framework.config.JobGenerationWorkspaceUtils
 import com.liquidhub.framework.config.impl.YAMLConfigurationManager
 import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.providers.stash.GitRepository
+import com.liquidhub.framework.providers.stash.StashConfigurationManager
 import com.liquidhub.framework.scm.model.SCMRepository
 /**
  * Assembles all implementation specific classes into a job generation pipeline. We expect to create one for each CI tool that we support
@@ -53,13 +54,20 @@ class JenkinsJobGenerationPipeline {
 		
 		JobViewSupport viewSupport = new JenkinsJobViewSupport()
 
-		JobGenerationContext ctx = new JobGenerationContext(factory, workspaceUtils,configuration, scmRepository, viewSupport)
+		JobGenerationContext ctx = new JobGenerationContext(factory, factory, workspaceUtils,configuration, scmRepository, viewSupport)
 		
 		logger.info 'Created job generation context'
 
 		JobGeneratorPipelineFilter jobGeneratorFilter = new JobGeneratorPipelineFilter(ctx)
 		
 		logger.info 'JobGeneratorPipelineFilter created successfully'
+		
+		logger.info 'Configuring SCM repository @ '+scmRepository.repoUrl
+		
+		StashConfigurationManager scmConfigurer = new StashConfigurationManager()
+		scmConfigurer.configure(ctx)
+		
+		logger.info 'Finished Configuring SCM repository successfully '
 		
 		logger.info 'Launching job generators'
 

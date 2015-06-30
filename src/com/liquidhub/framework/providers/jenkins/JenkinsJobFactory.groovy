@@ -1,8 +1,11 @@
 package com.liquidhub.framework.providers.jenkins
 
-import com.liquidhub.framework.ci.JobFactory
+import groovy.lang.Closure;
 
-class JenkinsJobFactory implements JobFactory {
+import com.liquidhub.framework.ci.JobFactory
+import com.liquidhub.framework.ci.view.JobViewFactory
+
+class JenkinsJobFactory implements JobFactory,JobViewFactory {
 
 	private def jenkinsDSLFactory
 
@@ -16,9 +19,17 @@ class JenkinsJobFactory implements JobFactory {
 	    jenkinsDSLFactory.freeStyleJob(name, jobConfig)
 	}
 	
+	@Override
+	def view(name, type, Closure viewConfig) {
+		this.jenkinsDSLFactory."${type}"(name, viewConfig)
+	}
+	
 	def getImpl(){
 		jenkinsDSLFactory
 	}
+
+
+	
 	
 	
 }
