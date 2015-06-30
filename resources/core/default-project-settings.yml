@@ -22,7 +22,10 @@ viewConfig:
     
 jobSeederName: frontoffice-job-seeder
     
-    
+viewConfig:
+  sectionViews:
+    projectDescriptionTemplatePath: resources/generic/section-view-description.template
+  
 buildConfig:
    maven: 
       name: maven3
@@ -130,7 +133,7 @@ buildPipelinePreferences:
 - branchName: develop
   pipeline:
   - *continuousIntegrationConfig
-  - *deploymentConfig 
+  
   
 - branchName: master
   pipeline:
@@ -138,5 +141,5 @@ buildPipelinePreferences:
   - *gitflowReleaseBranchConfig
   - *gitflowHotfixBranchConfig
   - *milestoneReleaseConfig  
-  - *deploymentConfig 
+
  
