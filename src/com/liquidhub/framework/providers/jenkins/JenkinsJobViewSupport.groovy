@@ -12,9 +12,36 @@ import com.liquidhub.framework.ci.model.GitflowJobParameter
 import com.liquidhub.framework.ci.model.ParameterListingScript
 import com.liquidhub.framework.ci.view.JobViewSupport
 
+import jenkins.model.Jenkins //TODO This is an ugly jenkins dependency, figure out how to remove it, may be use scripts?
+
 class JenkinsJobViewSupport implements JobViewSupport{
 
 	private static Logger logger
+
+	public def findPreConfiguredRepositoryNamesInProjectView(projectName){
+
+
+		//In the current jenkins instance if you find a view which matches the current project name, return that view. That is our project view
+		def projectView = Jenkins.instance.views.findResult{it.name =~ /${projectName}.*/ ? it : null }
+
+		//Let us find the existing repositories included in that project view we found, default to an empty array
+		def repositoryViews = projectView && projectView.views ? projectView.views.findResults{
+			/*
+			 * We have various kinds of views in a project view. Typically, one view per repository listing its jobs.Some additional views per repository
+			 * showing test results, build monitors, delivery pipelines, etc.
+			 * All, we need to do is figure out the repositories.Once we can figure out the repositores, we can derive everything else since the views
+			 *  associated with a repository are rules embedded into code.
+			 *
+			 *  By convention, we ALWAYS make repository listing of jobs as Sectioned views (look at createView API), so that's why we are interested in list views
+			 *  We cannot do an instanceof test because that would require us to import and resolve a jenkins class which is undesirable
+			 *
+			 */
+			'hudson.plugins.sectioned_view.SectionedView'.equals(it.class.name) ? it.name : null
+		} : []
+
+
+		repositoryViews as Set
+	}
 
 	def defineParameter(GitflowJobParameter parameter){
 
