@@ -38,9 +38,14 @@ abstract class BaseGitflowJobGenerationTemplateSupport extends BaseJobGeneration
 
 		def templateParams =['repositoryName': ctx.repositoryName, 'pluginArgs': jobConfig.goalArgs]
 
-		def workspaceRelativeTemplatePath = [ctx.getVariable(SeedJobParameters.FRAMEWORK_CONFIG_BASE_MOUNT), jobConfig.projectDescriptionTemplatePath].join(File.separator)
+		if(jobConfig.projectDescriptionTemplatePath){ //If there is a project description template provided, use it
 
-		ctx.templateEngine.withContentFromTemplate(workspaceRelativeTemplatePath, templateParams << jobConfig.goalArgs)
+			def workspaceRelativeTemplatePath = [ctx.getVariable(SeedJobParameters.FRAMEWORK_CONFIG_BASE_MOUNT), jobConfig.projectDescriptionTemplatePath].join(File.separator)
+			
+			def additionalParams = jobConfig.goalArgs ?: [:] //Are there variables in the job config goals
+
+			ctx.templateEngine.withContentFromTemplate(workspaceRelativeTemplatePath, templateParams << additionalParams)
+		}
 	}
 
 	@Override
