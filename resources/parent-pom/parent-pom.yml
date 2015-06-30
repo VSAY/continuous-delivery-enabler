@@ -1,4 +1,4 @@
 continuousIntegrationConfig: &continuousIntegrationConfig
-  goals: clean install
+  goals: clean install deploy
   pollSchedule: 
   jobSuffix: -cix
