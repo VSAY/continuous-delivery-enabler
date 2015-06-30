@@ -15,11 +15,14 @@ class MavenSectionConfigurer implements JobSectionConfigurer {
 		def action = jobConfig.goals
 		def commandProperties = jobConfig.goalArgs
 		def pomFile = 'pom.xml'
-		
+		def mavenProfiles = jobConfig?.activeMavenProfiles as String
+				
+		def goalsWithProfile = mavenProfiles ? action+' -P' +mavenProfiles : action
+				
 		return { maven ->
 			mavenInstallation(mvn.name)
 			providedSettings(mvn.settings)
-			goals(action)
+			goals(goalsWithProfile)
 			rootPOM(pomFile)
 			if(commandProperties){
 				properties(commandProperties)
