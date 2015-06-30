@@ -4,11 +4,13 @@ import com.liquidhub.framework.JobSectionConfigurer
 import com.liquidhub.framework.ci.BuildEnvironmentAwareTemplateEngine
 import com.liquidhub.framework.ci.JobFactory
 import com.liquidhub.framework.ci.logger.Logger
+import com.liquidhub.framework.ci.view.JobViewFactory
 import com.liquidhub.framework.ci.view.JobViewSupport
 import com.liquidhub.framework.config.JobGenerationWorkspaceUtils
 import com.liquidhub.framework.config.model.BuildConfig
 import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.providers.jenkins.JenkinsWorkspaceUtils
+import com.liquidhub.framework.scm.RepositoryAPIClientFactory
 import com.liquidhub.framework.scm.model.SCMRepository
 
 /**
@@ -22,6 +24,8 @@ import com.liquidhub.framework.scm.model.SCMRepository
 class JobGenerationContext {
 
 	final JobFactory jobFactory
+	
+	final JobViewFactory viewFactory
 
 	final JobGenerationWorkspaceUtils workspaceUtils
 
@@ -31,7 +35,7 @@ class JobGenerationContext {
 
 	final SCMRepository scmRepository
 
-	final def repositoryName, defaultRegularEmailRecipients,defaultEscalationEmailRecipients,repositoryBranchName, jobSeederName, scmCredentialsId
+	final def repositoryName, defaultRegularEmailRecipients,defaultEscalationEmailRecipients,repositoryBranchName, jobSeederName, scmCredentialsId,scmRepositoryConfigurationInstructions
 	
 	final boolean generatingOnWindows
 
@@ -40,11 +44,14 @@ class JobGenerationContext {
 	final BuildConfig buildToolConfig
 
 	final JobViewSupport viewHelper
+	
+	final def scmAPIClient
 
-	JobGenerationContext(JobFactory jobFactory, JenkinsWorkspaceUtils workspaceUtils,Configuration configuration,SCMRepository scmRepository, JobViewSupport jobViewSupport){
+	JobGenerationContext(JobFactory jobFactory, JobViewFactory viewFactory, JenkinsWorkspaceUtils workspaceUtils,Configuration configuration,SCMRepository scmRepository, JobViewSupport jobViewSupport){
 
 		this.workspaceUtils = workspaceUtils
 		this.jobFactory = jobFactory
+		this.viewFactory = viewFactory
 		this.configuration = configuration
 		this.scmRepository = scmRepository
 		this.viewHelper = jobViewSupport
@@ -59,11 +66,17 @@ class JobGenerationContext {
 		this.jobSeederName = configuration.jobSeederName
 		this.generatingOnWindows = workspaceUtils.isRunningOnWindows()
 		this.scmCredentialsId = buildToolConfig.scm?.credentials
+		this.scmRepositoryConfigurationInstructions=configuration.scmRepositoryConfigurationInstructions
+		this.scmAPIClient = RepositoryAPIClientFactory.getInstance(this)
 	}
 
 
 	public def generateJob(name, jobConfig){
 		jobFactory.job(name, jobConfig)
+	}
+	
+	public def generateView(name, type, Closure viewConfig){
+		viewFactory.view(name, type, viewConfig)
 	}
 
 
