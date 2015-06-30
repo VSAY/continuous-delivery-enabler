@@ -24,9 +24,9 @@ abstract class VersionDeterminationScriptProvider implements EmbeddedScriptProvi
 			versionNamingStrategy = "'"+versionNamingStrategy+"'"
 		}
 
-		getVersionChoicesScript(gitRepoUrl, authorizedUserDigest, versionNamingStrategy)
+		getVersionDeterminationScript(gitRepoUrl, authorizedUserDigest, versionNamingStrategy)
 	}
 
 
-	abstract getVersionChoicesScript(gitRepoUrl, authorizedUserDigest, versionNamingStrategy)
+	abstract getVersionDeterminationScript(gitRepoUrl, authorizedUserDigest, versionNamingStrategy)
 }
