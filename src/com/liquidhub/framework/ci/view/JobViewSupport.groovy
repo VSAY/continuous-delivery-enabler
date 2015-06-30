@@ -6,5 +6,7 @@ import com.liquidhub.framework.ci.model.GitflowJobParameter
 interface JobViewSupport {
 	
 	def defineParameter(GitflowJobParameter parameterDefinition)
+	
+	def findPreConfiguredRepositoryNamesInProjectView(projectName)
 
 }
