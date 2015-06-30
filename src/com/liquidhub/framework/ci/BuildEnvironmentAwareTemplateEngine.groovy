@@ -35,17 +35,38 @@ class BuildEnvironmentAwareTemplateEngine{
 	 * 
 	 * @return the templated content
 	 */
-	def withContentFromTemplate(templatePath, templateParameters){
+	def withContentFromTemplatePath(templatePath, templateParameters){
 
 		def templateContent = withTemplate(templatePath){templateContent ->
 
+			//			if(!templateContent){
+			//				throw new IllegalArgumentException('Failed to load template content. No template was found at the specified path '+templatePath)
+			//			}
+			//
+			//			def params = [:] << buildEnvVars << templateParameters  //Always override provided arguments with generic environment variables
+			//			engine.createTemplate(templateContent).make(params).toString()
+			
 			if(!templateContent){
 				throw new IllegalArgumentException('Failed to load template content. No template was found at the specified path '+templatePath)
 			}
 
-			def params = [:] << buildEnvVars << templateParameters  //Always override provided arguments with generic environment variables 
-			engine.createTemplate(templateContent).make(params).toString()
+			withTemplatedContent(templateContent, templateParameters)
 		}
+	}
+
+	/**
+	 * Load the template content from the specified file path
+	 *
+	 * @param templatePath   The path from which the file has to be loaded, the path provided must be relative to the job generation workspace
+	 * @param templateParameters The variable parameters which need to be substituted in the template
+	 *
+	 * @return the templated content
+	 */
+	def withTemplatedContent(templateContent, templateParameters){
+
+		def params = [:] << buildEnvVars << templateParameters  //Always override provided arguments with generic environment variables
+		engine.createTemplate(templateContent).make(params).toString()
+
 	}
 
 
