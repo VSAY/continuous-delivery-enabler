@@ -12,7 +12,6 @@ configurableJobSections:
  maven: MAVEN_SECTION_CONFIGURER
 
  
- 
 notificationConfig:   
   defaultRecipientEmailSuffix: -recipients@ibx.com
   defaultEscalationEmailSuffix: -escalations@ibx.com  
