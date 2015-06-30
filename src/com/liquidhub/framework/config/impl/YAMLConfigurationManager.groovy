@@ -30,7 +30,7 @@ class YAMLConfigurationManager implements ConfigurationManager{
 	Map buildEnvVars
 
 	private Configuration masterConfiguration
-	
+
 	/**
 	 * Loads the configuration for the specified project , branch combination
 	 *
@@ -39,7 +39,7 @@ class YAMLConfigurationManager implements ConfigurationManager{
 
 	//@Memoized
 	public Configuration loadConfigurationForRepositoryBranch(projectName, branchName) {
-		
+
 		Configuration.logger = logger
 
 		logger.debug 'Enter.loadConfigurationForRepositoryBranch() >> '
@@ -56,7 +56,7 @@ class YAMLConfigurationManager implements ConfigurationManager{
 		//Load the base configuration
 
 		def defaultConfigFilePath = [configBaseMount, ConfigFiles.DEFAULT_PROJECT_SETTINGS.filePath].findAll().join(File.separator)
-		def applicationSettingsDir =  [configBaseMount,ConfigFiles.APPLICATION_SETTINGS_DIR, projectName].findAll().join(File.separator)
+		def applicationSettingsDir =  [configBaseMount, ConfigFiles.APPLICATION_SETTINGS_DIR, projectName].findAll().join(File.separator)
 		def repositoryConfigFilePath = [applicationSettingsDir, projectName+CONFIG_FILE_EXTN].findAll().join(File.separator)
 
 		def repoBranchName = branchName.replace("/","-") //If its a gitflow branch it will be named as feature/*, so convert it to a hyphenated name
@@ -65,12 +65,16 @@ class YAMLConfigurationManager implements ConfigurationManager{
 		updateMasterConfig(defaultConfigFilePath,ConfigurationLevel.DEFAULT, true) //Load default
 		updateMasterConfig(repositoryConfigFilePath, ConfigurationLevel.REPOSITORY) //Override with repository level settings
 		updateMasterConfig(branchConfigFilePath, ConfigurationLevel.BRANCH) //Override with branch level settings
-		
-		return masterConfiguration
 
+		def repositorySettingsFilePath = [configBaseMount, ConfigFiles.REPOSITORY_SETTINGS.filePath].findAll().join(File.separator)
+
+		masterConfiguration.scmRepositoryConfigurationInstructions = this.loadConfiguration(repositorySettingsFilePath).scmRepositoryConfigurationInstructions
+       
+		return masterConfiguration
+       
 	}
 
-	
+
 
 
 	protected updateMasterConfig(settingsFile, configurationLevel, failOnError=false){
@@ -96,12 +100,19 @@ class YAMLConfigurationManager implements ConfigurationManager{
 		}
 		loadedConfiguration.level = configurationLevel
 		masterConfiguration.merge(loadedConfiguration)
-		
-	
+
+
 	}
 
 
-	protected def loadConfiguration(filePath){
+	/**
+	 * Loads the provided file into configuration into a YAML Beans Object
+	 * 
+	 * @param filePath
+	 * 
+	 * @return
+	 */
+	protected Configuration loadConfiguration(filePath){
 
 		YamlReader reader = null
 		try {
@@ -112,11 +123,13 @@ class YAMLConfigurationManager implements ConfigurationManager{
 
 			reader = new YamlReader(configFileStream)
 
-			def loadedConfiguration = (Configuration)reader.read()
+			Configuration loadedConfiguration = (Configuration)reader.read()
 
 			logger.debug 'Loaded settings from '+filePath
 
 			return loadedConfiguration
+			//	}catch(Exception ex){
+			//		ex.printStackTrace()
 		}
 		finally{
 			reader?.close();
