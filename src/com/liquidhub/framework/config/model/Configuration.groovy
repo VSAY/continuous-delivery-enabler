@@ -18,10 +18,10 @@ class Configuration {
 	 * 
 	 */
 
-	JobConfig continuousIntegrationConfig, codeQualityConfig
+	JobConfig continuousIntegrationConfig, codeQualityConfig, milestoneReleaseConfig
 
 	GitflowBranchingConfig gitflowFeatureBranchConfig,gitflowReleaseBranchConfig,gitflowHotfixBranchConfig
-
+	
 	ConfigurableJobSections configurableJobSections
 
 	DeploymentJobConfig deploymentConfig
@@ -52,6 +52,7 @@ class Configuration {
 			'roleConfig',
 			'codeQualityConfig',
 			'continuousIntegrationConfig',
+			'milestoneReleaseConfig',
 			'gitflowFeatureBranchConfig',
 			'gitflowReleaseBranchConfig',
 			'gitflowHotfixBranchConfig',
