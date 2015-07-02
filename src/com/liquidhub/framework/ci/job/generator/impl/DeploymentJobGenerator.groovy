@@ -1,18 +1,5 @@
 package com.liquidhub.framework.ci.job.generator.impl
 
-import com.liquidhub.framework.ci.EmbeddedScriptProvider
-import com.liquidhub.framework.ci.job.generator.JobGenerator
-import com.liquidhub.framework.ci.logger.Logger
-import com.liquidhub.framework.ci.model.JobGenerationContext
-import com.liquidhub.framework.ci.model.ParameterListingScript
-import com.liquidhub.framework.ci.view.ViewElementTypes
-import com.liquidhub.framework.config.model.Configuration
-import com.liquidhub.framework.config.model.DeploymentJobConfig
-import com.liquidhub.framework.config.model.JobConfig
-import com.liquidhub.framework.config.model.RoleConfig
-import com.liquidhub.framework.model.MavenArtifact
-import com.liquidhub.framework.providers.maven.RepositoryArtifactVersionListingScriptProvider
-
 import static com.liquidhub.framework.ci.model.JobPermissions.ItemBuild
 import static com.liquidhub.framework.ci.model.JobPermissions.ItemCancel
 import static com.liquidhub.framework.ci.model.JobPermissions.ItemConfigure
@@ -21,6 +8,23 @@ import static com.liquidhub.framework.ci.model.JobPermissions.ItemRead
 import static com.liquidhub.framework.ci.model.JobPermissions.ItemWorkspace
 import static com.liquidhub.framework.ci.model.JobPermissions.RunDelete
 import static com.liquidhub.framework.ci.model.JobPermissions.RunUpdate
+import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_TEXT
+
+import com.liquidhub.framework.ci.EmbeddedScriptProvider
+import com.liquidhub.framework.ci.job.generator.JobGenerator
+import com.liquidhub.framework.ci.logger.Logger
+import com.liquidhub.framework.ci.model.DeploymentJobParameters;
+import com.liquidhub.framework.ci.model.JobGenerationContext
+import com.liquidhub.framework.ci.model.JobParameter
+import com.liquidhub.framework.ci.model.ParameterListingScript
+import com.liquidhub.framework.ci.view.ViewElementTypes
+import com.liquidhub.framework.config.model.Configuration
+import com.liquidhub.framework.config.model.DeploymentJobConfig
+import com.liquidhub.framework.config.model.JobConfig
+import com.liquidhub.framework.config.model.RoleConfig
+import com.liquidhub.framework.model.MavenArtifact
+import com.liquidhub.framework.providers.jenkins.JenkinsJobViewSupport
+import com.liquidhub.framework.providers.maven.RepositoryArtifactVersionListingScriptProvider
 
 
 class DeploymentJobGenerator implements JobGenerator{
@@ -95,7 +99,7 @@ class DeploymentJobGenerator implements JobGenerator{
 
 
 
-	class DeploymentJobTemplate extends BaseJobGenerationTemplate{
+	private class DeploymentJobTemplate extends BaseJobGenerationTemplate{
 
 		private DeploymentJobConfig environmentConfig
 
@@ -111,7 +115,7 @@ class DeploymentJobGenerator implements JobGenerator{
 
 		@Override
 		protected def determineJobName(JobGenerationContext ctx,JobConfig jobConfig){
-			ctx.scmRepository.repositorySlug+'-deployTo'+environmentConfig.name
+			ctx.scmRepository.repositorySlug+'-deployTo'+environmentConfig.name.capitalize()
 		}
 
 
@@ -143,23 +147,36 @@ class DeploymentJobGenerator implements JobGenerator{
 			def mvnArtifactId = ctx.deployable.artifactId
 			def packaging = ctx.deployable.packaging
 
+			JenkinsJobViewSupport.logger = ctx.logger
+
 
 			DeploymentJobConfig deploymentConfig = ctx.configuration.deploymentConfig
+
+			ctx.logger.debug 'environment config is '+environmentConfig
+
+			def targetClusterName = environmentConfig.targetClusterName
+			def targetCellName=environmentConfig.targetCellName
+			def contextRoot=environmentConfig.appContextRoot
 
 
 			def artifactVersionDescription = 'Pick the artifact version you intend to deploy. By default only the last few versions are displayed. If the drop down list is empty,  it implies that we could not find any released versions for the artifact you intend to deploy. Please contact the release manager'
 			def mavenMetadataDownloadScript = scriptProvider.getScript([baseRepositoryUrl: deploymentConfig.artifactRepositoryUrl,groupId: mvnGroupId,artifactId: mvnArtifactId])
 			def scriptBindings = [releaseVersionCountToDisplay: environmentConfig.releaseVersionCountToDisplay, snapshotVersionCountToDisplay: environmentConfig.snapshotVersionCountToDisplay]
 
-			def jobParameters = [
-				[name:'groupId', description: 'The group id of the artifact which needs to be deployed',elementType: ViewElementTypes.READ_ONLY_TEXT, defaultValue: "'${mvnGroupId}'"],
-				[name:'artifactId', description: 'The unique identifier of the artifact which needs to be deployed.',elementType: ViewElementTypes.READ_ONLY_TEXT, defaultValue: "'${mvnArtifactId}'"],
-				[name:'packaging', description: 'The packaging of the artifact to be deployed.',elementType: ViewElementTypes.READ_ONLY_TEXT, defaultValue: "'${packaging}'"],
-				[name:'artifactVersion', description: artifactVersionDescription, elementType: ViewElementTypes.SINGLE_SELECT_CHOICES, valueListingScript: new ParameterListingScript(text: mavenMetadataDownloadScript, bindings: scriptBindings)]
+			def deploymentJobParameters = [
+				DeploymentJobParameters.GROUP_ID.properties << [defaultValue:  "'${mvnGroupId}'"],
+				DeploymentJobParameters.ARTIFACT_ID.properties << [defaultValue: "'${mvnArtifactId}'"],
+				DeploymentJobParameters.PACKAGING.properties << [defaultValue: "'${packaging}'"],
+				DeploymentJobParameters.ARTIFACT_VERSION.properties << [valueListingScript: new ParameterListingScript(text: mavenMetadataDownloadScript, bindings: scriptBindings)],
+				DeploymentJobParameters.TARGET_CLUSTER_NAME.properties << [defaultValue: "'${targetClusterName}'"],
+				DeploymentJobParameters.TARGET_CELL_NAME.properties << [defaultValue: "'${targetCellName}'"],
+				DeploymentJobParameters.APP_CONTEXT_ROOT.properties << [defaultValue: "'${contextRoot}'"],
+				DeploymentJobParameters.REPLACEMENT_VERSION.properties
 			]
+
 			def parameterDefinitions = {}
-			jobParameters.reverse().each{jobParameter -> parameterDefinitions = parameterDefinitions <<  ctx.viewHelper.defineParameter(jobParameter) }
-			
+			deploymentJobParameters.reverse().each{ parameterDefinitions = parameterDefinitions <<  ctx.viewHelper.defineParameter(it) }
+
 			return parameterDefinitions
 		}
 	}
