@@ -8,10 +8,9 @@ import static com.liquidhub.framework.ci.view.ViewElementTypes.TEXT
 import static java.util.UUID.randomUUID
 
 import com.liquidhub.framework.ci.logger.Logger
-import com.liquidhub.framework.ci.model.GitflowJobParameter
+import com.liquidhub.framework.ci.model.JobParameter
 import com.liquidhub.framework.ci.model.ParameterListingScript
 import com.liquidhub.framework.ci.view.JobViewSupport
-
 import jenkins.model.Jenkins //TODO This is an ugly jenkins dependency, figure out how to remove it, may be use scripts?
 
 class JenkinsJobViewSupport implements JobViewSupport{
@@ -43,12 +42,11 @@ class JenkinsJobViewSupport implements JobViewSupport{
 		repositoryViews as Set
 	}
 
-	def defineParameter(GitflowJobParameter parameter){
+	def defineParameter(parameter){
 
 		def name = parameter.name
 		def description = parameter?.description
-		boolean editable = parameter?.editable
-
+	
 		def parameterClosure = {}
 
 		switch(parameter.elementType){
@@ -72,7 +70,8 @@ class JenkinsJobViewSupport implements JobViewSupport{
 				break
 
 			case TEXT:
-				parameterClosure =  createSimpleTextBox(name, description, parameter.valueListingScript, true)//true represents editable
+				def valueListingScript = parameter.valueListingScript?: new ParameterListingScript(text:parameter.defaultValue)
+				parameterClosure =  createSimpleTextBox(name, description, valueListingScript, true)//true represents editable
 				break
 		}
 
