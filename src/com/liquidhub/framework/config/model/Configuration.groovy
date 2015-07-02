@@ -73,7 +73,7 @@ class Configuration {
 
 			this[it] = merge(src, target)
 
-			logger.debug it +' @ '+ thatConfig.level+': '+this[it]
+//			logger.debug it +' @ '+ thatConfig.level+': '+this[it]
 		}
 
 	}
