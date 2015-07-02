@@ -56,7 +56,7 @@ class YAMLConfigurationManager implements ConfigurationManager{
 		//Load the base configuration
 
 		def defaultConfigFilePath = [configBaseMount, ConfigFiles.DEFAULT_PROJECT_SETTINGS.filePath].findAll().join(File.separator)
-		def applicationSettingsDir =  [configBaseMount, ConfigFiles.APPLICATION_SETTINGS_DIR, projectName].findAll().join(File.separator)
+		def applicationSettingsDir =  [configBaseMount, ConfigFiles.APPLICATION_SETTINGS_DIR.filePath, projectName].findAll().join(File.separator)
 		def repositoryConfigFilePath = [applicationSettingsDir, projectName+CONFIG_FILE_EXTN].findAll().join(File.separator)
 
 		def repoBranchName = branchName.replace("/","-") //If its a gitflow branch it will be named as feature/*, so convert it to a hyphenated name
