@@ -7,6 +7,7 @@ import com.liquidhub.framework.ci.model.JobGenerationContext
 import com.liquidhub.framework.ci.model.JobGeneratorPipelineFilter
 import com.liquidhub.framework.ci.model.SeedJobParameters
 import com.liquidhub.framework.ci.view.JobViewSupport
+import com.liquidhub.framework.ci.view.generator.impl.NestedViewGenerator
 import com.liquidhub.framework.config.ConfigurationManager
 import com.liquidhub.framework.config.JobGenerationWorkspaceUtils
 import com.liquidhub.framework.config.impl.YAMLConfigurationManager
@@ -29,16 +30,14 @@ class JenkinsJobGenerationPipeline {
 		JobFactory factory = new JenkinsJobFactory(dslFactory) //This is the job generator factory
 		
 		logger.info 'Job factory initialized '
-		
-		JobGenerationWorkspaceUtils workspaceUtils = new JenkinsWorkspaceUtils(dslFactory) //A utility which knows how to read files from a workspace
-		
+			
 		logger.info 'Workspace utilities initialized '
 
 		YAMLConfigurationManager.logger = logger
 
 		def bindingVariables = binding.getVariables() //A list of variables which were bound from the seed job to this framework
 
-		ConfigurationManager configurationManager = new YAMLConfigurationManager(workspaceUtils: workspaceUtils, buildEnvVars : bindingVariables)
+		ConfigurationManager configurationManager = new YAMLConfigurationManager(workspaceUtils: factory, buildEnvVars : bindingVariables)
 
 		logger.info 'Analyzing scm repository information'
 
@@ -46,7 +45,7 @@ class JenkinsJobGenerationPipeline {
 		
 		logger.info 'Analyzed git repository information'
 
-		Configuration configuration =  configurationManager.loadConfigurationForRepositoryBranch(scmRepository.getProjectKey(), scmRepository.getRepoBranchName())
+		Configuration configuration =  configurationManager.loadConfigurationForRepositoryBranch(scmRepository.getRepositorySlug(), scmRepository.getRepoBranchName())
 		
 		logger.info 'Finished loading configuration '
 
@@ -54,7 +53,7 @@ class JenkinsJobGenerationPipeline {
 		
 		JobViewSupport viewSupport = new JenkinsJobViewSupport()
 
-		JobGenerationContext ctx = new JobGenerationContext(factory, factory, workspaceUtils,configuration, scmRepository, viewSupport)
+		JobGenerationContext ctx = new JobGenerationContext(factory, factory, factory,configuration, scmRepository, viewSupport)
 		
 		logger.info 'Created job generation context'
 
@@ -74,5 +73,13 @@ class JenkinsJobGenerationPipeline {
 		jobGeneratorFilter.configuredJobGenerators*.generateJob(ctx)
 		
 		logger.info 'Job configuration generated successfully'
+		
+		logger.info 'Generating views'
+		
+		NestedViewGenerator viewGenerator = new NestedViewGenerator()
+		
+		viewGenerator.generateView(ctx)
+		
+		logger.info 'Finished generating views'
 	}
 }
