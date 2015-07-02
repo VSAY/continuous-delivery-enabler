@@ -58,6 +58,17 @@ scmRepositoryConfigurationInstructions:
         "users": ["srv-cibuilder"]
       }
       
+  - apiName: restrictTaggingPrevileges
+    httpMethod: POST
+    uri: rest/branch-permissions/1.0/projects/${projectKey}/repos/${repositorySlug}/restricted
+    autoInvoke: true
+    payload: |
+      {
+        "type": "PATTERN",
+        "value": "tags/",
+        "users": ["srv-cibuilder"]
+      }
+      
   - apiName: listRepositoryBranches
     httpMethod: GET
     uri: 'rest/api/1.0/projects/${projectKey}/repos/${repositorySlug}/branches?details=false&orderBy=MODIFICATION'
