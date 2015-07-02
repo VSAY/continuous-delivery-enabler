@@ -1,6 +1,7 @@
 package com.liquidhub.framework.ci.view.generator.impl
 
 import com.liquidhub.framework.ci.model.JobGenerationContext
+import com.liquidhub.framework.ci.model.SeedJobParameters
 import com.liquidhub.framework.ci.view.generator.ViewGenerator
 import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.config.model.GitflowBranchingConfig
@@ -46,8 +47,12 @@ class SectionedJobViewGenerator implements ViewGenerator{
 		def sectionViewConfiguration = ctx.configuration.viewConfig.sectionViews
 
 		def templateParams = [repositoryName: repositoryName, generationDateTime: new Date()]
+		
+		def configBaseMount = ctx.getVariable(SeedJobParameters.FRAMEWORK_CONFIG_BASE_MOUNT)
+		
+		def sectionViewTemplateFilePath = [configBaseMount, sectionViewConfiguration.projectDescriptionTemplatePath].join(File.separator)
 
-		def sectionViewDescription = ctx.templateEngine.withContentFromTemplatePath(sectionViewConfiguration.projectDescriptionTemplatePath, templateParams)
+		def sectionViewDescription = ctx.templateEngine.withContentFromTemplatePath(sectionViewTemplateFilePath, templateParams)
 
 
 		return {
