@@ -1,11 +1,11 @@
 package com.liquidhub.framework.ci.view
 
-import com.liquidhub.framework.ci.model.GitflowJobParameter
+import com.liquidhub.framework.ci.model.JobParameter
 
 
 interface JobViewSupport {
 	
-	def defineParameter(GitflowJobParameter parameterDefinition)
+	def defineParameter(parameterDefinition)
 	
 	def findPreConfiguredRepositoryNamesInProjectView(projectName)
 
