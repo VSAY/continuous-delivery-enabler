@@ -9,7 +9,8 @@ import com.liquidhub.framework.ci.view.JobViewSupport
 import com.liquidhub.framework.config.JobGenerationWorkspaceUtils
 import com.liquidhub.framework.config.model.BuildConfig
 import com.liquidhub.framework.config.model.Configuration
-import com.liquidhub.framework.providers.jenkins.JenkinsWorkspaceUtils
+import com.liquidhub.framework.model.MavenArtifact
+import com.liquidhub.framework.providers.maven.MavenArtifactMetadataInfoProvider;
 import com.liquidhub.framework.scm.RepositoryAPIClientFactory
 import com.liquidhub.framework.scm.model.SCMRepository
 
@@ -46,8 +47,10 @@ class JobGenerationContext {
 	final JobViewSupport viewHelper
 	
 	final def scmAPIClient
+	
+	final MavenArtifact deployable,configurationArtifact
 
-	JobGenerationContext(JobFactory jobFactory, JobViewFactory viewFactory, JenkinsWorkspaceUtils workspaceUtils,Configuration configuration,SCMRepository scmRepository, JobViewSupport jobViewSupport){
+	JobGenerationContext(JobFactory jobFactory, JobViewFactory viewFactory, JobGenerationWorkspaceUtils workspaceUtils,Configuration configuration,SCMRepository scmRepository, JobViewSupport jobViewSupport){
 
 		this.workspaceUtils = workspaceUtils
 		this.jobFactory = jobFactory
@@ -68,6 +71,10 @@ class JobGenerationContext {
 		this.scmCredentialsId = buildToolConfig.scm?.credentials
 		this.scmRepositoryConfigurationInstructions=configuration.scmRepositoryConfigurationInstructions
 		this.scmAPIClient = RepositoryAPIClientFactory.getInstance(this)
+		
+		MavenArtifactMetadataInfoProvider deploymentInfoProvider = new MavenArtifactMetadataInfoProvider(this)
+		this.deployable = deploymentInfoProvider.deployable
+		this.configurationArtifact = deploymentInfoProvider.configurationArtifact
 	}
 
 
@@ -84,10 +91,7 @@ class JobGenerationContext {
 		configuration.configurableJobSections.provider(providerKey)
 	}
 
-	JobSectionConfigurer cmdBuildStepConfigurer(){
-		configuration.configurableJobSections.provider('os')
-	}
-
+	
 	JobSectionConfigurer mavenBuildStepConfigurer(){
 		configuration.configurableJobSections.provider('maven')
 	}
@@ -96,6 +100,9 @@ class JobGenerationContext {
 	def getVariable(SeedJobParameters jobParameter){
 		configuration.buildEnvProperties[jobParameter.bindingName]
 	}
-
 	
+
+	public boolean hasDeployable(){
+		deployable != null
+	}	
 }
