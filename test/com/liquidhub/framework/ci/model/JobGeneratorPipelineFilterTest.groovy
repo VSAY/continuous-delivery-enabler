@@ -19,7 +19,7 @@ class JobGeneratorPipelineFilterTest {
 		def scmRepository  = { repoBranchName: 'master' } as SCMRepository
 
 		def buildPipelinePreferences = [
-			[branchName: 'master', 'pipeline':['a':'b', generatorClass:ContinuousIntegrationJobGenerator.class.name]],
+			[branchName: 'master', 'pipeline':['a':'b', generatorClass: ContinuousIntegrationJobGenerator.class.name]],
 			[branchName: 'develop', 'pipeline':['1':'2', generatorClass:'FakeJobGeneratorClass']]
 		]
 
