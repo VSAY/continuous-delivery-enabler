@@ -12,6 +12,8 @@ package com.liquidhub.framework.ci
  */
 interface JobFactory {
 	
+	def job(name, type, Closure jobConfig)
+	
 	def job(name, Closure jobConfig)
 	
 	def getImpl()
