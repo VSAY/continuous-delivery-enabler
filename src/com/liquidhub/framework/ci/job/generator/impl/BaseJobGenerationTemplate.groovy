@@ -45,7 +45,7 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 	 *
 	 */
 	@Override
-	public Object generateJob(JobGenerationContext ctx) {
+	public def generateJob(JobGenerationContext ctx) {
 
 		Logger logger = JobGenerationContext.logger
 
