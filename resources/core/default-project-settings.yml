@@ -21,11 +21,7 @@ viewConfig:
     projectDescriptionTemplatePath: resources/core/section-view-description.template
     
 jobSeederName: frontoffice-job-seeder
-    
-viewConfig:
-  sectionViews:
-    projectDescriptionTemplatePath: resources/generic/section-view-description.template
-  
+      
 buildConfig:
    maven: 
       name: maven3
@@ -117,24 +113,25 @@ gitflowHotfixBranchConfig: &gitflowHotfixBranchConfig
   
 deploymentConfig: &deploymentConfig
   artifactRepositoryUrl: http://repo.test.ibx.com/
-  projectDescriptionTemplatePath: resources/core/default-deployment-project-description.template
   appConfigurationArtifactIdentificationPattern: .*conf.*
-  generatorClass: com.ibx.frontoffice.jenkins.job.generator.impl.DeploymentJobGenerator
+  generatorClass: com.liquidhub.framework.ci.job.generator.impl.DeploymentJobGenerator
   releaseVersionCountToDisplay: 5
   snapshotVersionCountToDisplay: 5
+  deploymentScriptPath: resources/core/default-deployment-script.sh
+   
       
 buildDiscardPolicy: 
   daysToKeep: 2
   numToKeep: 7
-  artifactDaysToKeep: 1
-  artifactNumToKeep: 2
+  artifactDaysToKeep: 3
+  artifactNumToKeep: 7
     
 buildPipelinePreferences:
 - branchName: develop
   pipeline:
   - *continuousIntegrationConfig
-  
-  
+  - *deploymentConfig
+   
 - branchName: master
   pipeline:
   - *gitflowFeatureBranchConfig
