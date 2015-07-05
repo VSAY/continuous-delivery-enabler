@@ -13,11 +13,10 @@ import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_TEXT
 import com.liquidhub.framework.ci.EmbeddedScriptProvider
 import com.liquidhub.framework.ci.job.generator.JobGenerator
 import com.liquidhub.framework.ci.logger.Logger
-import com.liquidhub.framework.ci.model.DeploymentJobParameters;
+import com.liquidhub.framework.ci.model.DeploymentJobParameters
 import com.liquidhub.framework.ci.model.JobGenerationContext
-import com.liquidhub.framework.ci.model.JobParameter
 import com.liquidhub.framework.ci.model.ParameterListingScript
-import com.liquidhub.framework.ci.view.ViewElementTypes
+import com.liquidhub.framework.ci.model.SeedJobParameters
 import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.config.model.DeploymentJobConfig
 import com.liquidhub.framework.config.model.JobConfig
@@ -178,6 +177,29 @@ class DeploymentJobGenerator implements JobGenerator{
 			deploymentJobParameters.reverse().each{ parameterDefinitions = parameterDefinitions <<  ctx.viewHelper.defineParameter(it) }
 
 			return parameterDefinitions
+		}
+		
+		/**
+		 * Configure the build steps for this job, by default we assume a maven step and directly use the goals configured
+		 *
+		 *
+		 * @param ctx
+		 * @param jobConfig
+		 *
+		 * @return
+		 */
+		@Override
+		protected def configureSteps(JobGenerationContext ctx, JobConfig jobConfig){
+			
+			
+			
+			def deploymentScriptPath = [ctx.getVariable(SeedJobParameters.FRAMEWORK_CONFIG_BASE_MOUNT), environmentConfig.deploymentScriptPath].join(File.separator)
+			
+			def deploymentScript = ctx.workspaceUtils.fileReader(deploymentScriptPath)
+			
+			return {
+				shell(deploymentScript)
+			}
 		}
 	}
 }
