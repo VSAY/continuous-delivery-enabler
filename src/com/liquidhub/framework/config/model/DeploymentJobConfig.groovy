@@ -15,7 +15,7 @@ class DeploymentJobConfig extends JobConfig {
 
 	def servers //An array of servers for the deployment environment
 
-	def deploymentScript //The location of the deployment script which can be used to trigger deployments
+	def deploymentScriptPath //The location of the deployment script which can be used to trigger deployments
 
 	def artifactRepositoryUrl //The URL from where the deployment artifacts can be downloaded
 
@@ -65,6 +65,14 @@ class DeploymentJobConfig extends JobConfig {
 
 	}
 
+	/**
+	 * Sets the environment specific deployment configurations into this parent configuration.
+	 * Allows us to set the parent-child relationship of deployment configurations
+	 * 
+	 * @param environments
+	 * 
+	 * @return
+	 */
 	public def setEnvironments(DeploymentJobConfig[] environments){
 		environments.each{ it.parentConfig = this}
 		this.environments=environments
