@@ -4,7 +4,7 @@ import java.util.Map
 
 import com.liquidhub.framework.ci.EmbeddedScriptProvider;
 
-class RepositoryArtifactVersionListingScriptProvider implements EmbeddedScriptProvider {
+class NexusRepositoryArtifactVersionListingScriptProvider implements EmbeddedScriptProvider {
 
 
 	@Override
