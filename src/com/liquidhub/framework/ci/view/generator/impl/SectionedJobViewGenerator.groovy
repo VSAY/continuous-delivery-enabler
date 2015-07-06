@@ -63,6 +63,8 @@ class SectionedJobViewGenerator implements ViewGenerator{
 			sections{
 
 				repositoryBranches.each{repositoryBranch ->
+					
+					ctx.logger.debug 'repository branch is '+repositoryBranch
 
 					//Gitflow jobs are named with a '/', our job names switch to hyphens, we need to capture such jobs under the branch
 					def repositoryBranchHyphenatedId = "${repositoryBranch.displayId}".replace("/","-")
