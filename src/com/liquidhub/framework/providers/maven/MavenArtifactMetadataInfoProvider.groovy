@@ -19,9 +19,9 @@ import com.liquidhub.framework.model.MavenArtifact
 class MavenArtifactMetadataInfoProvider {
 
 	XmlParser xmlParser = new XmlParser()
-	
+
 	MavenArtifact deployable
-	
+
 	MavenArtifact configurationArtifact
 
 	private static Logger logger
@@ -55,9 +55,6 @@ class MavenArtifactMetadataInfoProvider {
 
 		def groupId = pomMetadata?.groupId ? pomMetadata.groupId.text() : pomMetadata?.parent?.groupId.text()
 
-		deployable = new MavenArtifact(groupId: groupId, artifactId: pomMetadata.artifactId.text())
-
-
 		logger.debug 'Analyzing pom @ '+projectPath + File.separator +POM_FILE_NAME
 
 		def thisArtifactPackaging = pomMetadata?.packaging  ? pomMetadata.packaging.text() : 'jar' //Switch to maven default when packaging is not specified
@@ -65,7 +62,7 @@ class MavenArtifactMetadataInfoProvider {
 		switch(thisArtifactPackaging){
 
 			case ['ear', 'war']:
-				deployable.packaging = pomMetadata.packaging.text()
+				deployable = new MavenArtifact(groupId: groupId, artifactId: pomMetadata.artifactId.text(), packaging: pomMetadata.packaging.text())
 				logger.debug 'Found deployable with following characteristics '+deployable
 				return deployable
 
@@ -118,8 +115,8 @@ class MavenArtifactMetadataInfoProvider {
 		def pomFilePath = projectPath.trim() == '' ? POM_FILE_NAME : projectPath+File.separator+POM_FILE_NAME
 
 		try{
-			pomFilePath = context.getVariable(SeedJobParameters.TARGET_PROJECT_BASE_MOUNT)+File.separator+pomFilePath 
-			
+			pomFilePath = context.getVariable(SeedJobParameters.TARGET_PROJECT_BASE_MOUNT)+File.separator+pomFilePath
+
 			def pomContent = context.workspaceUtils.fileReader(pomFilePath)
 
 			xmlParser.parseText(pomContent)
