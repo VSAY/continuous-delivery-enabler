@@ -23,7 +23,7 @@ import com.liquidhub.framework.config.model.JobConfig
 import com.liquidhub.framework.config.model.RoleConfig
 import com.liquidhub.framework.model.MavenArtifact
 import com.liquidhub.framework.providers.jenkins.JenkinsJobViewSupport
-import com.liquidhub.framework.providers.maven.RepositoryArtifactVersionListingScriptProvider
+import com.liquidhub.framework.providers.maven.NexusRepositoryArtifactVersionListingScriptProvider
 
 
 class DeploymentJobGenerator implements JobGenerator{
@@ -34,8 +34,6 @@ class DeploymentJobGenerator implements JobGenerator{
 	private static final String TARGET_SERVER_NAME = 'targetServer', MAVEN_ARTIFACT_VERSION='artifactVersion'
 
 	private static final String ACTIVE_ENV_CONFIG = 'env'
-
-	final EmbeddedScriptProvider scriptProvider = new RepositoryArtifactVersionListingScriptProvider()
 
 	@Override
 	public def generateJob(JobGenerationContext ctx) {
@@ -156,7 +154,8 @@ class DeploymentJobGenerator implements JobGenerator{
 			def targetClusterName = environmentConfig.targetClusterName
 			def targetCellName=environmentConfig.targetCellName
 			def contextRoot=environmentConfig.appContextRoot
-
+			
+			EmbeddedScriptProvider scriptProvider = deploymentConfig.getDeploymentArtifactListingProvider()
 
 			def artifactVersionDescription = 'Pick the artifact version you intend to deploy. By default only the last few versions are displayed. If the drop down list is empty,  it implies that we could not find any released versions for the artifact you intend to deploy. Please contact the release manager'
 			def mavenMetadataDownloadScript = scriptProvider.getScript([baseRepositoryUrl: deploymentConfig.artifactRepositoryUrl,groupId: mvnGroupId,artifactId: mvnArtifactId])
