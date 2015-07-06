@@ -1,5 +1,7 @@
 package com.liquidhub.framework.config.model
 
+import com.liquidhub.framework.ci.model.MavenArtifactRepositoryRegistry;
+
 import groovy.transform.ToString
 
 /**
@@ -16,6 +18,8 @@ class DeploymentJobConfig extends JobConfig {
 	def servers //An array of servers for the deployment environment
 
 	def deploymentScriptPath //The location of the deployment script which can be used to trigger deployments
+
+	def artifactRepository //The Artifact Repository - as supported by the framework. Any value configured here MUST be included in MavenArtifactRepositoryRegistry
 
 	def artifactRepositoryUrl //The URL from where the deployment artifacts can be downloaded
 
@@ -95,6 +99,15 @@ class DeploymentJobConfig extends JobConfig {
 	}
 
 
-
-
+	public def getDeploymentArtifactListingProvider(){
+		try{
+			def mavenArtifactRepository = MavenArtifactRepositoryRegistry.valueOf(artifactRepository)
+			mavenArtifactRepository.instance
+		}catch(IllegalArgumentException iae){
+			throw new RuntimeException('Illegal configuration value for #{deploymentConfig.artifactRepository}. Expected one of '+MavenArtifactRepositoryRegistry.values()+' are allowed but found '+artifactRepository)
+		}
+	}
 }
+
+
+
