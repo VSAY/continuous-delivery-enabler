@@ -47,9 +47,9 @@ class SectionedJobViewGenerator implements ViewGenerator{
 		def sectionViewConfiguration = ctx.configuration.viewConfig.sectionViews
 
 		def templateParams = [repositoryName: repositoryName, generationDateTime: new Date()]
-		
+
 		def configBaseMount = ctx.getVariable(SeedJobParameters.FRAMEWORK_CONFIG_BASE_MOUNT)
-		
+
 		def sectionViewTemplateFilePath = [configBaseMount, sectionViewConfiguration.projectDescriptionTemplatePath].join(File.separator)
 
 		def sectionViewDescription = ctx.templateEngine.withContentFromTemplatePath(sectionViewTemplateFilePath, templateParams)
@@ -62,14 +62,6 @@ class SectionedJobViewGenerator implements ViewGenerator{
 
 			sections{
 
-				listView listViewGenerator.createView("DeploymentJobs(${repositoryName})", "$repositoryName-deploy.*")
-
-				listView listViewGenerator.createView("ManageFeatures(${repositoryName})", gitflowJobRegExpConfig[FEATURE_JOB_KEY])
-
-				listView listViewGenerator.createView("ManageReleases(${repositoryName})",gitflowJobRegExpConfig[RELEASE_JOB_KEY])
-
-				listView listViewGenerator.createView("ManageEmergencyHotfixes(${repositoryName})", gitflowJobRegExpConfig[HOTFIX_JOB_KEY])
-
 				repositoryBranches.each{repositoryBranch ->
 
 					//Gitflow jobs are named with a '/', our job names switch to hyphens, we need to capture such jobs under the branch
@@ -78,6 +70,15 @@ class SectionedJobViewGenerator implements ViewGenerator{
 					listView listViewGenerator.createView("branch:${repositoryBranch.displayId}", "$repositoryName-${repositoryBranchHyphenatedId}-.*")
 
 				}
+
+				listView listViewGenerator.createView("DeploymentJobs(${repositoryName})", "$repositoryName-deploy.*")
+
+				listView listViewGenerator.createView("ManageFeatures(${repositoryName})", gitflowJobRegExpConfig[FEATURE_JOB_KEY])
+
+				listView listViewGenerator.createView("ManageReleases(${repositoryName})",gitflowJobRegExpConfig[RELEASE_JOB_KEY])
+
+				listView listViewGenerator.createView("ManageEmergencyHotfixes(${repositoryName})", gitflowJobRegExpConfig[HOTFIX_JOB_KEY])
+
 
 			}
 
@@ -100,7 +101,7 @@ class SectionedJobViewGenerator implements ViewGenerator{
 		if(additionalRegExp){
 			"(${startJobExpr}|${finishJobExpr}|${additionalRegExp})$repositoryName"
 		}else{
-		"(${startJobExpr}|${finishJobExpr})$repositoryName"
+			"(${startJobExpr}|${finishJobExpr})$repositoryName"
 		}
 
 	}
