@@ -113,13 +113,13 @@ gitflowHotfixBranchConfig: &gitflowHotfixBranchConfig
   
 deploymentConfig: &deploymentConfig
   artifactRepositoryUrl: http://repo.test.ibx.com/
+  artifactRepository: NEXUS
   appConfigurationArtifactIdentificationPattern: .*conf.*
   generatorClass: com.liquidhub.framework.ci.job.generator.impl.DeploymentJobGenerator
   releaseVersionCountToDisplay: 5
   snapshotVersionCountToDisplay: 5
   deploymentScriptPath: resources/core/default-deployment-script.sh
-   
-      
+       
 buildDiscardPolicy: 
   daysToKeep: 2
   numToKeep: 7
@@ -130,13 +130,13 @@ buildPipelinePreferences:
 - branchName: develop
   pipeline:
   - *continuousIntegrationConfig
-  - *deploymentConfig
-   
+ 
 - branchName: master
   pipeline:
   - *gitflowFeatureBranchConfig
   - *gitflowReleaseBranchConfig
   - *gitflowHotfixBranchConfig
-  - *milestoneReleaseConfig  
+  - *milestoneReleaseConfig
+  - *deploymentConfig  
 
  
