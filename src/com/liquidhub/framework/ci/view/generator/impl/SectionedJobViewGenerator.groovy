@@ -71,7 +71,9 @@ class SectionedJobViewGenerator implements ViewGenerator{
 
 				}
 
-				listView listViewGenerator.createView("DeploymentJobs(${repositoryName})", "$repositoryName-deploy.*")
+				if(ctx.hasDeployable()){ //Attach deployment jobs only if there are deployment capabilities
+					listView listViewGenerator.createView("DeploymentJobs(${repositoryName})", "$repositoryName-deploy.*")
+				}
 
 				listView listViewGenerator.createView("ManageFeatures(${repositoryName})", gitflowJobRegExpConfig[FEATURE_JOB_KEY])
 
