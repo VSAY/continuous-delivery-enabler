@@ -45,7 +45,7 @@ class JenkinsJobGenerationPipeline {
 		
 		logger.info 'Analyzed git repository information'
 
-		Configuration configuration =  configurationManager.loadConfigurationForRepositoryBranch(scmRepository.getRepositorySlug(), scmRepository.getRepoBranchName())
+		Configuration configuration =  configurationManager.loadConfigurationForRepositoryBranch(scmRepository.getRepositorySlug(),'', scmRepository.getRepoBranchName())
 		
 		logger.info 'Finished loading configuration '
 
