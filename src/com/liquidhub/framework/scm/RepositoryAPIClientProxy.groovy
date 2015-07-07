@@ -25,41 +25,42 @@ class RepositoryAPIClientProxy{
 		def repositoryConfigurationInstructions  = context.scmRepositoryConfigurationInstructions
 		def authHeader = [Authorization: 'Basic '+scmRepository.authorizedUserDigest]
 
-		def buildEnvVars = [:]
-		buildEnvVars << context.configuration.buildEnvProperties << scmRepository.properties
+		def allParams = [:] << context.configuration.buildEnvProperties << scmRepository.properties
+		
+		restClient = new RESTClient(baseGitUrl, ContentType.JSON)
 
-		repositoryConfigurationInstructions.each{SCMRepositoryConfigurationInstruction apiConfiguration ->
+		RepositoryAPIClient.metaClass.methodMissing = {name, methodArgs ->
 
-			def uri = context.templateEngine.withTemplatedContent(apiConfiguration.uri, buildEnvVars)
+			methodArgs.each{it instanceof Map ? allParams << it : allParams}
 
-			def args = [uri: baseGitUrl+'/'+uri,headers: authHeader]
+			SCMRepositoryConfigurationInstruction apiConfiguration = repositoryConfigurationInstructions.findResult{it.apiName == name ? it : null}
+
+			if(!apiConfiguration){
+				throw new MissingMethodException(name, RepositoryAPIClient.class, methodArgs)
+			}
+
+
+			def uri = context.templateEngine.withTemplatedContent(apiConfiguration.uri, allParams)
+
+			def httpArgs = [uri: baseGitUrl+'/'+uri,headers: authHeader]
 
 			def httpMethod = apiConfiguration.httpMethod.toLowerCase()
 
 			if('get' == httpMethod){
-				args.query = apiConfiguration.queryParams
+				httpArgs.query = apiConfiguration.queryParams
 			}else{
 				def parameterizedPayload = apiConfiguration?.payload?.replaceAll("\\s+","")
-				def payload = parameterizedPayload ? context.templateEngine.withTemplatedContent(parameterizedPayload, buildEnvVars) : ''
-				args.body =payload
+				def payload = parameterizedPayload ? context.templateEngine.withTemplatedContent(parameterizedPayload, allParams) : ''
+				httpArgs.body =payload
 			}
 
 			def apiName = apiConfiguration.apiName
 
-			//Create new API's on the REST client, so we can call them later
-			RepositoryAPIClient.metaClass[apiName] << {
-				->
-				def response = restClient."${httpMethod}"(args)
-
-			}
+			restClient."${httpMethod}"(httpArgs)
 
 		}
 
-		this.target = new RepositoryAPIClient(baseGitUrl, ContentType.JSON)
-
-
-
-
+		this.target = new RepositoryAPIClient()
 
 	}
 
@@ -71,11 +72,14 @@ class RepositoryAPIClientProxy{
 
 	protected class RepositoryAPIClient{
 
-		public RepositoryAPIClient(baseUrl, contentType){
-			restClient = new RESTClient(baseUrl, contentType)
-		}
+
+
+
+
 
 	}
+
+
 
 
 }
