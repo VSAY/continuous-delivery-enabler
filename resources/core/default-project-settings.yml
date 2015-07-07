@@ -20,7 +20,7 @@ viewConfig:
   sectionViews:
     projectDescriptionTemplatePath: resources/core/section-view-description.template
     
-jobSeederName: frontoffice-job-seeder
+jobSeederName: frontoffice-ci-enabler
       
 buildConfig:
    maven: 
@@ -60,7 +60,7 @@ milestoneReleaseConfig: &milestoneReleaseConfig
 gitflowFeatureBranchConfig: &gitflowFeatureBranchConfig
   startConfig:
     goals: clean install test jgitflow:feature-start -B -Pgitflow
-    goalArgs: {featureName: $featureName,startCommit: $startCommit}
+    goalArgs: {featureName: $featureName}
     jobPrefix: StartFeature_
     projectDescriptionTemplatePath: resources/core/gitflow-start-feature-description.template
     generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowStartFeatureJobGenerator
@@ -76,7 +76,7 @@ gitflowFeatureBranchConfig: &gitflowFeatureBranchConfig
 gitflowReleaseBranchConfig: &gitflowReleaseBranchConfig
   startConfig:
     goals: clean install test jgitflow:release-start -B -Pgitflow,ci
-    goalArgs: {autoVersionSubmodules: true, startCommit: $startCommit}
+    goalArgs: {autoVersionSubmodules: true}
     jobPrefix: StartRelease_
     projectDescriptionTemplatePath: resources/core/gitflow-start-release-description.template
     generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowStartReleaseJobGenerator
