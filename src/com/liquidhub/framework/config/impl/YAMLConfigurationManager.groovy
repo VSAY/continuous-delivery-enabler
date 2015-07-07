@@ -38,7 +38,7 @@ class YAMLConfigurationManager implements ConfigurationManager{
 	 */
 
 	//@Memoized
-	public Configuration loadConfigurationForRepositoryBranch(projectName, branchName) {
+	public Configuration loadConfigurationForRepositoryBranch(repositoryName, repositoryType, branchName) {
 
 		Configuration.logger = logger
 
@@ -56,11 +56,11 @@ class YAMLConfigurationManager implements ConfigurationManager{
 		//Load the base configuration
 
 		def defaultConfigFilePath = [configBaseMount, ConfigFiles.DEFAULT_PROJECT_SETTINGS.filePath].findAll().join(File.separator)
-		def applicationSettingsDir =  [configBaseMount, ConfigFiles.APPLICATION_SETTINGS_DIR.filePath, projectName].findAll().join(File.separator)
-		def repositoryConfigFilePath = [applicationSettingsDir, projectName+CONFIG_FILE_EXTN].findAll().join(File.separator)
+		def applicationSettingsDir =  [configBaseMount, ConfigFiles.APPLICATION_SETTINGS_DIR.filePath, repositoryName].findAll().join(File.separator)
+		def repositoryConfigFilePath = [applicationSettingsDir, repositoryName+CONFIG_FILE_EXTN].findAll().join(File.separator)
 
 		def repoBranchName = branchName.replace("/","-") //If its a gitflow branch it will be named as feature/*, so convert it to a hyphenated name
-		def branchConfigFilePath = [applicationSettingsDir, projectName+'-'+repoBranchName+CONFIG_FILE_EXTN].join(File.separator)
+		def branchConfigFilePath = [applicationSettingsDir, repositoryName+'-'+repoBranchName+CONFIG_FILE_EXTN].join(File.separator)
 
 		updateMasterConfig(defaultConfigFilePath,ConfigurationLevel.DEFAULT, true) //Load default
 		updateMasterConfig(repositoryConfigFilePath, ConfigurationLevel.REPOSITORY) //Override with repository level settings
