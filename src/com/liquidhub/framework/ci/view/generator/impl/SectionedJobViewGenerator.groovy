@@ -38,8 +38,8 @@ class SectionedJobViewGenerator implements ViewGenerator{
 
 		//This is a REST API call and executes remotely
 		def repositoryResponse = ctx.scmAPIClient.listRepositoryBranches(repositorySlug : repositoryName)
-		
-		
+
+
 		def repositoryBranches = []
 
 		if(repositoryResponse && repositoryResponse.data.values){
@@ -65,7 +65,7 @@ class SectionedJobViewGenerator implements ViewGenerator{
 			sections{
 
 				repositoryBranches.each{repositoryBranch ->
-					
+
 					//Gitflow jobs are named with a '/', our job names switch to hyphens, we need to capture such jobs under the branch
 					def repositoryBranchHyphenatedId = "${repositoryBranch.displayId}".replace("/","-")
 
@@ -73,9 +73,7 @@ class SectionedJobViewGenerator implements ViewGenerator{
 
 				}
 
-				if(ctx.hasDeployable()){ //Attach deployment jobs only if there are deployment capabilities
-					listView listViewGenerator.createView("DeploymentJobs(${repositoryName})", "$repositoryName-deploy.*")
-				}
+				listView listViewGenerator.createView("DeploymentJobs(${repositoryName})", "$repositoryName-deploy.*")
 
 				listView listViewGenerator.createView("ManageFeatures(${repositoryName})", gitflowJobRegExpConfig[FEATURE_JOB_KEY])
 
