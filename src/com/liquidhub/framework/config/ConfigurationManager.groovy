@@ -11,5 +11,5 @@ import com.liquidhub.framework.config.model.Configuration
 
 interface ConfigurationManager {
 
-	Configuration loadConfigurationForRepositoryBranch(projectName, branchName)
+	Configuration loadConfigurationForRepositoryBranch(repositoryName, repositoryType, branchName)
 }
