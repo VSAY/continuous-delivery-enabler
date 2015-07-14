@@ -11,7 +11,7 @@ import groovy.transform.ToString
 @ToString(includeNames=true)
 class JobConfig {
 
-	boolean disabled //Indicates if the configuration element is disabled, if this value is true, this job is ignored
+	def disabled //Indicates if the configuration element is disabled, if this value is true, this job is ignored
 	def
 	jobName,
 	jobPrefix, 
@@ -56,7 +56,7 @@ class JobConfig {
 			'escalationEmailRecipients',
 			'activeMavenProfiles'
 		].each{property ->
-			this[property] = otherJobConfig[property] ?:  this[property]
+		   	this[property] = otherJobConfig[property] ?:  this[property]
 		}
 
 		return this
