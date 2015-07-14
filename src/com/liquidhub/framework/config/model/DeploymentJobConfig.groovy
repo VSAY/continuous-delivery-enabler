@@ -1,8 +1,9 @@
 package com.liquidhub.framework.config.model
 
-import com.liquidhub.framework.ci.model.MavenArtifactRepositoryRegistry;
-
 import groovy.transform.ToString
+
+import com.liquidhub.framework.ci.logger.Logger
+import com.liquidhub.framework.ci.model.MavenArtifactRepositoryRegistry
 
 /**
  * Represents the deployment specification as stated in configuration files. 
@@ -29,13 +30,16 @@ class DeploymentJobConfig extends JobConfig {
 
 	def appConfigurationArtifactIdentificationPattern //The pattern by which we identify the configuration artifact for the deployable
 
-	def targetClusterName,targetCellName, appContextRoot
+	def targetClusterName,targetCellName, appContextRoot,deploymentManagers
 
 	private DeploymentJobConfig parentConfig //A reference to the parent deployment configuration
 
 	DeploymentJobConfig [] environments //An array of environments
 
 	boolean enforceRoleBasedAccess=true //By default all environment deployments have restricted access unless overriden
+
+	static Logger logger
+
 
 	/**
 	 * Merges this deployment configuration with the specified configuration
@@ -44,29 +48,42 @@ class DeploymentJobConfig extends JobConfig {
 	 * 
 	 * @return the merged configuration
 	 */
-	def merge(DeploymentJobConfig thatDeploymentConfig){
+	def merge(DeploymentJobConfig deploymentConfig){
 
-		if(thatDeploymentConfig.environments){
-			environments.each{environment ->
-				environment.merge(thatDeploymentConfig[environment.name]) //Merge environment information as required
+		if(this.environments && deploymentConfig.environments){ //If we have preconfigured environment information and incoming environment configuration
+
+			deploymentConfig.environments.each{environment ->
+
+				if(this.environments[environment.name]){
+					this.environments[environment.name].merge(deploymentConfig[environment.name]) //Merge corresponding environments
+				}else{
+					this.environments[environment.name]= deploymentConfig[environment.name] //The incoming environment IS this environment, no preexisting config
+				}
 			}
+
+		}else if(deploymentConfig.environments){ //If we do not have any environment awareness yet, inherit all environments from the incoming configuration
+			this.environments = deploymentConfig.environments
 		}
 
-		super.merge(thatDeploymentConfig)
+		super.merge(deploymentConfig)
 
 		[
 			//These are the properties which are specific to deployment configuration
 			'name',
-			'servers',
-			'deploymentScript',
+			'targetClusterName',
+			'targetCellName',
+			'appContextRoot',
+			'deploymentManagers',
+			'deploymentScriptPath',
 			'artifactRepositoryUrl',
 			'releaseVersionCountToDisplay',
 			'snapshotVersionCountToDisplay',
 			'appConfigurationArtifactIdentificationPattern'
 		].each{property ->
-			this[property] = thatDeploymentConfig[property] ?:  this[property]
+			this[property] = deploymentConfig[property] ?:  this[property]
 		}
 
+		return this
 	}
 
 	/**
