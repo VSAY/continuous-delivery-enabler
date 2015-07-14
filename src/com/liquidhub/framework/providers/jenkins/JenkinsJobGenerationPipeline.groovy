@@ -9,9 +9,10 @@ import com.liquidhub.framework.ci.model.SeedJobParameters
 import com.liquidhub.framework.ci.view.JobViewSupport
 import com.liquidhub.framework.ci.view.generator.impl.NestedViewGenerator
 import com.liquidhub.framework.config.ConfigurationManager
-import com.liquidhub.framework.config.JobGenerationWorkspaceUtils
 import com.liquidhub.framework.config.impl.YAMLConfigurationManager
 import com.liquidhub.framework.config.model.Configuration
+import com.liquidhub.framework.config.model.DeploymentJobConfig
+import com.liquidhub.framework.config.model.JobConfig
 import com.liquidhub.framework.providers.stash.GitRepository
 import com.liquidhub.framework.providers.stash.StashConfigurationManager
 import com.liquidhub.framework.scm.model.SCMRepository
@@ -26,6 +27,9 @@ class JenkinsJobGenerationPipeline {
 	def fabricate(Binding binding, dslFactory){
 
 		Logger logger = new PrintStreamLogger(binding[SeedJobParameters.LOGGER_OUTPUT_STREAM.bindingName])
+		
+		JobConfig.logger = logger
+		DeploymentJobConfig.logger = logger
 		
 		JobFactory factory = new JenkinsJobFactory(dslFactory) //This is the job generator factory
 		
