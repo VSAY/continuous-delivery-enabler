@@ -234,7 +234,7 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 
 		def recipientEmail = ctx.getVariable(SeedJobParameters.RECIPIENT_EMAIL)
 
-		ctx.logger.debug 'Recipient Emails [bindVariable: '+recipientEmail+', jobConfig: '+jobConfig.regularEmailRecipients+', notificationConfig: '+notificationConfig?.regularEmailRecipients+', default: '+ctx.defaultRegularEmailRecipients+']'
+		//ctx.logger.debug 'Recipient Emails [bindVariable: '+recipientEmail+', jobConfig: '+jobConfig.regularEmailRecipients+', notificationConfig: '+notificationConfig?.regularEmailRecipients+', default: '+ctx.defaultRegularEmailRecipients+']'
 
 		//These are our options to find regular email recipients, ranked by preference, we break on first not null result
 		[recipientEmail, jobConfig.regularEmailRecipients, notificationConfig?.regularEmailRecipients, ctx.defaultRegularEmailRecipients].findResult {it?.trim() ? it:null}
@@ -249,7 +249,7 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 
 		def notificationConfig = ctx.configuration.notificationConfig
 
-		ctx.logger.debug 'Escalation Emails [bindVariable: '+escalationEmail+', jobConfig: '+jobConfig.escalationEmailRecipients+', notificationConfig: '+notificationConfig?.escalationEmailRecipients+', default: '+ctx.defaultEscalationEmailRecipients+']'
+		//ctx.logger.debug 'Escalation Emails [bindVariable: '+escalationEmail+', jobConfig: '+jobConfig.escalationEmailRecipients+', notificationConfig: '+notificationConfig?.escalationEmailRecipients+', default: '+ctx.defaultEscalationEmailRecipients+']'
 
 		//These are our options to find regular email recipients, ranked by preference, we break on first not null result
 		[escalationEmail, jobConfig.escalationEmailRecipients, notificationConfig?.escalationEmailRecipients, ctx.defaultEscalationEmailRecipients].findResult {it?.trim() ? it:null}
