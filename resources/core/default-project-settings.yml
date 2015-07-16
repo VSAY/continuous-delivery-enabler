@@ -20,7 +20,7 @@ viewConfig:
   sectionViews:
     projectDescriptionTemplatePath: resources/core/section-view-description.template
     
-jobSeederName: frontoffice-ci-enabler
+jobSeederName: frontoffice-repository-branch-job-creator
       
 buildConfig:
    maven: 
