@@ -1,2 +1,1 @@
-ssh srv-cibuilder@${deploymentManager}
-/apps/scripts/deploy.sh -r $repositorySegment -g ${groupId} -a ${artifactId} -v ${version} -p ${packaging} -c ${contextRoot} --restart -t ${targetJVMName} -n ${cellName}
+ssh -i /opt/apps/jenkins/.ssh/id_rsa_jenkssh jenkssh@${deploymentManager} "sudo su - wasadmin -c /apps/scripts/deploy.sh --releases ${repositorySegment} --groupId ${groupId} --artifactId ${artifactId} --version ${artifactVersion} --packaging ${packaging} --targetJVMName ${targetJVMName} --cellName ${targetJVMName}"
