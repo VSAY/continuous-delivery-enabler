@@ -1,0 +1,12 @@
+deploymentConfig: &deploymentConfig
+  artifactRepositoryUrl: http://repo.test.ibx.com/
+  appConfigurationArtifactIdentificationPattern: .*conf.*
+  generatorClass: com.liquidhub.framework.ci.job.generator.impl.DeploymentJobGenerator
+  releaseVersionCountToDisplay: 5
+  snapshotVersionCountToDisplay: 5
+  deploymentScriptPath: resources/core/default-deployment-script.sh
+  environments: 
+   - name: dev
+     targetClusterName: wsd40
+     targetCellName: cell32
+     appContextRoot: /SBCService
