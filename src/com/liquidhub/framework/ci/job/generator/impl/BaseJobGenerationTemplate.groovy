@@ -320,7 +320,19 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 	 *
 	 */
 	protected def determineJobBaseName(JobGenerationContext ctx, JobConfig jobConfig){
-		ctx.repositoryName+'-'+ctx.repositoryBranchName
+		
+		/*
+		 * We use the branch name to create the project name, but some branches can contain a prefix  which makes the job name unnecessarily long, so we shorten it
+		 * 
+		 * Here are the transformation samples:
+		 * 
+		 *  feature/ssoIntegration -> ssoIntegration
+		 *  release/1.0.0 -> 1.0.0
+		 * 
+		 */
+		def shortenedBranchName = ctx.repositoryBranchName.replaceAll("(^feature/)|(^hotfix/)|(^release/)", "")
+		
+		ctx.repositoryName+'-'+transformedBranchName
 	}
 
 	/**
