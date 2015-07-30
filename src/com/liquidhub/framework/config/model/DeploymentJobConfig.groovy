@@ -15,6 +15,8 @@ import com.liquidhub.framework.ci.model.MavenArtifactRepositoryRegistry
 class DeploymentJobConfig extends JobConfig {
 
 	def name //A logical name to the deployment config, should be the environment name when used as environments
+	
+	def serverTemplate //the deployment job template to be used. Allows us to support different servers on a per environment basis for the same app
 
 	def servers //An array of servers for the deployment environment
 
@@ -30,7 +32,7 @@ class DeploymentJobConfig extends JobConfig {
 
 	def appConfigurationArtifactIdentificationPattern //The pattern by which we identify the configuration artifact for the deployable
 
-	def targetClusterName,targetCellName, appContextRoot,deploymentManagers
+	def targetJVMName,targetCellName, appContextRoot,deploymentManager
 
 	private DeploymentJobConfig parentConfig //A reference to the parent deployment configuration
 
@@ -62,7 +64,7 @@ class DeploymentJobConfig extends JobConfig {
 			}
 
 		}else if(deploymentConfig.environments){ //If we do not have any environment awareness yet, inherit all environments from the incoming configuration
-			this.environments = deploymentConfig.environments
+			setEnvironments(deploymentConfig.environments)
 		}
 
 		super.merge(deploymentConfig)
@@ -70,10 +72,11 @@ class DeploymentJobConfig extends JobConfig {
 		[
 			//These are the properties which are specific to deployment configuration
 			'name',
-			'targetClusterName',
+			'targetJVMName',
+			'serverTemplate',
 			'targetCellName',
 			'appContextRoot',
-			'deploymentManagers',
+			'deploymentManager',
 			'deploymentScriptPath',
 			'artifactRepositoryUrl',
 			'releaseVersionCountToDisplay',

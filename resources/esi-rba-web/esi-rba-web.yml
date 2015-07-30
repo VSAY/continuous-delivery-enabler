@@ -5,8 +5,14 @@ deploymentConfig: &deploymentConfig
   releaseVersionCountToDisplay: 5
   snapshotVersionCountToDisplay: 5
   deploymentScriptPath: resources/core/default-deployment-script.sh
+  appContextRoot: /esirba
   environments: 
    - name: dev
-     targetClusterName: wsd40
-     targetCellName: cell32
-     appContextRoot: /SBCService
+     deploymentManager: wsmgrd20
+     targetJVMName: ESIRBA
+     targetCellName: DevKCell40
+   - name: qa
+     deploymentManager: wsmgrq20
+     targetJVMName: ESIRBA
+     targetCellName: QaKCell40
+     
