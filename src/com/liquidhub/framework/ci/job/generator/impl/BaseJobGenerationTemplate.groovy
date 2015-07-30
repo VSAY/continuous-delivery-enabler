@@ -36,9 +36,9 @@ import com.liquidhub.framework.providers.jenkins.MavenPOMVersionExtractionScript
  *
  */
 abstract class BaseJobGenerationTemplate implements JobGenerator{
-	
+
 	private EmbeddedScriptProvider mavenPOMVersionExtractionScript = new MavenPOMVersionExtractionScriptProvider([:])
-	
+
 
 	/**
 	 * Outlines the job definition template, the template can be overriden completely or partly based on requirements.
@@ -70,16 +70,20 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 					masterConfig.buildDiscardPolicy['artifactNumToKeep'] as Integer
 					)
 
-			scm  ctx.configurers('scm').configure(ctx, jobConfig, ignoreCommitNotifications())
 
-			triggers ctx.configurers('trigger').configure(ctx, jobConfig)
+			if(requiresSCMConfiguration()){
+				scm  ctx.configurers('scm').configure(ctx, jobConfig, ignoreCommitNotifications())
+			}
 
+			if(requiresTriggerConfiguration()){
+				triggers ctx.configurers('trigger').configure(ctx, jobConfig)
+			}
 			steps  configureSteps(ctx, jobConfig)
 
 			publishers configurePublishers(ctx, jobConfig)
 
 			def jobParameters = configureParameters(ctx, jobConfig)
-			
+
 			if(jobParameters){
 				parameters jobParameters
 			}
@@ -118,6 +122,14 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 	 */
 	protected def configureDescription(ctx, JobConfig jobConfig){
 		return jobConfig?.description ? jobConfig.description : 'No description provided'
+	}
+
+	protected def requiresSCMConfiguration(){
+		true
+	}
+
+	protected def requiresTriggerConfiguration(){
+		true
 	}
 
 
@@ -200,7 +212,6 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 	 * @return
 	 */
 	protected def configureParameters(JobGenerationContext ctx,JobConfig jobConfig){
-	
 	}
 
 
@@ -220,11 +231,11 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 		def emailSubject = determineEmailSubject(ctx, jobConfig)
 
 		def email = new Email(sendTo: regularEmailRecipients, escalateTo: escalationEmails, subject: emailSubject)
-		
+
 		def mavenPOMVersionExtractorScript = mavenPOMVersionExtractionScript.getScript()
 
 		return configureAdditionalPublishers(ctx, jobConfig) >>
-				 { groovyPostBuild(mavenPOMVersionExtractorScript) } >> ctx.configurers('email').configure(ctx, jobConfig, email)
+				{ groovyPostBuild(mavenPOMVersionExtractorScript) } >> ctx.configurers('email').configure(ctx, jobConfig, email)
 	}
 
 
@@ -320,7 +331,7 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 	 *
 	 */
 	protected def determineJobBaseName(JobGenerationContext ctx, JobConfig jobConfig){
-		
+
 		/*
 		 * We use the branch name to create the project name, but some branches can contain a prefix  which makes the job name unnecessarily long, so we shorten it
 		 * 
@@ -333,7 +344,7 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 		def shortenedBranchName = ctx.repositoryBranchName.replace("(^feature/)", "")
 		shortenedBranchName = ctx.repositoryBranchName.replace("(^hotfix/)", "hotfix-")
 		shortenedBranchName = ctx.repositoryBranchName.replace("(^release/)", "release-")
-		
+
 		ctx.repositoryName+'-'+shortenedBranchName
 	}
 
@@ -360,7 +371,7 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 	}
 
 	protected def configureJobParameterExtensions(JobGenerationContext context, JobConfig jobCofig){
-		
+
 	}
 
 
