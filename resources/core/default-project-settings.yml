@@ -32,6 +32,13 @@ buildConfig:
    languageRuntime: 
         type: java  
         name: jdk8u31
+        
+healthConfig: &healthConfig
+  goals: clean compile test
+  jobSuffix: -health
+  generatorClass: com.liquidhub.framework.ci.job.generator.impl.BranchHealthMonitor
+  description: Monitors the health of the branch. Fails only if the code does not compile and test
+
       
       
 continuousIntegrationConfig: &continuousIntegrationConfig
@@ -113,6 +120,7 @@ gitflowHotfixBranchConfig: &gitflowHotfixBranchConfig
   
 deploymentConfig: &deploymentConfig
   artifactRepositoryUrl: http://repo.test.ibx.com/
+  serverTemplate: WEBSPHERE
   artifactRepository: NEXUS
   appConfigurationArtifactIdentificationPattern: .*conf.*
   generatorClass: com.liquidhub.framework.ci.job.generator.impl.DeploymentJobGenerator
@@ -137,6 +145,7 @@ buildPipelinePreferences:
   - *gitflowReleaseBranchConfig
   - *gitflowHotfixBranchConfig
   - *milestoneReleaseConfig
-  - *deploymentConfig  
+  - *deploymentConfig
+  - *healthConfig  
 
  

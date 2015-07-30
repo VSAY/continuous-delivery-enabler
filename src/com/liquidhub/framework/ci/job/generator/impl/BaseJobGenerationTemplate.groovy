@@ -330,9 +330,11 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 		 *  release/1.0.0 -> 1.0.0
 		 * 
 		 */
-		def shortenedBranchName = ctx.repositoryBranchName.replaceAll("(^feature/)|(^hotfix/)|(^release/)", "")
+		def shortenedBranchName = ctx.repositoryBranchName.replace("(^feature/)", "")
+		shortenedBranchName = ctx.repositoryBranchName.replace("(^hotfix/)", "hotfix-")
+		shortenedBranchName = ctx.repositoryBranchName.replace("(^release/)", "release-")
 		
-		ctx.repositoryName+'-'+transformedBranchName
+		ctx.repositoryName+'-'+shortenedBranchName
 	}
 
 	/**

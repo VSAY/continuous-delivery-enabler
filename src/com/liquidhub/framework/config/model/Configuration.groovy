@@ -18,7 +18,7 @@ class Configuration {
 	 * 
 	 */
 
-	JobConfig continuousIntegrationConfig, codeQualityConfig, milestoneReleaseConfig
+	JobConfig continuousIntegrationConfig, codeQualityConfig, milestoneReleaseConfig,healthConfig
 
 	GitflowBranchingConfig gitflowFeatureBranchConfig,gitflowReleaseBranchConfig,gitflowHotfixBranchConfig
 	
@@ -65,6 +65,7 @@ class Configuration {
 			'configurableJobSections',
 			'buildConfig',
 			'buildDiscardPolicy',
+			'healthConfig',
 			'jobSeederName'
 		].each{
 	
