@@ -40,11 +40,41 @@ class SectionedJobViewGenerator implements ViewGenerator{
 		def repositoryResponse = ctx.scmAPIClient.listRepositoryBranches(repositorySlug : repositoryName)
 
 
-		def repositoryBranches = []
+		//Our goal is to have a section for each of the following branch types
+		def featureBranchJobRegExp = '' //There can be more than one feature branch
+		def releaseBranchJobRegExp =''//Only one release branch is allowed at a given time
+		def hotfixBranchJobRegexp  =''//Only one hotfix branch is allowed at a given time
+		
+		
 
 		if(repositoryResponse && repositoryResponse.data.values){
-			repositoryResponse.data.values.each{ repositoryBranches.push(it) }
+			
+			repositoryResponse.data.values.each{ repositoryBranch ->
+				
+				//Gitflow jobs are named with a '/', our job names switch to hyphens, we need to capture such jobs under the branch	
+				def branchDisplayId = repositoryBranch.displayId.replace("/","-")
+				
+				ctx.logger.debug('branch display id is '+branchDisplayId)
+				
+					switch(branchDisplayId){
+
+					case ~/feature.*/:
+						featureBranchJobRegExp = featureBranchJobRegExp + "(${repositoryName}-${branchDisplayId}.*)|"
+						break
+
+					case ~/hotfix.*/:
+						hotfixBranchJobRegexp = "${repositoryName}-${branchDisplayId}.*"
+						break
+
+					case ~/release.*/:
+						releaseBranchJobRegExp =  "${repositoryName}-${branchDisplayId}.*"
+						break
+
+				}
+
+			}
 		}
+		
 
 		def sectionViewConfiguration = ctx.configuration.viewConfig.sectionViews
 
@@ -59,27 +89,28 @@ class SectionedJobViewGenerator implements ViewGenerator{
 
 		return {
 			//Create sections dynamically, one for each  branch listed from the repository
-
 			description sectionViewDescription
 
 			sections{
 
-				repositoryBranches.each{repositoryBranch ->
 
-					//Gitflow jobs are named with a '/', our job names switch to hyphens, we need to capture such jobs under the branch
-					def repositoryBranchHyphenatedId = "${repositoryBranch.displayId}".replace("/","-")
+				listView listViewGenerator.createView("Master(${repositoryName}) ", "${repositoryName}-master-.*")
+				
+				listView listViewGenerator.createView("Develop(${repositoryName}) ", "${repositoryName}-develop-.*")
+				
+				listView listViewGenerator.createView("Release(${repositoryName}) ", releaseBranchJobRegExp)
+				
+				listView listViewGenerator.createView("Hotfix(${repositoryName}) ", hotfixBranchJobRegexp)
+				
+				listView listViewGenerator.createView("Features(${repositoryName}) ", featureBranchJobRegExp)
 
-					listView listViewGenerator.createView("branch:${repositoryBranch.displayId}", "$repositoryName-${repositoryBranchHyphenatedId}-.*")
-
-				}
-
-				listView listViewGenerator.createView("DeploymentJobs(${repositoryName})", "$repositoryName-deploy.*")
+				listView listViewGenerator.createView("Deployment(${repositoryName})", "$repositoryName-deploy.*")
 
 				listView listViewGenerator.createView("ManageFeatures(${repositoryName})", gitflowJobRegExpConfig[FEATURE_JOB_KEY])
 
 				listView listViewGenerator.createView("ManageReleases(${repositoryName})",gitflowJobRegExpConfig[RELEASE_JOB_KEY])
 
-				listView listViewGenerator.createView("ManageEmergencyHotfixes(${repositoryName})", gitflowJobRegExpConfig[HOTFIX_JOB_KEY])
+				listView listViewGenerator.createView("ManageEmergencyHotfix(${repositoryName})", gitflowJobRegExpConfig[HOTFIX_JOB_KEY])
 
 
 			}
