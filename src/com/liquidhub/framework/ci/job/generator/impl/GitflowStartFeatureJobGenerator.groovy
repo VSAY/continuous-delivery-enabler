@@ -54,7 +54,7 @@ class GitflowStartFeatureJobGenerator extends BaseGitflowJobGenerationTemplateSu
 
 	@Override
 	protected def determineRegularEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
-		'New Feature branch ${ENV, var="featureName"} created on '+ctx.repositoryName+' repository'
+		'New Feature branch [ ${ENV, var="featureName"} ] created on '+ctx.repositoryName+' repository'
 	}
 
 	@Override
