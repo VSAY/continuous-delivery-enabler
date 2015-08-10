@@ -36,11 +36,6 @@ class WebSphereDeploymentTemplate extends BaseJobGenerationTemplate{
 		environmentConfig
 	}
 
-	@Override
-	protected def determineJobName(JobGenerationContext ctx,JobConfig jobConfig){
-		ctx.scmRepository.repositorySlug+'-deployTo'+environmentConfig.name.capitalize()
-	}
-
 
 	@Override
 	protected def requiresSCMConfiguration(){
