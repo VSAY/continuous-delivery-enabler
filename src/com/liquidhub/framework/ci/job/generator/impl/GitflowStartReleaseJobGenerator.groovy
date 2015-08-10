@@ -14,6 +14,7 @@ import com.liquidhub.framework.ci.model.ParameterListingScript
 import com.liquidhub.framework.ci.view.ViewElementTypes
 import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.config.model.JobConfig
+
 import static com.liquidhub.framework.providers.jenkins.OperatingSystemCommandAdapter.adapt
 import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_BOOLEAN_CHOICE
 import static com.liquidhub.framework.ci.view.ViewElementTypes.TEXT
@@ -75,9 +76,14 @@ class GitflowStartReleaseJobGenerator extends BaseGitflowJobGenerationTemplateSu
 
 
 
-	protected def determineEmailSubject(ctx, jobConfig){
+	@Override
+	protected def determineRegularEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
+		'Release branch ${ENV, var="releaseVersion"} for '+ctx.repositoryBranchName+' is now open'
+	}
 
-		'Release # ${PROJECT_VERSION} start '+ BuildEnvironmentVariables.BUILD_STATUS.paramValue+'!'
+	@Override
+	protected def determineFailureEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
+		'Action Required !!! Failed to open release branch ${ENV, var="releaseVersion"} for '+ctx.repositoryBranchName
 	}
 
 	protected boolean configuresBranchInitiatingJob(){
