@@ -22,7 +22,17 @@ class ExtendedEmailNotificationSectionConfigurer implements JobSectionConfigurer
 			extendedEmail(regularEmailRecipients, emailSubject, contentTemplate) {
 
 				notificationContext.emailTriggers.each{ triggerName, Email email ->
-					trigger(triggerName: triggerName, sendToRecipientList: email.sendToRecipientList, sendToDevelopers:email.sendToDevelopers, includeCulprits: email.includeCulprits, subject: email.subject, content: email.body)
+
+					trigger(
+							triggerName: triggerName,
+							sendToRecipientList: email.sendToRecipientList,
+							sendToDevelopers:email.sendToDevelopers,
+							includeCulprits: email.includeCulprits,
+							sendToRequester: email.sendToRequestor,
+							recipientList : email.recipientList ?: regularEmailRecipients,
+							subject: email.subject,
+							content: email.body,
+							)
 				}
 
 				configure { node ->
@@ -32,8 +42,5 @@ class ExtendedEmailNotificationSectionConfigurer implements JobSectionConfigurer
 				}
 			}
 		}
-
 	}
-
-
 }
