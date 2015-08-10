@@ -3,6 +3,7 @@ package com.liquidhub.framework.ci.model
 import com.liquidhub.framework.JobSectionConfigurer
 import com.liquidhub.framework.ci.BuildEnvironmentAwareTemplateEngine
 import com.liquidhub.framework.ci.JobFactory
+import com.liquidhub.framework.ci.JobNameBuilder
 import com.liquidhub.framework.ci.logger.Logger
 import com.liquidhub.framework.ci.view.JobViewFactory
 import com.liquidhub.framework.ci.view.JobViewSupport
@@ -10,7 +11,7 @@ import com.liquidhub.framework.config.JobGenerationWorkspaceUtils
 import com.liquidhub.framework.config.model.BuildConfig
 import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.model.MavenArtifact
-import com.liquidhub.framework.providers.maven.MavenArtifactMetadataInfoProvider;
+import com.liquidhub.framework.providers.maven.MavenArtifactMetadataInfoProvider
 import com.liquidhub.framework.scm.RepositoryAPIClientFactory
 import com.liquidhub.framework.scm.model.SCMRepository
 
@@ -49,7 +50,9 @@ class JobGenerationContext {
 	final def scmAPIClient
 	
 	final MavenArtifact deployable,configurationArtifact
-
+	
+	final JobNameBuilder jobNameCreator = new JobNameBuilder()
+	
 	JobGenerationContext(JobFactory jobFactory, JobViewFactory viewFactory, JobGenerationWorkspaceUtils workspaceUtils,Configuration configuration,SCMRepository scmRepository, JobViewSupport jobViewSupport){
 
 		this.workspaceUtils = workspaceUtils
@@ -75,6 +78,7 @@ class JobGenerationContext {
 		MavenArtifactMetadataInfoProvider deploymentInfoProvider = new MavenArtifactMetadataInfoProvider(this)
 		this.deployable = deploymentInfoProvider.deployable
 		this.configurationArtifact = deploymentInfoProvider.configurationArtifact
+		
 	}
 
 
