@@ -254,8 +254,16 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 		Email failureEmail = new Email(includeCulprits: true,sendToDevelopers: true,sendToRequestor: true, sendToRecipientList:true , subject:failureEmailSubject, recipientList: [regularEmailRecipients, escalationEmails].join(","))
 
 		defaultContext.addEmailForTrigger('Failure', failureEmail)
+		
+		//Any configuration registrations here will override what has been done above
+		registerEmailConfigurationForTrigger(defaultContext, jobConfig)
+		
 
 		return defaultContext
+	}
+	
+	protected def registerEmailConfigurationForTrigger(JobGenerationContext ctx, EmailNotificationContext emailContext, JobConfig jobConfig){
+		
 	}
 
 

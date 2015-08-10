@@ -9,7 +9,11 @@ import static com.liquidhub.framework.ci.model.JobPermissions.ItemWorkspace
 import static com.liquidhub.framework.ci.model.JobPermissions.RunDelete
 import static com.liquidhub.framework.ci.model.JobPermissions.RunUpdate
 
+import javax.management.NotificationBroadcasterSupport.SendNotifJob;
+
 import com.liquidhub.framework.ci.EmbeddedScriptProvider
+import com.liquidhub.framework.ci.model.Email
+import com.liquidhub.framework.ci.model.EmailNotificationContext
 import com.liquidhub.framework.ci.model.GitflowJobParameter
 import com.liquidhub.framework.ci.model.GitflowJobParameterNames
 import com.liquidhub.framework.ci.model.JobGenerationContext
@@ -38,10 +42,11 @@ abstract class BaseGitflowJobGenerationTemplateSupport extends BaseJobGeneration
 
 		def templateParams =['repositoryName': ctx.repositoryName, 'pluginArgs': jobConfig.goalArgs]
 
-		if(jobConfig.projectDescriptionTemplatePath){ //If there is a project description template provided, use it
+		if(jobConfig.projectDescriptionTemplatePath){
+			//If there is a project description template provided, use it
 
 			def workspaceRelativeTemplatePath = [ctx.getVariable(SeedJobParameters.FRAMEWORK_CONFIG_BASE_MOUNT), jobConfig.projectDescriptionTemplatePath].join(File.separator)
-			
+
 			def additionalParams = jobConfig.goalArgs ?: [:] //Are there variables in the job config goals
 
 			ctx.templateEngine.withContentFromTemplatePath(workspaceRelativeTemplatePath, templateParams << additionalParams)
@@ -91,6 +96,16 @@ abstract class BaseGitflowJobGenerationTemplateSupport extends BaseJobGeneration
 	}
 
 
+	@Override
+	protected def registerEmailConfigurationForTrigger(JobGenerationContext ctx, EmailNotificationContext emailContext, JobConfig jobConfig){
+				
+		Email successEmail = new Email(sendToDevelopers: true,sendToRequestor: true, sendToRecipientList:true ,subject:super.determineRegularEmailSubject(ctx, jobConfig))		
+		
+		emailContext.addEmailForTrigger('Success', successEmail)
+		
+	}
+
+
 	protected final def configureJobParameterExtensions(JobGenerationContext context,JobConfig jobConfig){
 
 		def parameters = defineJobParameters(context, jobConfig)
@@ -127,7 +142,7 @@ abstract class BaseGitflowJobGenerationTemplateSupport extends BaseJobGeneration
 	protected boolean configuresBranchInitiatingJob(){
 		false
 	}
-	
+
 	/**
 	 *  @return true if the generator is a gitflow supporting generator. Defaults to false
 	 */
