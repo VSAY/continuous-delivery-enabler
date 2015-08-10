@@ -30,8 +30,8 @@ class ExtendedEmailNotificationSectionConfigurer implements JobSectionConfigurer
 							includeCulprits: email.includeCulprits,
 							sendToRequester: email.sendToRequestor,
 							recipientList : email.recipientList ?: regularEmailRecipients,
-							subject: email.subject,
-							content: email.body,
+							subject: emailSubject ?: email.subject,
+							content: contentTemplate ?: email.body,
 							)
 				}
 
