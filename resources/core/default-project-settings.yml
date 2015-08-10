@@ -129,9 +129,9 @@ deploymentConfig: &deploymentConfig
   deploymentScriptPath: resources/core/default-deployment-script.sh
        
 buildDiscardPolicy: 
-  daysToKeep: 2
+  daysToKeep: 7
   numToKeep: 7
-  artifactDaysToKeep: 3
+  artifactDaysToKeep: 7
   artifactNumToKeep: 7
     
 buildPipelinePreferences:
