@@ -256,7 +256,7 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 		defaultContext.addEmailForTrigger('Failure', failureEmail)
 		
 		//Any configuration registrations here will override what has been done above
-		registerEmailConfigurationForTrigger(defaultContext, jobConfig)
+		registerEmailConfigurationForTrigger(ctx, defaultContext, jobConfig)
 		
 
 		return defaultContext
