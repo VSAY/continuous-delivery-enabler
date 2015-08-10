@@ -5,7 +5,6 @@ import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.PUSH_HOT
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_VERSION
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.START_COMMIT
 import static com.liquidhub.framework.providers.jenkins.OperatingSystemCommandAdapter.adapt
-
 import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_BOOLEAN_CHOICE
 import static com.liquidhub.framework.ci.view.ViewElementTypes.TEXT
 
@@ -36,9 +35,14 @@ class GitflowStartHotfixJobGenerator extends BaseGitflowJobGenerationTemplateSup
 	}
 
 
-	protected def determineEmailSubject(JobGenerationContext ctx,JobConfig jobConfig){
+	@Override
+	protected def determineRegularEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
+		'Hotfix branch ${ENV, var="releaseVersion"} for '+ctx.repositoryBranchName+' is now open'
+	}
 
-		'Hotfix # ${PROJECT_VERSION} start '+ BuildEnvironmentVariables.BUILD_STATUS.paramValue+'!'
+	@Override
+	protected def determineFailureEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
+		'Action Required !!! Failed to open hotfix branch ${ENV, var="releaseVersion"} for '+ctx.repositoryBranchName
 	}
 
 
