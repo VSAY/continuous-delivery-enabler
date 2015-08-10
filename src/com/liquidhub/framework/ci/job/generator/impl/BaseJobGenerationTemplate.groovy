@@ -10,10 +10,12 @@ import static com.liquidhub.framework.ci.model.JobPermissions.RunDelete
 import static com.liquidhub.framework.ci.model.JobPermissions.RunUpdate
 
 import com.liquidhub.framework.ci.EmbeddedScriptProvider
+import com.liquidhub.framework.ci.JobNameBuilder
 import com.liquidhub.framework.ci.job.generator.JobGenerator
 import com.liquidhub.framework.ci.logger.Logger
 import com.liquidhub.framework.ci.model.BuildEnvironmentVariables
 import com.liquidhub.framework.ci.model.Email
+import com.liquidhub.framework.ci.model.EmailNotificationContext
 import com.liquidhub.framework.ci.model.JobGenerationContext
 import com.liquidhub.framework.ci.model.JobPermissions
 import com.liquidhub.framework.ci.model.SeedJobParameters
@@ -88,7 +90,7 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 				parameters jobParameters
 			}
 
-			createPermissionRoleMappings(ctx){grantedPermission, allowedRole ->
+			createPermissionRoleMappings(ctx){ grantedPermission, allowedRole ->
 				authorization { permission(grantedPermission, allowedRole) }
 			}
 
@@ -168,17 +170,17 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 
 		def additionalMappings = grantAdditionalPermissions(ctx, roleConfig)
 
-		additionalMappings.each{role,permissions->
+		additionalMappings.each{ role,permissions->
 			def existingMappings = mappings[role] ?: []
 			existingMappings.addAll(additionalMappings[role])
 		}
 
 
-		mappings.each{rolePermissionMapping ->
+		mappings.each{ rolePermissionMapping ->
 
 			def allowedRole = rolePermissionMapping.key, permissions = rolePermissionMapping.value
 
-			permissions.each{JobPermissions permission->
+			permissions.each{ JobPermissions permission->
 				authorizationClosure(permission.longForm, allowedRole)
 			}
 		}
@@ -224,18 +226,36 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 	 */
 	protected def configurePublishers(JobGenerationContext ctx, JobConfig jobConfig){
 
-		def regularEmailRecipients = determineRegularEmailRecipients(ctx, jobConfig)
+		EmailNotificationContext email = configureEmail(ctx, jobConfig)
 
-		def escalationEmails = determineEscalationEmailRecipients(ctx, jobConfig)
-
-		def emailSubject = determineEmailSubject(ctx, jobConfig)
-
-		def email = new Email(sendTo: regularEmailRecipients, escalateTo: escalationEmails, subject: emailSubject)
 
 		def mavenPOMVersionExtractorScript = mavenPOMVersionExtractionScript.getScript()
 
-		return configureAdditionalPublishers(ctx, jobConfig) >>
-				{ groovyPostBuild(mavenPOMVersionExtractorScript) } >> ctx.configurers('email').configure(ctx, jobConfig, email)
+		return configureAdditionalPublishers(ctx, jobConfig) >> { groovyPostBuild(mavenPOMVersionExtractorScript) } >> ctx.configurers('email').configure(ctx, jobConfig, email)
+	}
+
+
+	protected def configureEmail(JobGenerationContext ctx, JobConfig jobConfig){
+
+		def regularEmailRecipients = determineRegularEmailRecipients(ctx, jobConfig)
+
+		def emailSubject = determineRegularEmailSubject(ctx, jobConfig)
+
+		EmailNotificationContext defaultContext = new EmailNotificationContext(recipientList: regularEmailRecipients, subjectTemplate: emailSubject)
+
+		def escalationEmails = determineEscalationEmailRecipients(ctx, jobConfig)
+
+		def failureEmailSubject = determineFailureEmailSubject(ctx, jobConfig)
+
+		Email firstFailureEmail = new Email(includeCulprits: true,sendToDevelopers: true,sendToRequestor: true, subject:failureEmailSubject)
+
+		defaultContext.addEmailForTrigger('FirstFailure', firstFailureEmail)
+
+		Email failureEmail = new Email(includeCulprits: true,sendToDevelopers: true,sendToRequestor: true, sendToRecipientList:true , subject:failureEmailSubject, recipientList: [regularEmailRecipients, escalationEmails].join(","))
+
+		defaultContext.addEmailForTrigger('Failure', failureEmail)
+
+		return defaultContext
 	}
 
 
@@ -267,9 +287,14 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 
 	}
 
-	protected def determineEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
+
+	protected def determineRegularEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
 		//Resort to default email subject if one is not provided
 		BuildEnvironmentVariables.PROJECT_NAME.paramValue+' - Build # '+BuildEnvironmentVariables.BUILD_NUMBER.paramValue+' - '+BuildEnvironmentVariables.BUILD_STATUS.paramValue+'!'
+	}
+
+	protected def determineFailureEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
+		'Fix Required!!!'+determineRegularEmailSubject(ctx, jobConfig)
 	}
 
 	/**
@@ -295,8 +320,9 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 
 
 	/**
-	 * Extension point for subclasses to control the pattern for the job name.
-	 * A pattern is utilized if an explicit job name is not provided by configuration
+	 * Non extensible job naming pattern. The pattern is frozen but the name of a job can be altered by tweaking its components.
+	 * 
+	 * This a final API because the framework makes assumptions about the naming pattern
 	 *
 	 * The job name is based on a pattern of ${jobPrefix}{baseName}${jobSuffix}
 	 *
@@ -309,44 +335,12 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 	 *
 	 *
 	 */
-	protected def determineJobName(JobGenerationContext ctx, JobConfig jobConfig){
+	final def determineJobName(JobGenerationContext ctx, JobConfig jobConfig){
 
-		def baseName= jobConfig?.jobName ?: determineJobBaseName(ctx, jobConfig)
-
-		[jobConfig?.jobPrefix, baseName, jobConfig?.jobSuffix].findAll().join('')
-
+		ctx.jobNameCreator.createJobName(ctx.repositoryName, ctx.scmRepository.branchType, ctx.repositoryBranchName, jobConfig, supportsGitflow())
 
 	}
 
-	/**
-	 * Extension point for subclasses to determine the base name of the job generated
-	 *
-	 * We first look if the job configuration specifies a name, if it doesn't we resort to using the one
-	 *
-	 * @param ctx
-	 * @param jobConfig
-	 *
-	 * @return
-	 *
-	 *
-	 */
-	protected def determineJobBaseName(JobGenerationContext ctx, JobConfig jobConfig){
-
-		/*
-		 * We use the branch name to create the project name, but some branches can contain a prefix  which makes the job name unnecessarily long, so we shorten it
-		 * 
-		 * Here are the transformation samples:
-		 * 
-		 *  feature/ssoIntegration -> ssoIntegration
-		 *  release/1.0.0 -> 1.0.0
-		 * 
-		 */
-		def shortenedBranchName = ctx.repositoryBranchName.replace("(^feature/)", "")
-		shortenedBranchName = ctx.repositoryBranchName.replace("(^hotfix/)", "hotfix-")
-		shortenedBranchName = ctx.repositoryBranchName.replace("(^release/)", "release-")
-
-		ctx.repositoryName+'-'+shortenedBranchName
-	}
 
 	/**
 	 *  @return true if the generator is a gitflow supporting generator. Defaults to false
