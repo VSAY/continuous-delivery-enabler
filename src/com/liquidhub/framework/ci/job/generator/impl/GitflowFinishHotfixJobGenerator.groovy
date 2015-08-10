@@ -9,6 +9,10 @@ import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.KEEP_HOT
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.NO_DEPLOY
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SKIP_HOTFIX_TAGGING
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SQUASH_COMMITS
+import static com.liquidhub.framework.ci.view.ViewElementTypes.BOOLEAN_CHOICE
+import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_BOOLEAN_CHOICE
+import static com.liquidhub.framework.ci.view.ViewElementTypes.TEXT
+import static com.liquidhub.framework.providers.jenkins.OperatingSystemCommandAdapter.adapt
 
 import com.liquidhub.framework.ci.model.GitflowJobParameter
 import com.liquidhub.framework.ci.model.JobGenerationContext
@@ -16,14 +20,9 @@ import com.liquidhub.framework.ci.model.ParameterListingScript
 import com.liquidhub.framework.ci.view.ViewElementTypes
 import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.config.model.JobConfig
+import com.liquidhub.framework.scm.model.GitFlowBranchTypes
 import com.liquidhub.framework.scm.model.SCMRemoteRefListingRequest
 import com.liquidhub.framework.scm.model.SCMRepository
-
-import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_BOOLEAN_CHOICE
-import static com.liquidhub.framework.ci.view.ViewElementTypes.TEXT
-import static com.liquidhub.framework.ci.view.ViewElementTypes.BOOLEAN_CHOICE
-
-import static com.liquidhub.framework.providers.jenkins.OperatingSystemCommandAdapter.adapt
 
 class GitflowFinishHotfixJobGenerator extends BaseGitflowJobGenerationTemplateSupport{
 
@@ -69,6 +68,32 @@ class GitflowFinishHotfixJobGenerator extends BaseGitflowJobGenerationTemplateSu
 			context.generatingOnWindows ? batchFile(adapt(CHECK_OUT_HOTFIX)) : shell(CHECK_OUT_HOTFIX)
 			maven context.configurers('maven').configure(context, jobConfig)
 		}
+	}
+	
+	@Override
+	protected def determineRegularEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
+		'Closed Hotfix branch ${ENV, var="releaseVersion"}  on '+ctx.repositoryName
+	}
+
+	@Override
+	protected def determineFailureEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
+		'Action Required !!! Failed to finish hotfix branch ${ENV, var="releaseVersion"} on '+ctx.repositoryName
+	}
+	
+	
+	@Override
+	protected def configureAdditionalPublishers(JobGenerationContext ctx, JobConfig jobConfig){
+
+		//When release finishes and the code is merged to master, we trigger the master branch health job automatically
+		def downstreamMasterHealthJobName = ctx.jobNameCreator.createJobName(ctx.repositoryName, GitFlowBranchTypes.MASTER, 'master', ctx.configuration.healthConfig)
+				
+		return {
+			downstreamParameterized {
+				trigger(downstreamMasterHealthJobName, 'SUCCESS')
+			
+			}
+		}
+
 	}
 	
 	private static final def CHECK_OUT_HOTFIX = 'git checkout hotfix/${hotfixBranch}'

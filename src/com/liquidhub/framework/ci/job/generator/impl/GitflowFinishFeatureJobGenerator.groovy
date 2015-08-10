@@ -4,21 +4,20 @@ import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.FEATURE_
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.KEEP_FEATURE_BRANCH
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SKIP_FEATURE_MERGE_TO_DEVELOP
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SQUASH_COMMITS
-
+import static com.liquidhub.framework.ci.view.ViewElementTypes.BOOLEAN_CHOICE
 import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_BOOLEAN_CHOICE
 import static com.liquidhub.framework.ci.view.ViewElementTypes.TEXT
-import static com.liquidhub.framework.ci.view.ViewElementTypes.BOOLEAN_CHOICE
+import static com.liquidhub.framework.providers.jenkins.OperatingSystemCommandAdapter.adapt
 
-import com.liquidhub.framework.ci.model.BuildEnvironmentVariables
 import com.liquidhub.framework.ci.model.GitflowJobParameter
 import com.liquidhub.framework.ci.model.JobGenerationContext
 import com.liquidhub.framework.ci.model.ParameterListingScript
 import com.liquidhub.framework.ci.view.ViewElementTypes
 import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.config.model.JobConfig
+import com.liquidhub.framework.scm.model.GitFlowBranchTypes
 import com.liquidhub.framework.scm.model.SCMRemoteRefListingRequest
 import com.liquidhub.framework.scm.model.SCMRepository
-import static com.liquidhub.framework.providers.jenkins.OperatingSystemCommandAdapter.adapt
 
 class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateSupport {
 
@@ -69,13 +68,31 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 		}
 	}
 
+
 	@Override
-	protected def determineEmailSubject(JobGenerationContext ctx,JobConfig jobConfig){
-		'Feature # ${PROJECT_VERSION} finish '+ BuildEnvironmentVariables.BUILD_STATUS.paramValue+'!'
+	protected def determineRegularEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
+		'Feature branch ${ENV, var="featureName"}  on '+ctx.repositoryName+' merged to develop'
+	}
+
+	@Override
+	protected def determineFailureEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
+		'Action Required !!! Failed to finish feature branch ${ENV, var="featureName"} on '+ctx.repositoryName
+	}
+
+	@Override
+	protected def configureAdditionalPublishers(JobGenerationContext ctx, JobConfig jobConfig){
+
+		//When feature finishes and the code is merged to develop, we trigger the develop branch ci job automatically
+		def downstreamDevelopCIJobName = ctx.jobNameCreator.createJobName(ctx.repositoryName, GitFlowBranchTypes.DEVELOP, 'develop', ctx.configuration.continuousIntegrationConfig)
+		
+		return {
+			downstreamParameterized {
+				trigger(downstreamDevelopCIJobName, 'SUCCESS')
+			}
+		}
+
 	}
 
 
-
-
-	private static final String CHECK_OUT_FEATURE = 'git checkout feature/${featureName}'
-}
+		private static final String CHECK_OUT_FEATURE = 'git checkout feature/${featureName}'
+	}

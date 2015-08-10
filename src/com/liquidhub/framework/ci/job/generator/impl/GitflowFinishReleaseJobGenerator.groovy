@@ -15,7 +15,6 @@ import static com.liquidhub.framework.ci.view.ViewElementTypes.TEXT
 import static com.liquidhub.framework.providers.jenkins.OperatingSystemCommandAdapter.adapt
 
 import com.liquidhub.framework.ci.EmbeddedScriptProvider
-import com.liquidhub.framework.ci.model.BuildEnvironmentVariables
 import com.liquidhub.framework.ci.model.GitflowJobParameter
 import com.liquidhub.framework.ci.model.JobGenerationContext
 import com.liquidhub.framework.ci.model.ParameterListingScript
@@ -24,6 +23,7 @@ import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.config.model.JobConfig
 import com.liquidhub.framework.scm.DevelopmentMilestoneVersionScriptProvider
 import com.liquidhub.framework.scm.MilestoneReleaseVersionScriptProvider
+import com.liquidhub.framework.scm.model.GitFlowBranchTypes
 import com.liquidhub.framework.scm.model.SCMRemoteRefListingRequest
 import com.liquidhub.framework.scm.model.SCMRepository
 
@@ -82,24 +82,47 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 	@Override
 	def configureBuildSteps(JobGenerationContext ctx, JobConfig jobConfig){
-	
+
 
 		return{
 
 			ctx.generatingOnWindows ? batchFile(adapt(CHECKOUT_RELEASE_BRANCH)) : shell(CHECKOUT_RELEASE_BRANCH)
 
 			maven ctx.configurers('maven').configure(ctx, jobConfig)
-
 		}
 	}
 
-	protected def determineEmailSubject(ctx, jobConfig){
+	@Override
+	protected def determineRegularEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
+		'Closed Release branch ${ENV, var="releaseVersion"}  on '+ctx.repositoryName
+	}
 
-		'General Availability Release # ${PROJECT_VERSION} finish '+ BuildEnvironmentVariables.BUILD_STATUS.paramValue+'!'
+	@Override
+	protected def determineFailureEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
+		'Action Required !!! Failed to finish release branch ${ENV, var="releaseVersion"} on '+ctx.repositoryName
+	}
+	
+	
+	@Override
+	protected def configureAdditionalPublishers(JobGenerationContext ctx, JobConfig jobConfig){
+
+		//When release finishes and the code is merged to master, we trigger the master branch health job automatically
+		def downstreamMasterHealthJobName = ctx.jobNameCreator.createJobName(ctx.repositoryName, GitFlowBranchTypes.MASTER, 'master', ctx.configuration.healthConfig)
+		
+		//When release finishes and the master is merged to develop, we trigger the develop ci  job automatically
+		def downstreamDevelopCIJobName = ctx.jobNameCreator.createJobName(ctx.repositoryName, GitFlowBranchTypes.DEVELOP, 'develop', ctx.configuration.continuousIntegrationConfig)
+		
+		
+		return {
+			downstreamParameterized {
+				trigger(downstreamMasterHealthJobName, 'SUCCESS')
+				trigger(downstreamDevelopCIJobName, 'SUCCESS')
+			}
+		}
+
 	}
 
 
-	
+
 	static final def CHECKOUT_RELEASE_BRANCH = 'git checkout release/${releaseBranch}'
-	
 }

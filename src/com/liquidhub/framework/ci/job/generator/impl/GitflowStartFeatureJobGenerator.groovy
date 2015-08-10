@@ -5,6 +5,9 @@ import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.ENABLE_F
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.FEATURE_NAME
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.PUSH_FEATURES
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.START_COMMIT
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.FEATURE_OWNER_EMAIL
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.FEATURE_PRODUCTION_DATE
+
 
 import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_BOOLEAN_CHOICE
 import static com.liquidhub.framework.ci.view.ViewElementTypes.TEXT
@@ -38,17 +41,25 @@ class GitflowStartFeatureJobGenerator extends BaseGitflowJobGenerationTemplateSu
 		def featureParamDescription = 'The name of the feature you intend to start.Please do not prefix feature/  .It is done automatically'
 
 		parameters << new GitflowJobParameter(name: FEATURE_NAME, description: featureParamDescription, elementType: TEXT)
-		parameters << new GitflowJobParameter(name: START_COMMIT,description: generateCommitDescription(scmRepository.changeSetUrl),elementType: TEXT)
-
+		parameters << new GitflowJobParameter(name: START_COMMIT,description: generateCommitDescription(scmRepository.changeSetUrl),defaultValue: "'develop'", elementType: TEXT)
+		parameters << new GitflowJobParameter(name: FEATURE_OWNER_EMAIL,elementType: TEXT)
+		parameters << new GitflowJobParameter(name: FEATURE_PRODUCTION_DATE,elementType: TEXT)
+		
 		parameters << [ALLOW_SNAPSHOTS_WHILE_CREATING_FEATURE, ENABLE_FEATURE_VERSIONS, PUSH_FEATURES].collect{
 			new GitflowJobParameter(name: it, elementType: READ_ONLY_BOOLEAN_CHOICE, defaultValue: true)
 		}
 	}
 
 
-	protected def determineEmailSubject(JobGenerationContext ctx,JobConfig jobConfig){
 
-		'Feature # ${PROJECT_VERSION} start '+ BuildEnvironmentVariables.BUILD_STATUS.paramValue+'!'
+	@Override
+	protected def determineRegularEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
+		'New Feature branch ${ENV, var="featureName"} created on '+ctx.repositoryName+' repository'
+	}
+
+	@Override
+	protected def determineFailureEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
+		'Action Required !!! Failed to create feature branch ${ENV, var="featureName"}.'
 	}
 
 
