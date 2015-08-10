@@ -38,7 +38,8 @@ class JobNameBuilder {
 				break
 
 			case GitFlowBranchTypes.FEATURE:
-				repositoryName+'-'+branchName
+			   def jobNamePart = branchName.replace(GitFlowBranchTypes.FEATURE.prefix,'')//If feature name is feature/ssoIntegration, job name is ssoIntegration
+				repositoryName+'-'+jobNamePart
 				break
 
 			default: //There are a lot of situations which fall into this category, we handle them explicitly
