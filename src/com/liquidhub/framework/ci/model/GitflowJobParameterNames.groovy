@@ -5,6 +5,8 @@ enum GitflowJobParameterNames {
 	CONFIGURE_BRANCH_JOBS('configureBranchJobs', CONFIGURE_BRANCH_JOB_PARAM_DESCRIPTION),
 	FEATURE_NAME('featureName'),
 	START_COMMIT('startCommit'),
+	FEATURE_OWNER_EMAIL('featureOwnerEmail', 'Enter the email address of the team lead who owns this feature'),
+	FEATURE_PRODUCTION_DATE('featureProductionDate', 'Enter the intended release of feature in production. It is perfectly acceptable if the date changes later.binding Use the format mm/yyyyy. E.g. for October 2015 release, enter 10/2015'),
 	RELEASE_FROM_BRANCH('releaseFromBranch'),
 	RELEASE_BRANCH('releaseBranch'),
 	RELEASE_VERSION('releaseVersion','Default version to use when starting the branch'),
