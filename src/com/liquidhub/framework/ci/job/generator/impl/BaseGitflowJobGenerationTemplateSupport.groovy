@@ -127,5 +127,12 @@ abstract class BaseGitflowJobGenerationTemplateSupport extends BaseJobGeneration
 	protected boolean configuresBranchInitiatingJob(){
 		false
 	}
+	
+	/**
+	 *  @return true if the generator is a gitflow supporting generator. Defaults to false
+	 */
+	boolean supportsGitflow(){
+		true
+	}
 
 }
