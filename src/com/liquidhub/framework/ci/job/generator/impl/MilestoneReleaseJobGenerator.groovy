@@ -2,11 +2,11 @@ package com.liquidhub.framework.ci.job.generator.impl
 
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.ALLOW_SNAPSHOTS_WHILE_FINISHING_RELEASE
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.KEEP_RELEASE_BRANCH
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.MILESTONE_RELEASE_VERSION
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.MILESTONE_TAG_MESSAGE
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.NEXT_MILESTONE_DEV_VERSION
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_BRANCH
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_TAG_MESSAGE
-import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.MILESTONE_RELEASE_VERSION
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SKIP_RELEASE_TAGGING
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SQUASH_COMMITS
 import static com.liquidhub.framework.ci.view.ViewElementTypes.BOOLEAN_CHOICE
@@ -80,7 +80,7 @@ class MilestoneReleaseJobGenerator extends BaseGitflowJobGenerationTemplateSuppo
 
 		parameters << new GitflowJobParameter(name: NEXT_MILESTONE_DEV_VERSION, valueListingScript: new ParameterListingScript(text:developmentVersionDeterminationScript),elementType: READ_ONLY_TEXT)
 
-	//	parameters << new GitflowJobParameter(name: MILESTONE_TAG_MESSAGE, elementType: TEXT)
+		//	parameters << new GitflowJobParameter(name: MILESTONE_TAG_MESSAGE, elementType: TEXT)
 	}
 
 
@@ -120,13 +120,19 @@ class MilestoneReleaseJobGenerator extends BaseGitflowJobGenerationTemplateSuppo
 			ctx.generatingOnWindows ? batchFile(commitAllFilesCommand):shell(commitAllFilesCommand)
 		}
 	}
-	
-	
-	protected def determineEmailSubject(ctx, jobConfig){
-		
-				'Milestone Release # ${PROJECT_VERSION} finish '+ BuildEnvironmentVariables.BUILD_STATUS.paramValue+'!'
-		
-			}
+
+
+	@Override
+	protected def determineRegularEmailSubject(JobGenerationContext ctx,JobConfig jobConfig){
+
+		'New milestone ${PROJECT_VERSION} created for'+ctx.repositoryName
+	}
+
+	@Override
+	protected def determineFailureEmailSubject(JobGenerationContext ctx,JobConfig jobConfig){
+
+		'Fix Required!!!! Milestone creation failed for '+ctx.repositoryName
+	}
 
 	static final def CHECKOUT_RELEASE_BRANCH = 'git checkout release/${releaseBranch}'
 
