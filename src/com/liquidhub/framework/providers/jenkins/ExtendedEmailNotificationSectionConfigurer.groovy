@@ -2,32 +2,29 @@ package com.liquidhub.framework.providers.jenkins
 
 import com.liquidhub.framework.JobSectionConfigurer
 import com.liquidhub.framework.ci.model.Email
+import com.liquidhub.framework.ci.model.EmailNotificationContext
 import com.liquidhub.framework.ci.model.JobGenerationContext
 import com.liquidhub.framework.config.model.JobConfig
 
 class ExtendedEmailNotificationSectionConfigurer implements JobSectionConfigurer {
 
 
-	Closure configure(JobGenerationContext context, JobConfig jobConfig, Email email=null){
-		
-		context.logger.debug 'Email definition context is '+email
+	Closure configure(JobGenerationContext context, JobConfig jobConfig, EmailNotificationContext notificationContext=null){
 
-		def regularEmailRecipients = email.sendTo
-		def escalationEmailRecipients = email.escalateTo
-		def emailSubject = email.subject
+		context.logger.debug 'Email definition context is '+notificationContext
+
+		def regularEmailRecipients = notificationContext.recipientList
+		def contentTemplate = notificationContext.contentTemplate
+		def emailSubject = notificationContext.subjectTemplate
 
 		return {
 
-			extendedEmail(regularEmailRecipients, emailSubject) {
+			extendedEmail(regularEmailRecipients, emailSubject, contentTemplate) {
 
-				trigger(triggerName: 'Success', sendToRecipientList: true, sendToDevelopers:true)
-				//Only to dev contributors
-				trigger(triggerName: 'FirstFailure', includeCulprits: true, sendToRecipientList: true, sendToDevelopers:true, subject : 'Action Required!!!'+emailSubject)
-				//To everyone who was explicitly specified using a list
+				notificationContext.emailTriggers.each{ triggerName, Email email ->
+					trigger(triggerName: triggerName, sendToRecipientList: email.sendToRecipientList, sendToDevelopers:email.sendToDevelopers, includeCulprits: email.includeCulprits, subject: email.subject, content: email.body)
+				}
 
-				def failureEmailList  = [regularEmailRecipients, escalationEmailRecipients].join(",")
-
-				trigger(triggerName: 'Failure', recipientList: failureEmailList, sendToRecipientList: true, sendToDevelopers:true,includeCulprits: true, subject : 'Action Required!!!'+emailSubject)
 				configure { node ->
 					node  << attachBuildLog(true)
 					//We attach a default pre send script on master which allows messages to be flagged important when they fail
