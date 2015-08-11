@@ -71,11 +71,10 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 				)
 
 		parameters << new GitflowJobParameter(name: ALLOW_SNAPSHOTS_WHILE_FINISHING_RELEASE, elementType: READ_ONLY_BOOLEAN_CHOICE, defaultValue:false)
-		parameters << new GitflowJobParameter(name: KEEP_RELEASE_BRANCH, elementType: READ_ONLY_BOOLEAN_CHOICE, defaultValue:true)
+		parameters << new GitflowJobParameter(name: KEEP_RELEASE_BRANCH, elementType: BOOLEAN_CHOICE, defaultValue:true)
 		parameters << new GitflowJobParameter(name: SKIP_RELEASE_BRANCH_MERGE, elementType: BOOLEAN_CHOICE,defaultValue: false)
 		parameters << new GitflowJobParameter(name: SQUASH_COMMITS, elementType: BOOLEAN_CHOICE, defaultValue:false)
 		parameters << new GitflowJobParameter(name: SKIP_RELEASE_TAGGING, elementType: READ_ONLY_BOOLEAN_CHOICE, defaultValue:false)
-		//parameters << new GitflowJobParameter(name: RELEASE_TAG_MESSAGE, elementType: TEXT)
 	}
 
 
