@@ -25,6 +25,7 @@ class JobConfig {
 	projectDescriptionTemplatePath, //The path to a HTML template which adds a description for the project
 	regularEmailRecipients,  // The list of people who need to be informed about the activities of this job - success,failures
 	escalationEmailRecipients, // The escalation email list
+	emailContent,
 	activeMavenProfiles  
 
 	private static def logger
@@ -54,6 +55,7 @@ class JobConfig {
 			'projectDescriptionTemplatePath',
 			'regularEmailRecipients',
 			'escalationEmailRecipients',
+			'emailContent',
 			'activeMavenProfiles'
 		].each{property ->
 		   	this[property] = otherJobConfig[property] ?:  this[property]

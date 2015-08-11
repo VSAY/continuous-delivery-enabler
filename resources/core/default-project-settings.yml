@@ -71,6 +71,7 @@ gitflowFeatureBranchConfig: &gitflowFeatureBranchConfig
     jobPrefix: StartFeature_
     projectDescriptionTemplatePath: resources/core/gitflow-start-feature-description.template
     generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowStartFeatureJobGenerator
+    emailContent: ${JELLY_SCRIPT, template="frontoffice-feature-start-email-template.jelly"}
   finishConfig: 
     goals: clean install test jgitflow:feature-finish -B -Pgitflow
     goalArgs: {keepBranch: $keepBranch,  featureName: $featureName, noFeatureMerge: $skipFeatureMergeToDevelop, squash: $squashCommits}

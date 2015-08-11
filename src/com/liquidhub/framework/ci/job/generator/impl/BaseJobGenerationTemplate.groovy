@@ -241,7 +241,7 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 
 		def emailSubject = determineRegularEmailSubject(ctx, jobConfig)
 
-		EmailNotificationContext defaultContext = new EmailNotificationContext(recipientList: regularEmailRecipients, subjectTemplate: emailSubject)
+		EmailNotificationContext defaultContext = new EmailNotificationContext(recipientList: regularEmailRecipients, subjectTemplate: emailSubject, contentTemplate: jobConfig.emailContent)
 
 		def escalationEmails = determineEscalationEmailRecipients(ctx, jobConfig)
 
