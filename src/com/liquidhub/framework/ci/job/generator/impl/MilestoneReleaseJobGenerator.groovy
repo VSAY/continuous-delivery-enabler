@@ -133,6 +133,13 @@ class MilestoneReleaseJobGenerator extends BaseGitflowJobGenerationTemplateSuppo
 
 		'Action Required!!!! Milestone creation failed for '+ctx.repositoryName
 	}
+	
+	/**
+	 * @return the name of the branch which should be used to build the source code
+	 */
+	protected def identifySCMBranchForBuild(JobGenerationContext ctx){
+		'release/${releaseBranch}'
+	}
 
 	static final def CHECKOUT_RELEASE_BRANCH = 'git checkout release/${releaseBranch}'
 
