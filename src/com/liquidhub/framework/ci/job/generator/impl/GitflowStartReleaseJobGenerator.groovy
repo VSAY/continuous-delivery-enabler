@@ -6,6 +6,7 @@ import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.PUSH_REL
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_BRANCH_VERSION_SUFFIX
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_VERSION
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.START_COMMIT
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_DATE
 
 import com.liquidhub.framework.ci.model.BuildEnvironmentVariables
 import com.liquidhub.framework.ci.model.GitflowJobParameter
@@ -56,7 +57,8 @@ class GitflowStartReleaseJobGenerator extends BaseGitflowJobGenerationTemplateSu
 
 
 		parameters << new GitflowJobParameter(name: RELEASE_BRANCH_VERSION_SUFFIX, elementType: TEXT)
-
+		parameters << new GitflowJobParameter(name: RELEASE_DATE,elementType: TEXT)
+		
 		parameters << [ALLOW_SNAPSHOTS_WHILE_CREATING_RELEASE, PUSH_RELEASES].collect {
 			new GitflowJobParameter(name: it, elementType: READ_ONLY_BOOLEAN_CHOICE, defaultValue:true)
 		}

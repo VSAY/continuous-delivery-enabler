@@ -7,8 +7,8 @@ import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_TAG_MESSAGE
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SKIP_RELEASE_BRANCH_MERGE
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SKIP_RELEASE_TAGGING
-import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_DATE
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SQUASH_COMMITS
+
 import static com.liquidhub.framework.ci.view.ViewElementTypes.BOOLEAN_CHOICE
 import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_BOOLEAN_CHOICE
 import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_TEXT
@@ -71,7 +71,6 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 				elementType: ViewElementTypes.SINGLE_SELECT_CHOICES
 				)
 
-		parameters << new GitflowJobParameter(name: RELEASE_DATE,elementType: TEXT)
 		parameters << new GitflowJobParameter(name: ALLOW_SNAPSHOTS_WHILE_FINISHING_RELEASE, elementType: READ_ONLY_BOOLEAN_CHOICE, defaultValue:false)
 		parameters << new GitflowJobParameter(name: KEEP_RELEASE_BRANCH, elementType: BOOLEAN_CHOICE, defaultValue:true)
 		parameters << new GitflowJobParameter(name: SKIP_RELEASE_BRANCH_MERGE, elementType: BOOLEAN_CHOICE,defaultValue: false)
