@@ -77,7 +77,8 @@ gitflowFeatureBranchConfig: &gitflowFeatureBranchConfig
     goalArgs: {keepBranch: $keepBranch,  featureName: $featureName, noFeatureMerge: $skipFeatureMergeToDevelop, squash: $squashCommits}
     projectDescriptionTemplatePath: resources/core/gitflow-finish-feature-description.template
     jobPrefix: FinishFeature_
-    generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowFinishFeatureJobGenerator     
+    generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowFinishFeatureJobGenerator
+    emailContent: ${JELLY_SCRIPT, template="frontoffice-feature-finish-email-template.jelly"}
  
   
   
