@@ -93,7 +93,7 @@ gitflowReleaseBranchConfig: &gitflowReleaseBranchConfig
       
   finishConfig:
     goals: clean test jgitflow:release-finish -B
-    goalArgs: {autoVersionSubmodules: true, keepBranch: true, featureName: $featureName}
+    goalArgs: {autoVersionSubmodules: true}
     jobPrefix: FinishRelease_
     projectDescriptionTemplatePath: resources/core/gitflow-finish-release-description.template
     generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowFinishReleaseJobGenerator
