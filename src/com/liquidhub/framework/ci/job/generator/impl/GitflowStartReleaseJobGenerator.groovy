@@ -73,6 +73,13 @@ class GitflowStartReleaseJobGenerator extends BaseGitflowJobGenerationTemplateSu
 	protected def preparePropertiesForDownstreamJobLaunch(JobGenerationContext context){
 		[gitRepoUrl: context.scmRepository.repoUrl, repoBranchName: 'release/${releaseVersion}']
 	}
+	
+	/**
+	 * @return the name of the branch which should be used to build the source code
+	 */
+	protected def identifySCMBranchForBuild(JobGenerationContext ctx){
+		'develop'
+	}
 
 
 

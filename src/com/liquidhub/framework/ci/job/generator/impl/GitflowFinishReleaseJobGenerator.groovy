@@ -7,6 +7,7 @@ import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_TAG_MESSAGE
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SKIP_RELEASE_BRANCH_MERGE
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SKIP_RELEASE_TAGGING
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_DATE
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SQUASH_COMMITS
 import static com.liquidhub.framework.ci.view.ViewElementTypes.BOOLEAN_CHOICE
 import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_BOOLEAN_CHOICE
@@ -70,6 +71,7 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 				elementType: ViewElementTypes.SINGLE_SELECT_CHOICES
 				)
 
+		parameters << new GitflowJobParameter(name: RELEASE_DATE,elementType: TEXT)
 		parameters << new GitflowJobParameter(name: ALLOW_SNAPSHOTS_WHILE_FINISHING_RELEASE, elementType: READ_ONLY_BOOLEAN_CHOICE, defaultValue:false)
 		parameters << new GitflowJobParameter(name: KEEP_RELEASE_BRANCH, elementType: BOOLEAN_CHOICE, defaultValue:true)
 		parameters << new GitflowJobParameter(name: SKIP_RELEASE_BRANCH_MERGE, elementType: BOOLEAN_CHOICE,defaultValue: false)
@@ -88,17 +90,30 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 			ctx.generatingOnWindows ? batchFile(adapt(CHECKOUT_RELEASE_BRANCH)) : shell(CHECKOUT_RELEASE_BRANCH)
 
 			maven ctx.configurers('maven').configure(ctx, jobConfig)
+			
+			ctx.generatingOnWindows ? batchFile(adapt(WRITE_LAST_COMMIT_CODE_TO_FILE)) : shell(WRITE_LAST_COMMIT_CODE_TO_FILE)
+			environmentVariables{
+				propertiesFile('finishrelease_env_properties') //This is the file we create in the previous step
+				envs(['SCM_CHANGESET_URL': ctx.scmRepository.changeSetUrl])
+			}
 		}
 	}
 
 	@Override
 	protected def determineRegularEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
-		'Closed Release branch ${ENV, var="releaseVersion"}  on '+ctx.repositoryName
+		'Closed Release branch ${ENV, var="releaseBranch"}  on '+ctx.repositoryName+' repository'
 	}
 
 	@Override
 	protected def determineFailureEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
-		'Action Required !!! Failed to finish release branch ${ENV, var="releaseVersion"} on '+ctx.repositoryName
+		'Action Required !!! Failed to finish release branch ${ENV, var="releaseBranch"} on '+ctx.repositoryName
+	}
+	
+	/**
+	 * @return the name of the branch which should be used to build the source code
+	 */
+	protected def identifySCMBranchForBuild(JobGenerationContext ctx){
+		'release/${releaseBranch}'
 	}
 	
 	
@@ -124,4 +139,6 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 
 	static final def CHECKOUT_RELEASE_BRANCH = 'git checkout release/${releaseBranch}'
+	
+	private static final String WRITE_LAST_COMMIT_CODE_TO_FILE = 'echo MERGE_COMMIT=$(echo `git log -1 --pretty=format:%h`) > finishrelease_env_properties'
 }

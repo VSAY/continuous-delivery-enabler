@@ -89,6 +89,7 @@ gitflowReleaseBranchConfig: &gitflowReleaseBranchConfig
     jobPrefix: StartRelease_
     projectDescriptionTemplatePath: resources/core/gitflow-start-release-description.template
     generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowStartReleaseJobGenerator
+    emailContent: ${JELLY_SCRIPT, template="frontoffice-release-start-email-template.jelly"}
       
   finishConfig:
     goals: clean test jgitflow:release-finish -B
@@ -97,6 +98,7 @@ gitflowReleaseBranchConfig: &gitflowReleaseBranchConfig
     projectDescriptionTemplatePath: resources/core/gitflow-finish-release-description.template
     generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowFinishReleaseJobGenerator
     activeMavenProfiles: release,gitflow,ci
+    emailContent: ${JELLY_SCRIPT, template="frontoffice-release-finish-email-template.jelly"}
   
   
   
