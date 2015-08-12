@@ -125,7 +125,7 @@ class MilestoneReleaseJobGenerator extends BaseGitflowJobGenerationTemplateSuppo
 	@Override
 	protected def determineRegularEmailSubject(JobGenerationContext ctx,JobConfig jobConfig){
 
-		'New milestone ${PROJECT_VERSION} created for'+ctx.repositoryName
+		'New milestone ${PROJECT_VERSION} created for '+ctx.repositoryName +' repository'
 	}
 
 	@Override
