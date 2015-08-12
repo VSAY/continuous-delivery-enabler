@@ -88,7 +88,7 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 	 * @return the name of the branch which should be used to build the source code
 	 */
 	protected def identifySCMBranchForBuild(JobGenerationContext ctx){
-		'${featureName}'
+		'feature/${featureName}'
 	}
 
 	@Override
