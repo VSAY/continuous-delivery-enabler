@@ -74,7 +74,7 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 
 
 			if(requiresSCMConfiguration()){
-				scm  ctx.configurers('scm').configure(ctx, jobConfig, ignoreCommitNotifications())
+				scm  ctx.configurers('scm').configure(ctx, jobConfig, identifySCMBranchForBuild(), ignoreCommitNotifications())
 			}
 
 			if(requiresTriggerConfiguration()){
@@ -196,6 +196,14 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 	 */
 	protected Map grantAdditionalPermissions(JobGenerationContext ctx, RoleConfig roleConfig){
 		[:]
+	}
+	
+	
+	/**
+	 * @return the name of the branch which should be used to build the source code
+	 */
+	protected def identifySCMBranchForBuild(JobGenerationContext ctx){
+		ctx.repositoryBranchName
 	}
 
 

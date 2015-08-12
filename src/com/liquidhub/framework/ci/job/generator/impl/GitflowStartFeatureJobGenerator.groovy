@@ -61,6 +61,13 @@ class GitflowStartFeatureJobGenerator extends BaseGitflowJobGenerationTemplateSu
 	protected def determineFailureEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
 		'Action Required !!! Failed to create feature branch ${ENV, var="featureName"}.'
 	}
+	
+	/**
+	 * @return the name of the branch which should be used to build the source code
+	 */
+	protected def identifySCMBranchForBuild(JobGenerationContext ctx){
+		'develop'
+	}
 
 
 	def configureBuildSteps(JobGenerationContext ctx, JobConfig jobConfig){

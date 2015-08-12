@@ -83,6 +83,13 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 	protected def determineFailureEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
 		'Action Required !!! Failed to finish feature branch ${ENV, var="featureName"} on '+ctx.repositoryName
 	}
+	
+	/**
+	 * @return the name of the branch which should be used to build the source code
+	 */
+	protected def identifySCMBranchForBuild(JobGenerationContext ctx){
+		'${featureName}'
+	}
 
 	@Override
 	protected def configureAdditionalPublishers(JobGenerationContext ctx, JobConfig jobConfig){

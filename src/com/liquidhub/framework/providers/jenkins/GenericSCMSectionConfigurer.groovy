@@ -8,7 +8,7 @@ import com.liquidhub.framework.scm.model.SCMRepository
 class GenericSCMSectionConfigurer implements JobSectionConfigurer{
 
 
-	Closure configure(JobGenerationContext context, JobConfig jobConfig, boolean ignoreCommitNotifications=false){
+	Closure configure(JobGenerationContext context, JobConfig jobConfig, String branchToBuild=null, boolean ignoreCommitNotifications=false){
 		
 		SCMRepository scmRepository = context.scmRepository
 
@@ -18,7 +18,8 @@ class GenericSCMSectionConfigurer implements JobSectionConfigurer{
 					url(scmRepository.repoUrl)
 					credentials(context.scmCredentialsId) //This should point to an existing Credential Description
 				}
-				branch('*/'+scmRepository.repoBranchName) //Align to the ref spec
+				branchToBuild = branchToBuild ?: scmRepository.repoBranchName
+				branch('*/'+branchToBuild) //Align to the ref spec
 				browser {
 					stash(scmRepository.changeSetUrl) // URL to the Stash repository, optional
 				}
