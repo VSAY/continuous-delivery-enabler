@@ -97,9 +97,11 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 		//When feature finishes and the code is merged to develop, we trigger the develop branch ci job automatically
 		def downstreamDevelopCIJobName = ctx.jobNameCreator.createJobName(ctx.repositoryName, GitFlowBranchTypes.DEVELOP, 'develop', ctx.configuration.continuousIntegrationConfig)
 		
+		final boolean triggerWithNoParameters = true
+		
 		return {
 			downstreamParameterized {
-				trigger(downstreamDevelopCIJobName, 'SUCCESS')
+				trigger(downstreamDevelopCIJobName, 'SUCCESS', triggerWithNoParameters)
 			}
 		}
 
