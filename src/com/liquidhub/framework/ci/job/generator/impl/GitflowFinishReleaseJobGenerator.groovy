@@ -125,11 +125,12 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 		//When release finishes and the master is merged to develop, we trigger the develop ci  job automatically
 		def downstreamDevelopCIJobName = ctx.jobNameCreator.createJobName(ctx.repositoryName, GitFlowBranchTypes.DEVELOP, 'develop', ctx.configuration.continuousIntegrationConfig)
 		
+		final boolean triggerWithNoParameters = true
 		
 		return {
 			downstreamParameterized {
-				trigger(downstreamMasterHealthJobName, 'SUCCESS')
-				trigger(downstreamDevelopCIJobName, 'SUCCESS')
+				trigger(downstreamMasterHealthJobName, 'SUCCESS', triggerWithNoParameters)
+				trigger(downstreamDevelopCIJobName, 'SUCCESS', triggerWithNoParameters)
 			}
 		}
 
@@ -139,5 +140,5 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 	static final def CHECKOUT_RELEASE_BRANCH = 'git checkout release/${releaseBranch}'
 	
-	private static final String WRITE_LAST_COMMIT_CODE_TO_FILE = 'echo MERGE_COMMIT=$(echo `git log -1 --pretty=format:%h`) > finishrelease_env_properties'
+	private static final String WRITE_LAST_COMMIT_CODE_TO_FILE = 'echo MERGE_COMMIT=$(echo `git log -1 --merges --pretty=format:%h`) > finishrelease_env_properties'
 }

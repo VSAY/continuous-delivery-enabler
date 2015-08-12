@@ -110,5 +110,5 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 		private static final String CHECK_OUT_FEATURE = 'git checkout feature/${featureName}'
 		
-		private static final String WRITE_LAST_COMMIT_CODE_TO_FILE = 'echo MERGE_COMMIT=$(echo `git log -1 --pretty=format:%h`) > finishfeature_env_properties'
+		private static final String WRITE_LAST_COMMIT_CODE_TO_FILE = 'echo MERGE_COMMIT=$(echo `git log -1 --merges --pretty=format:%h`) > finishfeature_env_properties'
 	}
