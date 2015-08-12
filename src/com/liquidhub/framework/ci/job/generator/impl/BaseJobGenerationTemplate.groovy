@@ -74,7 +74,7 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 
 
 			if(requiresSCMConfiguration()){
-				scm  ctx.configurers('scm').configure(ctx, jobConfig, identifySCMBranchForBuild(), ignoreCommitNotifications())
+				scm  ctx.configurers('scm').configure(ctx, jobConfig, identifySCMBranchForBuild(ctx), ignoreCommitNotifications())
 			}
 
 			if(requiresTriggerConfiguration()){
