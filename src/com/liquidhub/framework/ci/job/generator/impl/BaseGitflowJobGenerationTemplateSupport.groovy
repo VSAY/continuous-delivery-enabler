@@ -99,7 +99,7 @@ abstract class BaseGitflowJobGenerationTemplateSupport extends BaseJobGeneration
 	@Override
 	protected def registerEmailConfigurationForTrigger(JobGenerationContext ctx, EmailNotificationContext emailContext, JobConfig jobConfig){
 				
-		Email successEmail = new Email(sendToDevelopers: true,sendToRequestor: true, sendToRecipientList:true ,subject:super.determineRegularEmailSubject(ctx, jobConfig))		
+		Email successEmail = new Email(sendToDevelopers: true,sendToRequestor: true, sendToRecipientList:true ,subject:determineRegularEmailSubject(ctx, jobConfig))		
 		
 		emailContext.addEmailForTrigger('Success', successEmail)
 		
