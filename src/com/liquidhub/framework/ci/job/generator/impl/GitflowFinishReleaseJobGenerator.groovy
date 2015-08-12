@@ -100,7 +100,7 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 	@Override
 	protected def determineRegularEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
-		'Release branch release/${ENV, var="releaseBranch"}  on '+ctx.repositoryName+' repository has been merged into master and develop branches'
+		'release/${ENV, var="releaseBranch"}  branch on '+ctx.repositoryName+' repository has been closed and merged into master and develop branches'
 	}
 
 	@Override

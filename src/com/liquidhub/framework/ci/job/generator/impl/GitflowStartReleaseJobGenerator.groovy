@@ -87,7 +87,7 @@ class GitflowStartReleaseJobGenerator extends BaseGitflowJobGenerationTemplateSu
 
 	@Override
 	protected def determineRegularEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
-		'Release branch release/${ENV, var="releaseVersion"} for '+ctx.repositoryName+'repository has been created'
+		'release/${ENV, var="releaseVersion"} branch for '+ctx.repositoryName+' repository is now open'
 	}
 
 	@Override
