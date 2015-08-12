@@ -131,7 +131,7 @@ class MilestoneReleaseJobGenerator extends BaseGitflowJobGenerationTemplateSuppo
 	@Override
 	protected def determineFailureEmailSubject(JobGenerationContext ctx,JobConfig jobConfig){
 
-		'Action Required!!!! Milestone creation failed for '+ctx.repositoryName
+		'Action Required!!!! Milestone creation failed for '+ctx.repositoryName+' repostiory'
 	}
 	
 	/**

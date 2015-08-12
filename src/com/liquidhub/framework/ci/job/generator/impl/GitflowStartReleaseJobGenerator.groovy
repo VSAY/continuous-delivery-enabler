@@ -87,12 +87,12 @@ class GitflowStartReleaseJobGenerator extends BaseGitflowJobGenerationTemplateSu
 
 	@Override
 	protected def determineRegularEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
-		'Release branch ${ENV, var="releaseVersion"} for '+ctx.repositoryBranchName+' is now open'
+		'Release branch ${ENV, var="releaseVersion"} for '+ctx.repositoryName+' is now open'
 	}
 
 	@Override
 	protected def determineFailureEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
-		'Action Required !!! Failed to open release branch ${ENV, var="releaseVersion"} for '+ctx.repositoryBranchName
+		'Action Required !!! Failed to open release branch ${ENV, var="releaseVersion"} for '+ctx.repositoryName+' repository'
 	}
 
 	protected boolean configuresBranchInitiatingJob(){
