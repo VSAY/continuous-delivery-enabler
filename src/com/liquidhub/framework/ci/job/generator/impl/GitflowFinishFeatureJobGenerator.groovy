@@ -64,6 +64,12 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 		return {
 			ctx.generatingOnWindows ? batchFile(adapt(CHECK_OUT_FEATURE)) : shell(CHECK_OUT_FEATURE)
 			maven ctx.mavenBuildStepConfigurer().configure(ctx, jobConfig)
+			ctx.generatingOnWindows ? batchFile(adapt(WRITE_LAST_COMMIT_CODE_TO_FILE)) : shell(WRITE_LAST_COMMIT_CODE_TO_FILE)
+			environmentVariables{
+				propertiesFile('finishfeature_env_properties') //This is the file we create in the previous step
+				envs(['SCM_CHANGESET_URL': ctx.scmRepository.changeSetUrl])
+			}
+			
 		}
 	}
 
@@ -94,4 +100,6 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 
 		private static final String CHECK_OUT_FEATURE = 'git checkout feature/${featureName}'
+		
+		private static final String WRITE_LAST_COMMIT_CODE_TO_FILE = 'echo MERGE_COMMIT=$(echo `git log -1 --pretty=format:%h`) > finishfeature_env_properties'
 	}
