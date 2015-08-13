@@ -6,7 +6,7 @@ enum GitflowJobParameterNames {
 	FEATURE_NAME('featureName'),
 	START_COMMIT('startCommit'),
 	FEATURE_OWNER_EMAIL('featureOwnerEmail', 'Enter the email address of the team lead who owns this feature'),
-	INTENDED_PRODUCTION_DATE('featureProductionMonthAndYea', 'Enter the intended release of feature in production expressed in month and year. It is perfectly acceptable if the date changes later.binding Use the format mm/yyyyy. E.g. for October 2015 release, enter 10/2015'),
+	FEATURE_PRODUCTION_DATE('featureProductionMonthAndYea', 'Enter the intended release of feature in production expressed in month and year. It is perfectly acceptable if the date changes later.binding Use the format mm/yyyyy. E.g. for October 2015 release, enter 10/2015'),
 	RELEASE_DATE('releaseDate', 'Enter the intended production release month and year. Use the format mm/yyyyy. E.g. for October 2015 release, enter 10/2015'),
 	
 	RELEASE_FROM_BRANCH('releaseFromBranch'),
