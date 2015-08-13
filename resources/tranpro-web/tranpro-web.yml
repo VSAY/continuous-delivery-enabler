@@ -1,13 +1,13 @@
 deploymentConfig: &deploymentConfig
   deploymentScriptPath: resources/core/default-deployment-script.sh
-  appContextRoot: /esirba
+  appContextRoot: /TranPro
   environments: 
    - name: Dev
      deploymentManager: wsmgrd20
-     targetJVMName: ESIRBA
+     targetJVMName: TranPro
      targetCellName: DevKCell40
    - name: QA
-     deploymentManager: wsmgrq20
-     targetJVMName: ESIRBA
+     deploymentManager: Wsmgrq20
+     targetJVMName: TranPro
      targetCellName: QaKCell40
      

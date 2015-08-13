@@ -127,6 +127,7 @@ deploymentConfig: &deploymentConfig
   serverTemplate: WEBSPHERE
   artifactRepository: NEXUS
   appConfigurationArtifactIdentificationPattern: .*conf.*
+  jobSuffix: Deployer
   generatorClass: com.liquidhub.framework.ci.job.generator.impl.DeploymentJobGenerator
   releaseVersionCountToDisplay: 5
   snapshotVersionCountToDisplay: 5

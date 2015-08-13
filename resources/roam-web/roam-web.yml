@@ -1,13 +1,12 @@
 deploymentConfig: &deploymentConfig
   deploymentScriptPath: resources/core/default-deployment-script.sh
-  appContextRoot: /esirba
   environments: 
    - name: Dev
      deploymentManager: wsmgrd20
-     targetJVMName: ESIRBA
+     targetJVMName: RCA
      targetCellName: DevKCell40
    - name: QA
      deploymentManager: wsmgrq20
-     targetJVMName: ESIRBA
+     targetJVMName: RCA
      targetCellName: QaKCell40
      
