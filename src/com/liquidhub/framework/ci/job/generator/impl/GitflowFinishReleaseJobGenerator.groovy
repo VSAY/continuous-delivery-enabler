@@ -90,7 +90,8 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 			maven ctx.configurers('maven').configure(ctx, jobConfig)
 			
-			ctx.generatingOnWindows ? batchFile(adapt(WRITE_LAST_COMMIT_CODE_TO_FILE)) : shell(WRITE_LAST_COMMIT_CODE_TO_FILE)
+			ctx.generatingOnWindows ? batchFile(adapt(WRITE_MASTER_MERGE_COMMIT_CODE_TO_FILE)) : shell(WRITE_MASTER_MERGE_COMMIT_CODE_TO_FILE)
+			ctx.generatingOnWindows ? batchFile(adapt(WRITE_DEVELOP_MERGE_COMMIT_CODE_TO_FILE)) : shell(WRITE_DEVELOP_MERGE_COMMIT_CODE_TO_FILE)
 			environmentVariables{
 				propertiesFile('finishrelease_env_properties') //This is the file we create in the previous step
 				envs(['SCM_CHANGESET_URL': ctx.scmRepository.changeSetUrl])
@@ -140,5 +141,7 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 	static final def CHECKOUT_RELEASE_BRANCH = 'git checkout release/${releaseBranch}'
 	
-	private static final String WRITE_LAST_COMMIT_CODE_TO_FILE = 'echo MERGE_COMMIT=$(echo `git log -1 --merges --pretty=format:%h`) > finishrelease_env_properties'
+	private static final String WRITE_MASTER_MERGE_COMMIT_CODE_TO_FILE = 'echo MASTER_MERGE_COMMIT=$(echo `git log -1 --merges --pretty=format:%h`) > finishrelease_env_properties'
+	
+	private static final String WRITE_DEVELOP_MERGE_COMMIT_CODE_TO_FILE = 'echo DEVELOP_MERGE_COMMIT=$(echo `git log -3 -2 --merges --pretty=format:%h`) > finishrelease_env_properties'
 }
