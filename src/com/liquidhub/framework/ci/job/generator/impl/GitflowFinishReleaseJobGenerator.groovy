@@ -82,14 +82,23 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 	@Override
 	def configureBuildSteps(JobGenerationContext ctx, JobConfig jobConfig){
+		
+		def mvnConfigurer = ctx.configurers('maven')
+		
+		def configureMavenCommand = {goals ->
+			
+						def config = goals instanceof JobConfig ? goals :  ['goals': goals, 'activeMavenProfiles':jobConfig?.activeMavenProfiles] as JobConfig
+			
+						mvnConfigurer.configure(ctx, config)
+					}
 
 
 		return{
 
 			ctx.generatingOnWindows ? batchFile(adapt(CHECKOUT_RELEASE_BRANCH)) : shell(CHECKOUT_RELEASE_BRANCH)
-
-			maven ctx.configurers('maven').configure(ctx, jobConfig)
-			
+			maven configureMavenCommand(UPDATE_RELEASE_BRANCH_VERSION)
+			maven configureMavenCommand(jobConfig)
+			ctx.generatingOnWindows ? batchFile(adapt(COMMIT_ALL_FILES)) : shell(COMMIT_ALL_FILES)
 			ctx.generatingOnWindows ? batchFile(adapt(WRITE_MASTER_MERGE_COMMIT_CODE_TO_FILE)) : shell(WRITE_MASTER_MERGE_COMMIT_CODE_TO_FILE)
 			ctx.generatingOnWindows ? batchFile(adapt(WRITE_DEVELOP_MERGE_COMMIT_CODE_TO_FILE)) : shell(WRITE_DEVELOP_MERGE_COMMIT_CODE_TO_FILE)
 			environmentVariables{
@@ -141,7 +150,11 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 	static final def CHECKOUT_RELEASE_BRANCH = 'git checkout release/${releaseBranch}'
 	
-	private static final String WRITE_MASTER_MERGE_COMMIT_CODE_TO_FILE = 'echo MASTER_MERGE_COMMIT=$(echo `git log -1 --merges --pretty=format:%h`) > finishrelease_env_properties'
+	static final def UPDATE_RELEASE_BRANCH_VERSION = 'versions:set -DnewVersion=${releaseVersion} versions:commit'
+
+	static final def COMMIT_ALL_FILES = 'git commit --all -m "Updated Maven POM versions for release"'
 	
-	private static final String WRITE_DEVELOP_MERGE_COMMIT_CODE_TO_FILE = 'echo DEVELOP_MERGE_COMMIT=$(echo `git log -3 -2 --merges --pretty=format:%h`) > finishrelease_env_properties'
+	private static final String WRITE_MASTER_MERGE_COMMIT_CODE_TO_FILE = 'echo MASTER_MERGE_COMMIT=$(echo `git log -3 -2 --merges --pretty=format:%h`) > finishrelease_env_properties'
+	
+	private static final String WRITE_DEVELOP_MERGE_COMMIT_CODE_TO_FILE = 'echo DEVELOP_MERGE_COMMIT=$(echo `git log -2 -1 --merges --pretty=format:%h`) >> finishrelease_env_properties'
 }
