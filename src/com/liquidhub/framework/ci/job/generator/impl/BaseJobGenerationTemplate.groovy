@@ -173,6 +173,7 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 		additionalMappings.each{ role,permissions->
 			def existingMappings = mappings[role] ?: []
 			existingMappings.addAll(additionalMappings[role])
+			mappings[role] = existingMappings
 		}
 
 
