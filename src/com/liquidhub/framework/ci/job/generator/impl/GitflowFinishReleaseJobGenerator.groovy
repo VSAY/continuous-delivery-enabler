@@ -73,9 +73,7 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 		parameters << new GitflowJobParameter(name: ALLOW_SNAPSHOTS_WHILE_FINISHING_RELEASE, elementType: READ_ONLY_BOOLEAN_CHOICE, defaultValue:false)
 		parameters << new GitflowJobParameter(name: KEEP_RELEASE_BRANCH, elementType: BOOLEAN_CHOICE, defaultValue:true)
-		parameters << new GitflowJobParameter(name: SKIP_RELEASE_BRANCH_MERGE, elementType: BOOLEAN_CHOICE,defaultValue: false)
 		parameters << new GitflowJobParameter(name: SQUASH_COMMITS, elementType: BOOLEAN_CHOICE, defaultValue:false)
-		parameters << new GitflowJobParameter(name: SKIP_RELEASE_TAGGING, elementType: READ_ONLY_BOOLEAN_CHOICE, defaultValue:false)
 	}
 
 
@@ -97,8 +95,8 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 			ctx.generatingOnWindows ? batchFile(adapt(CHECKOUT_RELEASE_BRANCH)) : shell(CHECKOUT_RELEASE_BRANCH)
 			maven configureMavenCommand(UPDATE_RELEASE_BRANCH_VERSION)
-			maven configureMavenCommand(jobConfig)
 			ctx.generatingOnWindows ? batchFile(adapt(COMMIT_ALL_FILES)) : shell(COMMIT_ALL_FILES)
+			maven configureMavenCommand(jobConfig)
 			ctx.generatingOnWindows ? batchFile(adapt(WRITE_MASTER_MERGE_COMMIT_CODE_TO_FILE)) : shell(WRITE_MASTER_MERGE_COMMIT_CODE_TO_FILE)
 			ctx.generatingOnWindows ? batchFile(adapt(WRITE_DEVELOP_MERGE_COMMIT_CODE_TO_FILE)) : shell(WRITE_DEVELOP_MERGE_COMMIT_CODE_TO_FILE)
 			environmentVariables{
@@ -110,7 +108,7 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 	@Override
 	protected def determineRegularEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
-		'release/${ENV, var="releaseBranch"}  branch on '+ctx.repositoryName+' repository has been closed and merged into master and develop branches'
+		'release/${ENV, var="releaseBranch"}  branch on '+ctx.repositoryName+' has merged into master and develop'
 	}
 
 	@Override
@@ -150,11 +148,17 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 	static final def CHECKOUT_RELEASE_BRANCH = 'git checkout release/${releaseBranch}'
 	
-	static final def UPDATE_RELEASE_BRANCH_VERSION = 'versions:set -DnewVersion=${releaseVersion} versions:commit'
+	static final def UPDATE_RELEASE_BRANCH_VERSION = 'versions:set -DnewVersion=${releaseBranch} versions:commit'
 
 	static final def COMMIT_ALL_FILES = 'git commit --all -m "Updated Maven POM versions for release"'
 	
-	private static final String WRITE_MASTER_MERGE_COMMIT_CODE_TO_FILE = 'echo MASTER_MERGE_COMMIT=$(echo `git log -3 -2 --merges --pretty=format:%h`) > finishrelease_env_properties'
+	/*
+	 * Release branch merges to master first, so the first merge commit in history is the merge of MASTER and RELEASE branch, so we skip nothing and request the latest merge commit
+	 */
+	private static final String WRITE_MASTER_MERGE_COMMIT_CODE_TO_FILE = 'echo MASTER_MERGE_COMMIT=$(echo `git log ---max-count=1 --skip=0 --merges --pretty=format:%h`) > finishrelease_env_properties'
 	
-	private static final String WRITE_DEVELOP_MERGE_COMMIT_CODE_TO_FILE = 'echo DEVELOP_MERGE_COMMIT=$(echo `git log -2 -1 --merges --pretty=format:%h`) >> finishrelease_env_properties'
+	/*
+	 * Master branch merges to develop next, so the next merge commit in history is the merge of MASTER and DEVELOP branch, so we skip 'one' and request the second last merge commit
+	 */
+	private static final String WRITE_DEVELOP_MERGE_COMMIT_CODE_TO_FILE = 'echo DEVELOP_MERGE_COMMIT=$(echo `git log --max-count=1 --skip=1 --merges --pretty=format:%h`) >> finishrelease_env_properties'
 }
