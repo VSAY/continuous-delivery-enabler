@@ -170,12 +170,12 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 	static final def COMMIT_ALL_FILES = 'git commit --all -m "Updated Maven POM versions for release"'
 	
 	/*
-	 * Release branch merges to master first, so the first merge commit in history is the merge of MASTER and RELEASE branch, so we skip nothing and request the latest merge commit
+	 * Release branch merges to master first, so the first merge commit in history is the merge of MASTER and RELEASE branch, so we skip 1 and request the second latest merge commit
 	 */
-	private static final String WRITE_MASTER_MERGE_COMMIT_CODE_TO_FILE = 'echo MASTER_MERGE_COMMIT=$(echo `git log ---max-count=1 --skip=0 --merges --pretty=format:%h`) > finishrelease_env_properties'
+	private static final String WRITE_MASTER_MERGE_COMMIT_CODE_TO_FILE = 'echo MASTER_MERGE_COMMIT=$(echo `git log --max-count=1 --skip=1 --merges --pretty=format:%h`) > finishrelease_env_properties'
 	
 	/*
-	 * Master branch merges to develop next, so the next merge commit in history is the merge of MASTER and DEVELOP branch, so we skip 'one' and request the second last merge commit
+	 * Master branch merges to develop next, so the next merge commit in history is the merge of MASTER and DEVELOP branch, so we skip none and request the latest merge commit
 	 */
-	private static final String WRITE_DEVELOP_MERGE_COMMIT_CODE_TO_FILE = 'echo DEVELOP_MERGE_COMMIT=$(echo `git log --max-count=1 --skip=1 --merges --pretty=format:%h`) >> finishrelease_env_properties'
+	private static final String WRITE_DEVELOP_MERGE_COMMIT_CODE_TO_FILE = 'echo DEVELOP_MERGE_COMMIT=$(echo `git log --max-count=1 --skip=0 --merges --pretty=format:%h`) >> finishrelease_env_properties'
 }
