@@ -7,6 +7,7 @@ import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.START_CO
 import static com.liquidhub.framework.providers.jenkins.OperatingSystemCommandAdapter.adapt
 import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_BOOLEAN_CHOICE
 import static com.liquidhub.framework.ci.view.ViewElementTypes.TEXT
+import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_TEXT
 
 import com.liquidhub.framework.ci.model.BuildEnvironmentVariables
 import com.liquidhub.framework.ci.model.GitflowJobParameter
@@ -28,21 +29,20 @@ class GitflowStartHotfixJobGenerator extends BaseGitflowJobGenerationTemplateSup
 		def parameters = []
 
 		def startCommitDescription = generateCommitDescription(context.scmRepository.changeSetUrl)
-		parameters << new GitflowJobParameter(name:START_COMMIT,description:startCommitDescription, elementType: TEXT)
-		parameters << new GitflowJobParameter(name:RELEASE_VERSION, description: 'Default version to use when starting a hotfix.', elementType: TEXT)
-		parameters << new GitflowJobParameter(name:ALLOW_SNAPSHOTS_WHILE_CREATING_HOTFIX, defaultValue:true,elementType: READ_ONLY_BOOLEAN_CHOICE)
-		parameters << new GitflowJobParameter(name:PUSH_HOTFIXES, defaultValue:true, elementType: READ_ONLY_BOOLEAN_CHOICE)
+		parameters << new GitflowJobParameter(name:START_COMMIT,description:startCommitDescription, elementType: READ_ONLY_TEXT, defaultValue: '"master"')
+		parameters << new GitflowJobParameter(name:RELEASE_VERSION, description: 'Version of your hotfix release.This is the name of your hotfix branch', elementType: TEXT)
+		parameters << new GitflowJobParameter(name:ALLOW_SNAPSHOTS_WHILE_CREATING_HOTFIX, defaultValue:false,elementType: READ_ONLY_BOOLEAN_CHOICE)
 	}
 
 
 	@Override
 	protected def determineRegularEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
-		'Hotfix branch ${ENV, var="releaseVersion"} for '+ctx.repositoryBranchName+' is now open'
+		'hotfix/${ENV, var="releaseVersion"} for '+ctx.repositoryName+' is now open'
 	}
 
 	@Override
 	protected def determineFailureEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
-		'Action Required !!! Failed to open hotfix branch ${ENV, var="releaseVersion"} for '+ctx.repositoryBranchName
+		'Action Required !!! Failed to open hotfix/${ENV, var="releaseVersion"} for '+ctx.repositoryName
 	}
 
 
