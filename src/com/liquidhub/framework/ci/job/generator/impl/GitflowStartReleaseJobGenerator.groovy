@@ -7,6 +7,16 @@ import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_VERSION
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.START_COMMIT
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_DATE
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemBuild
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemCancel
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemConfigure
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemDiscover
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemRead
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemWorkspace
+import static com.liquidhub.framework.ci.model.JobPermissions.RunDelete
+import static com.liquidhub.framework.ci.model.JobPermissions.RunUpdate
+
+import java.util.Map;
 
 import com.liquidhub.framework.ci.model.BuildEnvironmentVariables
 import com.liquidhub.framework.ci.model.GitflowJobParameter
@@ -15,6 +25,7 @@ import com.liquidhub.framework.ci.model.ParameterListingScript
 import com.liquidhub.framework.ci.view.ViewElementTypes
 import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.config.model.JobConfig
+import com.liquidhub.framework.config.model.RoleConfig;
 
 import static com.liquidhub.framework.providers.jenkins.OperatingSystemCommandAdapter.adapt
 import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_BOOLEAN_CHOICE
@@ -82,7 +93,14 @@ class GitflowStartReleaseJobGenerator extends BaseGitflowJobGenerationTemplateSu
 	protected def identifySCMBranchForBuild(JobGenerationContext ctx){
 		'develop'
 	}
-
+	
+	
+	@Override
+	protected Map grantAdditionalPermissions(JobGenerationContext ctx,RoleConfig roleConfig){
+		def parameters = [:]
+		parameters.put(roleConfig.releaseManagerRole, [ItemBuild, ItemCancel, ItemDiscover, ItemRead, RunUpdate, RunDelete, ItemWorkspace])
+		return parameters
+	}
 
 
 	@Override

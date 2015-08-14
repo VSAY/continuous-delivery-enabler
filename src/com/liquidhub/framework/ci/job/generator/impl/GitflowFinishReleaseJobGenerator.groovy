@@ -8,12 +8,22 @@ import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SKIP_RELEASE_BRANCH_MERGE
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SKIP_RELEASE_TAGGING
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SQUASH_COMMITS
-
 import static com.liquidhub.framework.ci.view.ViewElementTypes.BOOLEAN_CHOICE
 import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_BOOLEAN_CHOICE
 import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_TEXT
 import static com.liquidhub.framework.ci.view.ViewElementTypes.TEXT
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemBuild
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemCancel
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemConfigure
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemDiscover
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemRead
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemWorkspace
+import static com.liquidhub.framework.ci.model.JobPermissions.RunDelete
+import static com.liquidhub.framework.ci.model.JobPermissions.RunUpdate
+
 import static com.liquidhub.framework.providers.jenkins.OperatingSystemCommandAdapter.adapt
+
+import java.util.Map;
 
 import com.liquidhub.framework.ci.EmbeddedScriptProvider
 import com.liquidhub.framework.ci.model.GitflowJobParameter
@@ -22,6 +32,7 @@ import com.liquidhub.framework.ci.model.ParameterListingScript
 import com.liquidhub.framework.ci.view.ViewElementTypes
 import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.config.model.JobConfig
+import com.liquidhub.framework.config.model.RoleConfig;
 import com.liquidhub.framework.scm.DevelopmentMilestoneVersionScriptProvider
 import com.liquidhub.framework.scm.MilestoneReleaseVersionScriptProvider
 import com.liquidhub.framework.scm.model.GitFlowBranchTypes
@@ -144,6 +155,12 @@ class GitflowFinishReleaseJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 	}
 
+	@Override
+	protected Map grantAdditionalPermissions(JobGenerationContext ctx,RoleConfig roleConfig){
+		def parameters = [:]
+		parameters.put(roleConfig.releaseManagerRole, [ItemBuild, ItemCancel, ItemDiscover, ItemRead, RunUpdate, RunDelete, ItemWorkspace])
+		return parameters
+	}
 
 
 	static final def CHECKOUT_RELEASE_BRANCH = 'git checkout release/${releaseBranch}'
