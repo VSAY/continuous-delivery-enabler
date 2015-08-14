@@ -7,7 +7,19 @@ import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SQUASH_C
 import static com.liquidhub.framework.ci.view.ViewElementTypes.BOOLEAN_CHOICE
 import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_BOOLEAN_CHOICE
 import static com.liquidhub.framework.ci.view.ViewElementTypes.TEXT
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemBuild
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemCancel
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemConfigure
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemDiscover
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemRead
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemWorkspace
+import static com.liquidhub.framework.ci.model.JobPermissions.RunDelete
+import static com.liquidhub.framework.ci.model.JobPermissions.RunUpdate
+
+
 import static com.liquidhub.framework.providers.jenkins.OperatingSystemCommandAdapter.adapt
+
+import java.util.Map;
 
 import com.liquidhub.framework.ci.model.GitflowJobParameter
 import com.liquidhub.framework.ci.model.JobGenerationContext
@@ -15,6 +27,7 @@ import com.liquidhub.framework.ci.model.ParameterListingScript
 import com.liquidhub.framework.ci.view.ViewElementTypes
 import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.config.model.JobConfig
+import com.liquidhub.framework.config.model.RoleConfig;
 import com.liquidhub.framework.scm.model.GitFlowBranchTypes
 import com.liquidhub.framework.scm.model.SCMRemoteRefListingRequest
 import com.liquidhub.framework.scm.model.SCMRepository
@@ -89,6 +102,13 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 	 */
 	protected def identifySCMBranchForBuild(JobGenerationContext ctx){
 		'feature/${featureName}'
+	}
+	
+	@Override
+	protected Map grantAdditionalPermissions(JobGenerationContext ctx,RoleConfig roleConfig){
+		def parameters = [:]
+		parameters.put(roleConfig.projectAdminRole, [ItemBuild, ItemCancel, ItemDiscover, ItemRead, RunUpdate, RunDelete, ItemWorkspace])
+		return parameters
 	}
 
 	@Override

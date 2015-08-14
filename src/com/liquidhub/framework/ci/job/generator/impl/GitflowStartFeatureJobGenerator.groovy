@@ -1,6 +1,7 @@
 package com.liquidhub.framework.ci.job.generator.impl
 
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.ALLOW_SNAPSHOTS_WHILE_CREATING_FEATURE
+
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.ENABLE_FEATURE_VERSIONS
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.FEATURE_NAME
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.PUSH_FEATURES
@@ -8,10 +9,23 @@ import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.START_CO
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.FEATURE_OWNER_EMAIL
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.FEATURE_PRODUCTION_DATE
 
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemBuild
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemCancel
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemConfigure
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemDiscover
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemRead
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemWorkspace
+import static com.liquidhub.framework.ci.model.JobPermissions.RunDelete
+import static com.liquidhub.framework.ci.model.JobPermissions.RunUpdate
+
+
 
 import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_BOOLEAN_CHOICE
 import static com.liquidhub.framework.ci.view.ViewElementTypes.TEXT
 
+
+
+import java.util.Map;
 
 import com.liquidhub.framework.ci.model.BuildEnvironmentVariables
 import com.liquidhub.framework.ci.model.GitflowJobParameter
@@ -20,7 +34,7 @@ import com.liquidhub.framework.ci.model.ParameterListingScript
 import com.liquidhub.framework.ci.view.ViewElementTypes
 import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.config.model.JobConfig
-
+import com.liquidhub.framework.config.model.RoleConfig;
 import com.liquidhub.framework.scm.model.SCMRepository
 
 import static com.liquidhub.framework.providers.jenkins.OperatingSystemCommandAdapter.adapt
@@ -76,6 +90,14 @@ class GitflowStartFeatureJobGenerator extends BaseGitflowJobGenerationTemplateSu
 			ctx.generatingOnWindows ? batchFile(adapt(CHECK_OUT_DEVELOP)) : shell(CHECK_OUT_DEVELOP)
 			maven ctx.mavenBuildStepConfigurer().configure(ctx, jobConfig)
 		}
+	}
+	
+	
+	@Override
+	protected Map grantAdditionalPermissions(JobGenerationContext ctx,RoleConfig roleConfig){
+		def parameters = [:]
+		parameters.put(roleConfig.projectAdminRole, [ItemBuild, ItemCancel, ItemDiscover, ItemRead, RunUpdate, RunDelete, ItemWorkspace])
+		return parameters
 	}
 
 

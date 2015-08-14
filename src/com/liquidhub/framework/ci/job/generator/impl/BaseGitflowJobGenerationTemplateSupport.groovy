@@ -53,13 +53,6 @@ abstract class BaseGitflowJobGenerationTemplateSupport extends BaseJobGeneration
 		}
 	}
 
-	@Override
-	protected Map grantAdditionalPermissions(JobGenerationContext ctx,RoleConfig roleConfig){
-		def parameters = [:]
-		parameters.put(roleConfig.projectAdminRole, [ItemBuild, ItemCancel, ItemDiscover, ItemRead, RunUpdate, RunDelete, ItemWorkspace])
-		return parameters
-	}
-
 
 	protected final def configureSteps(JobGenerationContext ctx,JobConfig jobConfig){
 
