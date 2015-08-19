@@ -52,13 +52,19 @@ class GitflowStartFeatureJobGenerator extends BaseGitflowJobGenerationTemplateSu
 
 		SCMRepository scmRepository = context.scmRepository
 
-		def featureParamDescription = 'The name of the feature you intend to start.Please do not prefix feature/  .It is done automatically'
+		def featureParamDescription =
+
+				'''The name of the feature you intend to start.Please do not prefix feature/  .It is done automatically. A feature name must be 
+logical and indicate why you are creating the feature. Good name samples : ahnjDefinedContributionPrivateExchange, callidusSSOIntegration.
+Bad name samples: octoberRelease, rbaChangesForOctober. If you notice, the good samples tell us exactly what changes will happen in the feature branch.
+The bad samples are vague and opaque in expressing the intent for the feature
+'''
 
 		parameters << new GitflowJobParameter(name: FEATURE_NAME, description: featureParamDescription, elementType: TEXT)
 		parameters << new GitflowJobParameter(name: START_COMMIT,description: generateCommitDescription(scmRepository.changeSetUrl),defaultValue: "'develop'", elementType: TEXT)
 		parameters << new GitflowJobParameter(name: FEATURE_OWNER_EMAIL,elementType: TEXT)
 		parameters << new GitflowJobParameter(name: FEATURE_PRODUCTION_DATE,elementType: TEXT)
-		
+
 		parameters << [ALLOW_SNAPSHOTS_WHILE_CREATING_FEATURE, ENABLE_FEATURE_VERSIONS, PUSH_FEATURES].collect{
 			new GitflowJobParameter(name: it, elementType: READ_ONLY_BOOLEAN_CHOICE, defaultValue: true)
 		}
@@ -75,7 +81,7 @@ class GitflowStartFeatureJobGenerator extends BaseGitflowJobGenerationTemplateSu
 	protected def determineFailureEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
 		'Action Required !!! Failed to create feature branch ${ENV, var="featureName"}.'
 	}
-	
+
 	/**
 	 * @return the name of the branch which should be used to build the source code
 	 */
@@ -91,8 +97,8 @@ class GitflowStartFeatureJobGenerator extends BaseGitflowJobGenerationTemplateSu
 			maven ctx.mavenBuildStepConfigurer().configure(ctx, jobConfig)
 		}
 	}
-	
-	
+
+
 	@Override
 	protected Map grantAdditionalPermissions(JobGenerationContext ctx,RoleConfig roleConfig){
 		def parameters = [:]
