@@ -64,7 +64,7 @@ class NestedViewGenerator extends SectionedJobViewGenerator{
 
 		Configuration config = ctx.configuration
 
-		ctx.generateView(projectName+'-view','nestedView'){
+		ctx.generateView(projectName,'nestedView'){
 
 			views{
 
