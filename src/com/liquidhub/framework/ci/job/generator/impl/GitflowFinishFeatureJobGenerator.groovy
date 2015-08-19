@@ -4,7 +4,7 @@ import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.FEATURE_
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.KEEP_FEATURE_BRANCH
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SKIP_FEATURE_MERGE_TO_DEVELOP
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SQUASH_COMMITS
-import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.UPDATE_TO_LATEST_VERSIONS
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.UPDATE_INTERNAL_POM_DEPENDENCIES_TO_LATEST_VERSIONS
 
 import static com.liquidhub.framework.ci.view.ViewElementTypes.BOOLEAN_CHOICE
 import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_BOOLEAN_CHOICE
@@ -71,7 +71,7 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 		parameters << new GitflowJobParameter(name: KEEP_FEATURE_BRANCH,elementType: BOOLEAN_CHOICE, defaultValue:false)
 		parameters << new GitflowJobParameter(name: SQUASH_COMMITS, elementType: BOOLEAN_CHOICE, defaultValue:false)
-		parameters << new GitflowJobParameter(name: UPDATE_TO_LATEST_VERSIONS,elementType: BOOLEAN_CHOICE, defaultValue:true)
+		parameters << new GitflowJobParameter(name: UPDATE_INTERNAL_POM_DEPENDENCIES_TO_LATEST_VERSIONS,elementType: BOOLEAN_CHOICE, defaultValue:true)
 	}
 
 	@Override
