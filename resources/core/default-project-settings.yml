@@ -66,14 +66,14 @@ milestoneReleaseConfig: &milestoneReleaseConfig
   
 gitflowFeatureBranchConfig: &gitflowFeatureBranchConfig
   startConfig:
-    goals: clean install test jgitflow:feature-start -B -Pgitflow
+    goals: clean deploy test jgitflow:feature-start -B -Pgitflow
     goalArgs: {featureName: $featureName}
     jobPrefix: StartFeature_
     projectDescriptionTemplatePath: resources/core/gitflow-start-feature-description.template
     generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowStartFeatureJobGenerator
     emailContent: ${JELLY_SCRIPT, template="frontoffice-feature-start-email-template.jelly"}
   finishConfig: 
-    goals: clean install test jgitflow:feature-finish -B -Pgitflow
+    goals: clean deploy test jgitflow:feature-finish -B -Pgitflow
     goalArgs: {keepBranch: $keepBranch,  featureName: $featureName, noFeatureMerge: $skipFeatureMergeToDevelop, squash: $squashCommits}
     projectDescriptionTemplatePath: resources/core/gitflow-finish-feature-description.template
     jobPrefix: FinishFeature_
@@ -84,7 +84,7 @@ gitflowFeatureBranchConfig: &gitflowFeatureBranchConfig
   
 gitflowReleaseBranchConfig: &gitflowReleaseBranchConfig
   startConfig:
-    goals: clean install test jgitflow:release-start -B -Pgitflow,ci
+    goals: clean test jgitflow:release-start deploy -B -Pgitflow,ci
     goalArgs: {autoVersionSubmodules: true}
     jobPrefix: StartRelease_
     projectDescriptionTemplatePath: resources/core/gitflow-start-release-description.template
@@ -104,14 +104,14 @@ gitflowReleaseBranchConfig: &gitflowReleaseBranchConfig
   
 gitflowHotfixBranchConfig: &gitflowHotfixBranchConfig
   startConfig:
-    goals: clean install test jgitflow:hotfix-start -B -Pgitflow
+    goals: clean test jgitflow:hotfix-start deploy -B -Pgitflow
     goalArgs:
       autoVersionSubmodules: true
     jobPrefix: StartHotfix_
     projectDescriptionTemplatePath: resources/core/gitflow-start-hotfix-description.template
     generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowStartHotfixJobGenerator
   finishConfig:
-    goals: clean install test jgitflow:hotfix-finish deploy -B -Pgitflow
+    goals: clean test jgitflow:hotfix-finish deploy -B -Pgitflow
     goalArgs:
       autoVersionSubmodules: true
       keepBranch: true
