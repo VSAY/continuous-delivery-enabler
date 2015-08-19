@@ -34,7 +34,7 @@ buildConfig:
         name: jdk8u31
         
 healthConfig: &healthConfig
-  goals: clean compile test
+  goals: test
   jobSuffix: -health
   generatorClass: com.liquidhub.framework.ci.job.generator.impl.BranchHealthMonitor
   description: Monitors the health of the branch. Fails only if the code does not compile and test
@@ -42,7 +42,7 @@ healthConfig: &healthConfig
       
       
 continuousIntegrationConfig: &continuousIntegrationConfig
-  goals: clean install test deploy -P ci
+  goals: deploy -P ci
   pollSchedule: 
   jobSuffix: -ci
   generatorClass: com.liquidhub.framework.ci.job.generator.impl.ContinuousIntegrationJobGenerator
@@ -66,14 +66,14 @@ milestoneReleaseConfig: &milestoneReleaseConfig
   
 gitflowFeatureBranchConfig: &gitflowFeatureBranchConfig
   startConfig:
-    goals: clean test jgitflow:feature-start -B -Pgitflow
+    goals: clean jgitflow:feature-start -B -Pgitflow
     goalArgs: {featureName: $featureName}
     jobPrefix: StartFeature_
     projectDescriptionTemplatePath: resources/core/gitflow-start-feature-description.template
     generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowStartFeatureJobGenerator
     emailContent: ${JELLY_SCRIPT, template="frontoffice-feature-start-email-template.jelly"}
   finishConfig: 
-    goals: clean test jgitflow:feature-finish deploy -B -Pgitflow
+    goals: clean jgitflow:feature-finish -B -Pgitflow
     goalArgs: {keepBranch: $keepBranch,  featureName: $featureName, noFeatureMerge: $skipFeatureMergeToDevelop, squash: $squashCommits}
     projectDescriptionTemplatePath: resources/core/gitflow-finish-feature-description.template
     jobPrefix: FinishFeature_
