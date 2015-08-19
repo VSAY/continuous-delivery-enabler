@@ -89,7 +89,7 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 	@Override
 	protected def determineRegularEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
-		'Feature branch [ ${ENV, var="featureName"} ]  on '+ctx.repositoryName+'repository merged to develop'
+		'Feature branch [ ${ENV, var="featureName"} ]  on '+ctx.repositoryName+' repository merged to develop'
 	}
 
 	@Override
