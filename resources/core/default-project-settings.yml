@@ -66,14 +66,14 @@ milestoneReleaseConfig: &milestoneReleaseConfig
   
 gitflowFeatureBranchConfig: &gitflowFeatureBranchConfig
   startConfig:
-    goals: clean deploy test jgitflow:feature-start -B -Pgitflow
+    goals: clean test jgitflow:feature-start deploy -B -Pgitflow
     goalArgs: {featureName: $featureName}
     jobPrefix: StartFeature_
     projectDescriptionTemplatePath: resources/core/gitflow-start-feature-description.template
     generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowStartFeatureJobGenerator
     emailContent: ${JELLY_SCRIPT, template="frontoffice-feature-start-email-template.jelly"}
   finishConfig: 
-    goals: clean deploy test jgitflow:feature-finish -B -Pgitflow
+    goals: clean test jgitflow:feature-finish deploy -B -Pgitflow
     goalArgs: {keepBranch: $keepBranch,  featureName: $featureName, noFeatureMerge: $skipFeatureMergeToDevelop, squash: $squashCommits}
     projectDescriptionTemplatePath: resources/core/gitflow-finish-feature-description.template
     jobPrefix: FinishFeature_
