@@ -88,7 +88,7 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 			//boolean condition expression which helps determine if we should upgrade internal dependencies automatically
 			//The definition of internal is maintained in parent pom
-			def upgradeInternalVersionsAutomatically = '${ENV,var="updateToLatestInternalVersions"}'
+			def upgradeInternalVersionsAutomatically = '${ENV,var="updateInternalPOMDependenciesToLatestVersions"}'
 
 			conditionalSteps{
 				//Run the use-latest-versions check only if the user made the selection
