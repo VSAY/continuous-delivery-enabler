@@ -102,7 +102,7 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 			}
 
 
-			maven configureMavenCommand(ctx, jobConfig)
+			maven configureMavenCommand(jobConfig)
 			ctx.generatingOnWindows ? batchFile(adapt(WRITE_LAST_COMMIT_CODE_TO_FILE)) : shell(WRITE_LAST_COMMIT_CODE_TO_FILE)
 
 
