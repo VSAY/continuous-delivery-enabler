@@ -4,6 +4,8 @@ import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.FEATURE_
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.KEEP_FEATURE_BRANCH
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SKIP_FEATURE_MERGE_TO_DEVELOP
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.SQUASH_COMMITS
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.UPDATE_TO_LATEST_VERSIONS
+
 import static com.liquidhub.framework.ci.view.ViewElementTypes.BOOLEAN_CHOICE
 import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_BOOLEAN_CHOICE
 import static com.liquidhub.framework.ci.view.ViewElementTypes.TEXT
@@ -69,20 +71,48 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 		parameters << new GitflowJobParameter(name: KEEP_FEATURE_BRANCH,elementType: BOOLEAN_CHOICE, defaultValue:false)
 		parameters << new GitflowJobParameter(name: SQUASH_COMMITS, elementType: BOOLEAN_CHOICE, defaultValue:false)
+		parameters << new GitflowJobParameter(name: UPDATE_TO_LATEST_VERSIONS, BOOLEAN_CHOICE, defaultValue:true)
 	}
 
 	@Override
 	def configureBuildSteps(JobGenerationContext ctx, JobConfig jobConfig){
 
+		def configureMavenCommand = {goals ->
+
+			def config = goals instanceof JobConfig ? goals :  ['goals': goals] as JobConfig
+
+			ctx.configurers('maven').configure(ctx, config)
+		}
+
 		return {
-			ctx.generatingOnWindows ? batchFile(adapt(CHECK_OUT_FEATURE)) : shell(CHECK_OUT_FEATURE)
-			maven ctx.mavenBuildStepConfigurer().configure(ctx, jobConfig)
+
+			//boolean condition expression which helps determine if we should upgrade internal dependencies automatically
+			//The definition of internal is maintained in parent pom
+			def upgradeInternalVersionsAutomatically = '${ENV,var="updateToLatestInternalVersions"}'
+
+			conditionalSteps{
+				//Run the use-latest-versions check only if the user made the selection
+				condition{ booleanCondition(upgradeInternalVersionsAutomatically) }
+
+				runner("DontRun") //For any other values, look at runner classes of Run Condition Plugin
+
+				maven configureMavenCommand(BUMP_POM_DEPENDENCY_VERSIONS_IF_NEWER_EXIST)
+				
+				ctx.generatingOnWindows ? batchFile(adapt(COMMIT_DEPENDENCY_VERSION_UPGRADES_IF_ANY)) : shell(COMMIT_DEPENDENCY_VERSION_UPGRADES_IF_ANY)
+			}
+
+
+			maven configureMavenCommand(ctx, jobConfig)
 			ctx.generatingOnWindows ? batchFile(adapt(WRITE_LAST_COMMIT_CODE_TO_FILE)) : shell(WRITE_LAST_COMMIT_CODE_TO_FILE)
+
+
+
+
 			environmentVariables{
 				propertiesFile('finishfeature_env_properties') //This is the file we create in the previous step
 				envs(['SCM_CHANGESET_URL': ctx.scmRepository.changeSetUrl])
 			}
-			
+
 		}
 	}
 
@@ -96,14 +126,14 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 	protected def determineFailureEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
 		'Action Required !!! Failed to finish feature branch ${ENV, var="featureName"} on '+ctx.repositoryName
 	}
-	
+
 	/**
 	 * @return the name of the branch which should be used to build the source code
 	 */
 	protected def identifySCMBranchForBuild(JobGenerationContext ctx){
 		'feature/${featureName}'
 	}
-	
+
 	@Override
 	protected Map grantAdditionalPermissions(JobGenerationContext ctx,RoleConfig roleConfig){
 		def parameters = [:]
@@ -116,9 +146,9 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 		//When feature finishes and the code is merged to develop, we trigger the develop branch ci job automatically
 		def downstreamDevelopCIJobName = ctx.jobNameCreator.createJobName(ctx.repositoryName, GitFlowBranchTypes.DEVELOP, 'develop', ctx.configuration.continuousIntegrationConfig)
-		
+
 		final boolean triggerWithNoParameters = true
-		
+
 		return {
 			downstreamParameterized {
 				trigger(downstreamDevelopCIJobName, 'SUCCESS', triggerWithNoParameters)
@@ -128,7 +158,15 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 	}
 
 
-		private static final String CHECK_OUT_FEATURE = 'git checkout feature/${featureName}'
-		
-		private static final String WRITE_LAST_COMMIT_CODE_TO_FILE = 'echo MERGE_COMMIT=$(echo `git log -1 --merges --pretty=format:%h`) > finishfeature_env_properties'
-	}
+	private static final String BUMP_POM_DEPENDENCY_VERSIONS_IF_NEWER_EXIST = 'versions:use-latest-versions -DallowSnapshots=true versions:commit'
+
+	private static final String COMMIT_DEPENDENCY_VERSION_UPGRADES_IF_ANY = '''
+
+			if ! git diff --quiet HEAD ; then
+			  git checkout feature/${featureName}
+			  git commit pom.xml -m 'Automatically Upgrading internal dependency versions during feature finish' 
+			fi
+	'''
+
+	private static final String WRITE_LAST_COMMIT_CODE_TO_FILE = 'echo MERGE_COMMIT=$(echo `git log -1 --merges --pretty=format:%h`) > finishfeature_env_properties'
+}

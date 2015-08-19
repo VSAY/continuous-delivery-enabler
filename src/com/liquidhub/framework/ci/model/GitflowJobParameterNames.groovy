@@ -8,6 +8,8 @@ enum GitflowJobParameterNames {
 	FEATURE_OWNER_EMAIL('featureOwnerEmail', 'Enter the email address of the team lead who owns this feature'),
 	FEATURE_PRODUCTION_DATE('featureProductionMonthAndYear', 'Enter the intended release of feature in production expressed in month and year. It is perfectly acceptable if the date changes later. Use the format mm/yyyyy. E.g. for October 2015 release, enter 10/2015'),
 	RELEASE_DATE('releaseDate', 'Enter the intended production release month and year. Use the format mm/yyyyy. E.g. for October 2015 release, enter 10/2015'),
+	UPDATE_TO_LATEST_VERSIONS('updateToLatestInternalVersions', 'Determines if the internal/inhouse dependencies of this project will automatically be upgraded to the latest version available while the feature is being finished'),
+	
 	
 	RELEASE_FROM_BRANCH('releaseFromBranch'),
 	RELEASE_BRANCH('releaseBranch'),
