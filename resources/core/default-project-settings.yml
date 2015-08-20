@@ -111,7 +111,7 @@ gitflowHotfixBranchConfig: &gitflowHotfixBranchConfig
     projectDescriptionTemplatePath: resources/core/gitflow-start-hotfix-description.template
     generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowStartHotfixJobGenerator
   finishConfig:
-    goals: verify jgitflow:hotfix-finish -B -Pgitflow
+    goals: verify jgitflow:hotfix-finish deploy -B -Pgitflow
     goalArgs:
       autoVersionSubmodules: true
       keepBranch: true
