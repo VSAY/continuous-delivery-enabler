@@ -92,7 +92,7 @@ gitflowReleaseBranchConfig: &gitflowReleaseBranchConfig
     emailContent: ${JELLY_SCRIPT, template="frontoffice-release-start-email-template.jelly"}
       
   finishConfig:
-    goals: verify jgitflow:release-finish -B
+    goals: verify jgitflow:release-finish deploy -B
     goalArgs: {autoVersionSubmodules: true}
     jobPrefix: FinishRelease_
     projectDescriptionTemplatePath: resources/core/gitflow-finish-release-description.template
