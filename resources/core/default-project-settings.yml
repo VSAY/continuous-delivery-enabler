@@ -51,7 +51,7 @@ continuousIntegrationConfig: &continuousIntegrationConfig
   
 codeQualityConfig:
   disabled: false
-  goals: findbugs:check checkstype:check pmd:check cobertura:cobertura
+  goals: test findbugs:check checkstype:check pmd:check cobertura:cobertura
   pollSchedule: '@daily'
   jobSuffix: -quality-Tests  
   generatorClass: com.ibx.frontoffice.jenkins.job.generator.impl.CodeQualityJobGenerator
@@ -84,7 +84,7 @@ gitflowFeatureBranchConfig: &gitflowFeatureBranchConfig
   
 gitflowReleaseBranchConfig: &gitflowReleaseBranchConfig
   startConfig:
-    goals: clean test jgitflow:release-start deploy -B -Pgitflow,ci
+    goals: clean jgitflow:release-start -B -Pgitflow,ci
     goalArgs: {autoVersionSubmodules: true}
     jobPrefix: StartRelease_
     projectDescriptionTemplatePath: resources/core/gitflow-start-release-description.template
@@ -92,7 +92,7 @@ gitflowReleaseBranchConfig: &gitflowReleaseBranchConfig
     emailContent: ${JELLY_SCRIPT, template="frontoffice-release-start-email-template.jelly"}
       
   finishConfig:
-    goals: clean test jgitflow:release-finish deploy -B
+    goals: clean jgitflow:release-finish -B
     goalArgs: {autoVersionSubmodules: true}
     jobPrefix: FinishRelease_
     projectDescriptionTemplatePath: resources/core/gitflow-finish-release-description.template
@@ -104,14 +104,14 @@ gitflowReleaseBranchConfig: &gitflowReleaseBranchConfig
   
 gitflowHotfixBranchConfig: &gitflowHotfixBranchConfig
   startConfig:
-    goals: clean test jgitflow:hotfix-start deploy -B -Pgitflow
+    goals: clean jgitflow:hotfix-start -B -Pgitflow
     goalArgs:
       autoVersionSubmodules: true
     jobPrefix: StartHotfix_
     projectDescriptionTemplatePath: resources/core/gitflow-start-hotfix-description.template
     generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowStartHotfixJobGenerator
   finishConfig:
-    goals: clean test jgitflow:hotfix-finish deploy -B -Pgitflow
+    goals: clean jgitflow:hotfix-finish -B -Pgitflow
     goalArgs:
       autoVersionSubmodules: true
       keepBranch: true
