@@ -15,7 +15,7 @@ configurableJobSections:
 notificationConfig:   
   defaultRecipientEmailSuffix: -recipients@ibx.com
   defaultEscalationEmailSuffix: -escalations@ibx.com
-  regularEmailRecipients: jenkinsysadmin@ibx.com  
+  regularEmailRecipients: jenkins-sysadmin@ibx.com  
 
 viewConfig:
   sectionViews:
