@@ -34,7 +34,7 @@ buildConfig:
         name: jdk8u31
         
 healthConfig: &healthConfig
-  goals: test
+  goals: verify
   jobSuffix: -health
   generatorClass: com.liquidhub.framework.ci.job.generator.impl.BranchHealthMonitor
   description: Monitors the health of the branch. Fails only if the code does not compile and test
@@ -66,14 +66,14 @@ milestoneReleaseConfig: &milestoneReleaseConfig
   
 gitflowFeatureBranchConfig: &gitflowFeatureBranchConfig
   startConfig:
-    goals: test jgitflow:feature-start -B -Pgitflow
+    goals: verify jgitflow:feature-start -B -Pgitflow
     goalArgs: {featureName: $featureName}
     jobPrefix: StartFeature_
     projectDescriptionTemplatePath: resources/core/gitflow-start-feature-description.template
     generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowStartFeatureJobGenerator
     emailContent: ${JELLY_SCRIPT, template="frontoffice-feature-start-email-template.jelly"}
   finishConfig: 
-    goals: test jgitflow:feature-finish -B -Pgitflow
+    goals: verify jgitflow:feature-finish -B -Pgitflow
     goalArgs: {keepBranch: $keepBranch,  featureName: $featureName, noFeatureMerge: $skipFeatureMergeToDevelop, squash: $squashCommits}
     projectDescriptionTemplatePath: resources/core/gitflow-finish-feature-description.template
     jobPrefix: FinishFeature_
@@ -84,7 +84,7 @@ gitflowFeatureBranchConfig: &gitflowFeatureBranchConfig
   
 gitflowReleaseBranchConfig: &gitflowReleaseBranchConfig
   startConfig:
-    goals: test jgitflow:release-start -B -Pgitflow,ci
+    goals: verify jgitflow:release-start -B -Pgitflow,ci
     goalArgs: {autoVersionSubmodules: true}
     jobPrefix: StartRelease_
     projectDescriptionTemplatePath: resources/core/gitflow-start-release-description.template
@@ -92,7 +92,7 @@ gitflowReleaseBranchConfig: &gitflowReleaseBranchConfig
     emailContent: ${JELLY_SCRIPT, template="frontoffice-release-start-email-template.jelly"}
       
   finishConfig:
-    goals: test jgitflow:release-finish -B
+    goals: verify jgitflow:release-finish -B
     goalArgs: {autoVersionSubmodules: true}
     jobPrefix: FinishRelease_
     projectDescriptionTemplatePath: resources/core/gitflow-finish-release-description.template
@@ -104,14 +104,14 @@ gitflowReleaseBranchConfig: &gitflowReleaseBranchConfig
   
 gitflowHotfixBranchConfig: &gitflowHotfixBranchConfig
   startConfig:
-    goals: test jgitflow:hotfix-start -B -Pgitflow
+    goals: verify jgitflow:hotfix-start -B -Pgitflow
     goalArgs:
       autoVersionSubmodules: true
     jobPrefix: StartHotfix_
     projectDescriptionTemplatePath: resources/core/gitflow-start-hotfix-description.template
     generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowStartHotfixJobGenerator
   finishConfig:
-    goals: test jgitflow:hotfix-finish -B -Pgitflow
+    goals: verify jgitflow:hotfix-finish -B -Pgitflow
     goalArgs:
       autoVersionSubmodules: true
       keepBranch: true
