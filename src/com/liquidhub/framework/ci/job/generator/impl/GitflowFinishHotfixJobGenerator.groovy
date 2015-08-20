@@ -95,7 +95,7 @@ class GitflowFinishHotfixJobGenerator extends GitflowFinishReleaseJobGenerator{
 
 	@Override
 	protected def determineFailureEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
-		'Action Required !!! Failed to finish hotfix branch ${ENV, var="releaseVersion"} on '+ctx.repositoryName
+		'Action Required !!! Failed to finish hotfix branch ${ENV, var="hotfixBranch"} on '+ctx.repositoryName
 	}
 
 	/**
