@@ -90,7 +90,7 @@ class GitflowFinishHotfixJobGenerator extends GitflowFinishReleaseJobGenerator{
 
 	@Override
 	protected def determineRegularEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
-		'hotfix/${ENV, var="releaseVersion"}  on '+ctx.repositoryName+' repository has merged to master and develop'
+		'hotfix/${ENV, var="hotfixBranch"}  on '+ctx.repositoryName+' repository has merged to master and develop'
 	}
 
 	@Override
