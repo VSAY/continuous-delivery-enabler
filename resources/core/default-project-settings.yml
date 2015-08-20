@@ -14,7 +14,8 @@ configurableJobSections:
  
 notificationConfig:   
   defaultRecipientEmailSuffix: -recipients@ibx.com
-  defaultEscalationEmailSuffix: -escalations@ibx.com  
+  defaultEscalationEmailSuffix: -escalations@ibx.com
+  regularEmailRecipients: jenkinsysadmin@ibx.com  
 
 viewConfig:
   sectionViews:
@@ -38,7 +39,7 @@ healthConfig: &healthConfig
   jobSuffix: -health
   generatorClass: com.liquidhub.framework.ci.job.generator.impl.BranchHealthMonitor
   description: Monitors the health of the branch. Fails only if the code does not compile and test
-
+  
       
       
 continuousIntegrationConfig: &continuousIntegrationConfig
