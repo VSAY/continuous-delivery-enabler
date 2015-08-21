@@ -165,7 +165,7 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 		def mappings = [
 
 			(roleConfig.developerRole):[ItemRead, ItemDiscover],
-			(roleConfig.projectAdminRole): [ItemRead, ItemDiscover, ItemConfigure]]
+			(roleConfig.projectAdminRole): [ItemRead, ItemDiscover]]
 
 
 		def additionalMappings = grantAdditionalPermissions(ctx, roleConfig)
