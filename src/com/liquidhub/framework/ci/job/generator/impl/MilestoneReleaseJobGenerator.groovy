@@ -13,7 +13,19 @@ import static com.liquidhub.framework.ci.view.ViewElementTypes.BOOLEAN_CHOICE
 import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_BOOLEAN_CHOICE
 import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_TEXT
 import static com.liquidhub.framework.ci.view.ViewElementTypes.TEXT
+
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemBuild
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemCancel
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemConfigure
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemDiscover
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemRead
+import static com.liquidhub.framework.ci.model.JobPermissions.ItemWorkspace
+import static com.liquidhub.framework.ci.model.JobPermissions.RunDelete
+import static com.liquidhub.framework.ci.model.JobPermissions.RunUpdate
+
 import static com.liquidhub.framework.providers.jenkins.OperatingSystemCommandAdapter.adapt
+
+import java.util.Map;
 
 import com.liquidhub.framework.ci.model.BuildEnvironmentVariables
 import com.liquidhub.framework.ci.model.GitflowJobParameter
@@ -23,6 +35,7 @@ import com.liquidhub.framework.ci.model.VersionDeterminationRequest
 import com.liquidhub.framework.ci.view.ViewElementTypes
 import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.config.model.JobConfig
+import com.liquidhub.framework.config.model.RoleConfig;
 import com.liquidhub.framework.scm.DevelopmentMilestoneVersionScriptProvider
 import com.liquidhub.framework.scm.MilestoneReleaseVersionScriptProvider
 import com.liquidhub.framework.scm.model.SCMRemoteRefListingRequest
@@ -122,6 +135,14 @@ class MilestoneReleaseJobGenerator extends BaseGitflowJobGenerationTemplateSuppo
 	}
 
 
+	
+	@Override
+	protected Map grantAdditionalPermissions(JobGenerationContext ctx,RoleConfig roleConfig){
+		def parameters = [:]
+		parameters.put(roleConfig.projectAdminRole, [ItemBuild, ItemCancel, ItemDiscover, ItemRead, RunUpdate, RunDelete, ItemWorkspace])
+		return parameters
+	}
+	
 	@Override
 	protected def determineRegularEmailSubject(JobGenerationContext ctx,JobConfig jobConfig){
 
