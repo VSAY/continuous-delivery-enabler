@@ -118,8 +118,6 @@ gitflowHotfixBranchConfig: &gitflowHotfixBranchConfig
     goals: verify jgitflow:hotfix-finish deploy -B -Pgitflow
     goalArgs:
       autoVersionSubmodules: true
-      keepBranch: true
-      featureName: $featureName
     jobPrefix: FinishHotfix_
     projectDescriptionTemplatePath: resources/core/gitflow-finish-hotfix-description.template
     generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowFinishHotfixJobGenerator
