@@ -115,13 +115,14 @@ gitflowHotfixBranchConfig: &gitflowHotfixBranchConfig
     generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowStartHotfixJobGenerator
     regularEmailRecipients: jenkinssysadmin@ibx.com
   finishConfig:
-    goals: verify jgitflow:hotfix-finish deploy -B -Pgitflow
+    goals: verify jgitflow:hotfix-finish -B -Pgitflow
     goalArgs:
       autoVersionSubmodules: true
     jobPrefix: FinishHotfix_
     projectDescriptionTemplatePath: resources/core/gitflow-finish-hotfix-description.template
     generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowFinishHotfixJobGenerator
     regularEmailRecipients: jenkinssysadmin@ibx.com
+    activeMavenProfiles: release
   
   
 deploymentConfig: &deploymentConfig
