@@ -52,7 +52,7 @@ class GitflowFinishHotfixJobGenerator extends GitflowFinishReleaseJobGenerator{
 		labelListingScript: new ParameterListingScript(text:descriptionScript),
 		elementType: ViewElementTypes.SINGLE_SELECT_CHOICES)
 
-		parameters << new GitflowJobParameter(name: DEVELOPMENT_VERSION,description : 'What do you want the next development version to be?', elementType:TEXT)
+		parameters << new GitflowJobParameter(name: DEVELOPMENT_VERSION,description : 'What do you want the next development version to be(post hotfix merge)?', elementType:TEXT)
 		parameters << new GitflowJobParameter(name: KEEP_HOTFIX_BRANCH,elementType:BOOLEAN_CHOICE, defaultValue:false)
 		parameters << new GitflowJobParameter(name: SQUASH_COMMITS, elementType:BOOLEAN_CHOICE, defaultValue:false)
 
@@ -76,15 +76,21 @@ class GitflowFinishHotfixJobGenerator extends GitflowFinishReleaseJobGenerator{
 
 
 		return{
-
+			
+			
+			ctx.generatingOnWindows ? batchFile(adapt(CHECK_OUT_DEVELOP)) : shell(CHECK_OUT_DEVELOP)
+			maven configureMavenCommand(UPGRADE_DEVELOPMENT_VERSION)
+			ctx.generatingOnWindows ? batchFile(adapt(COMMIT_DEVELOP_POM)) : shell(COMMIT_DEVELOP_POM)
 			ctx.generatingOnWindows ? batchFile(adapt(CHECK_OUT_HOTFIX)) : shell(CHECK_OUT_HOTFIX)
 			maven configureMavenCommand(jobConfig)
-			ctx.generatingOnWindows ? batchFile(adapt(WRITE_MASTER_MERGE_COMMIT_CODE_TO_FILE)) : shell(WRITE_MASTER_MERGE_COMMIT_CODE_TO_FILE)
-			ctx.generatingOnWindows ? batchFile(adapt(WRITE_DEVELOP_MERGE_COMMIT_CODE_TO_FILE)) : shell(WRITE_DEVELOP_MERGE_COMMIT_CODE_TO_FILE)
+			ctx.generatingOnWindows ? batchFile(adapt(WRITE_MERGE_COMMITS_TO_FILE)) : shell(WRITE_MERGE_COMMITS_TO_FILE)
 			environmentVariables{
 				propertiesFile('finishhotfix_env_properties') //This is the file we create in the previous step
 				envs(['SCM_CHANGESET_URL': ctx.scmRepository.changeSetUrl])
 			}
+			ctx.generatingOnWindows ? batchFile(adapt(CHECK_OUT_MASTER)) : shell(CHECK_OUT_MASTER)
+			maven configureMavenCommand('deploy')
+			
 		}
 	}
 
@@ -108,16 +114,23 @@ class GitflowFinishHotfixJobGenerator extends GitflowFinishReleaseJobGenerator{
 
 	/*
 	 * Hotfix branch merges to master first, so the first merge commit in history is the merge of MASTER and RELEASE branch, so we skip 1 and request the second latest merge commit
+	 *  Hotfix branch merges to develop/release branch next, so the next merge commit in history is the merge of MASTER and DEVELOP branch, so we skip none and request the latest merge commit
 	 */
-	private static final String WRITE_MASTER_MERGE_COMMIT_CODE_TO_FILE = 'echo MASTER_MERGE_COMMIT=$(echo `git log --max-count=1 --skip=1 --merges --pretty=format:%h`) > finishhotfix_env_properties'
+	private static final String WRITE_MERGE_COMMITS_TO_FILE = 
+	   '''
+	   	  echo MASTER_MERGE_COMMIT=$(echo `git log --max-count=1 --skip=1 --merges --pretty=format:%h`) > finishhotfix_env_properties
+	   	  echo DEVELOP_MERGE_COMMIT=$(echo `git log --max-count=1 --skip=0 --merges --pretty=format:%h`) >> finishhotfix_env_properties'''
 	
-	/*
-	 * Hotfix branch merges to develop/release branch next, so the next merge commit in history is the merge of MASTER and DEVELOP branch, so we skip none and request the latest merge commit
-	 */
-	private static final String WRITE_DEVELOP_MERGE_COMMIT_CODE_TO_FILE = 'echo DEVELOP_MERGE_COMMIT=$(echo `git log --max-count=1 --skip=0 --merges --pretty=format:%h`) >> finishhotfix_env_properties'
-
-
-
+			 
+	static final def UPGRADE_DEVELOPMENT_VERSION='versions:set -DnewVersion=${developmentVersion} versions:commit'
+	
+	static final def COMMIT_DEVELOP_POM = 'git commit pom.xml -m "Updated develop pom version during hotfix finish"'
+	
+			 
 
 	private static final def CHECK_OUT_HOTFIX = 'git checkout hotfix/${hotfixBranch}'
+	
+	private static final def CHECK_OUT_DEVELOP = 'git checkout develop'
+	
+	private static final def CHECK_OUT_MASTER = 'git checkout master'
 }
