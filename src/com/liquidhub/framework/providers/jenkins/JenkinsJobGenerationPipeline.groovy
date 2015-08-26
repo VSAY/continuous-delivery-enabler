@@ -27,14 +27,14 @@ class JenkinsJobGenerationPipeline {
 	def fabricate(Binding binding, dslFactory){
 
 		Logger logger = new PrintStreamLogger(binding[SeedJobParameters.LOGGER_OUTPUT_STREAM.bindingName])
-		
+
 		JobConfig.logger = logger
 		DeploymentJobConfig.logger = logger
-		
+
 		JobFactory factory = new JenkinsJobFactory(dslFactory) //This is the job generator factory
-		
+
 		logger.info 'Job factory initialized '
-			
+
 		logger.info 'Workspace utilities initialized '
 
 		YAMLConfigurationManager.logger = logger
@@ -46,44 +46,47 @@ class JenkinsJobGenerationPipeline {
 		logger.info 'Analyzing scm repository information'
 
 		SCMRepository scmRepository = new GitRepository(bindingVariables)
-		
+
 		logger.info 'Analyzed git repository information'
 
 		Configuration configuration =  configurationManager.loadConfigurationForRepositoryBranch(scmRepository.getRepositorySlug(),'', scmRepository.getRepoBranchName())
-		
+
 		logger.info 'Finished loading configuration '
 
 		JobGenerationContext.logger = logger
-		
+
 		JobViewSupport viewSupport = new JenkinsJobViewSupport()
 
 		JobGenerationContext ctx = new JobGenerationContext(factory, factory, factory,configuration, scmRepository, viewSupport)
-		
+
 		logger.info 'Created job generation context'
 
 		JobGeneratorPipelineFilter jobGeneratorFilter = new JobGeneratorPipelineFilter(ctx)
-		
+
 		logger.info 'JobGeneratorPipelineFilter created successfully'
-		
-		logger.info 'Configuring SCM repository @ '+scmRepository.repoUrl
-		
-		StashConfigurationManager scmConfigurer = new StashConfigurationManager()
-		scmConfigurer.configure(ctx)
-		
+
+		if(scmRepository.branchType.requiresRepositorySetup()){
+
+			logger.info 'Configuring SCM repository @ '+scmRepository.repoUrl
+
+			StashConfigurationManager scmConfigurer = new StashConfigurationManager()
+			scmConfigurer.configure(ctx)
+		}
+
 		logger.info 'Finished Configuring SCM repository successfully '
-		
+
 		logger.info 'Launching job generators'
 
 		jobGeneratorFilter.configuredJobGenerators*.generateJob(ctx)
-		
+
 		logger.info 'Job configuration generated successfully'
-		
+
 		logger.info 'Generating views'
-		
+
 		NestedViewGenerator viewGenerator = new NestedViewGenerator()
-		
+
 		viewGenerator.generateView(ctx)
-		
+
 		logger.info 'Finished generating views'
 	}
 }
