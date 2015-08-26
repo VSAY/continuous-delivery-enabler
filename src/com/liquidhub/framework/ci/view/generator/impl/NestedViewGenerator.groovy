@@ -81,7 +81,7 @@ class NestedViewGenerator extends SectionedJobViewGenerator{
 
 					sectionedView (repositoryName, sectionJobViewGenerator.createSectionView(ctx, repositoryName, gitflowJobRegExpConfig))
 					
-					if(ctx.hasDeployable()){
+					if(repositoryName.endsWith('web')){ //Bad practice but we cannot figure out if the repository is deployable just by looking at context. Need a better approach
 						buildPipelineView(repositoryName+'-deliveryPipeline'){
 							def selectedJobName = ctx.jobNameCreator.createJobName(ctx.repositoryName, null, null, config.gitflowFeatureBranchConfig.finishConfig, true)
 							selectedJob(selectedJobName)
