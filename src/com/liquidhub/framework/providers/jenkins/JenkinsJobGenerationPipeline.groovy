@@ -71,10 +71,11 @@ class JenkinsJobGenerationPipeline {
 
 			StashConfigurationManager scmConfigurer = new StashConfigurationManager()
 			scmConfigurer.configure(ctx)
+			
+			logger.info 'Finished Configuring SCM repository successfully '
 		}
 
-		logger.info 'Finished Configuring SCM repository successfully '
-
+	
 		logger.info 'Launching job generators'
 
 		jobGeneratorFilter.configuredJobGenerators*.generateJob(ctx)
