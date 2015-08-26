@@ -4,9 +4,9 @@ import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.ALLOW_SN
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.DEVELOPMENT_VERSION
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.PUSH_RELEASES
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_BRANCH_VERSION_SUFFIX
+import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_DATE
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_VERSION
 import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.START_COMMIT
-import static com.liquidhub.framework.ci.model.GitflowJobParameterNames.RELEASE_DATE
 import static com.liquidhub.framework.ci.model.JobPermissions.ItemBuild
 import static com.liquidhub.framework.ci.model.JobPermissions.ItemCancel
 import static com.liquidhub.framework.ci.model.JobPermissions.ItemConfigure
@@ -15,23 +15,19 @@ import static com.liquidhub.framework.ci.model.JobPermissions.ItemRead
 import static com.liquidhub.framework.ci.model.JobPermissions.ItemWorkspace
 import static com.liquidhub.framework.ci.model.JobPermissions.RunDelete
 import static com.liquidhub.framework.ci.model.JobPermissions.RunUpdate
+import static com.liquidhub.framework.ci.view.ViewElementTypes.BOOLEAN_CHOICE
+import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_BOOLEAN_CHOICE
+import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_TEXT
+import static com.liquidhub.framework.ci.view.ViewElementTypes.TEXT
+import static com.liquidhub.framework.providers.jenkins.OperatingSystemCommandAdapter.adapt
 
-import java.util.Map;
-
-import com.liquidhub.framework.ci.model.BuildEnvironmentVariables
 import com.liquidhub.framework.ci.model.GitflowJobParameter
 import com.liquidhub.framework.ci.model.JobGenerationContext
-import com.liquidhub.framework.ci.model.ParameterListingScript
 import com.liquidhub.framework.ci.view.ViewElementTypes
 import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.config.model.JobConfig
-import com.liquidhub.framework.config.model.RoleConfig;
-
-import static com.liquidhub.framework.providers.jenkins.OperatingSystemCommandAdapter.adapt
-import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_BOOLEAN_CHOICE
-import static com.liquidhub.framework.ci.view.ViewElementTypes.TEXT
-import static com.liquidhub.framework.ci.view.ViewElementTypes.BOOLEAN_CHOICE
-import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_TEXT
+import com.liquidhub.framework.config.model.RoleConfig
+import com.liquidhub.framework.scm.model.GitFlowBranchTypes
 
 
 class GitflowStartReleaseJobGenerator extends BaseGitflowJobGenerationTemplateSupport {
@@ -100,6 +96,18 @@ class GitflowStartReleaseJobGenerator extends BaseGitflowJobGenerationTemplateSu
 		def parameters = [:]
 		parameters.put(roleConfig.releaseManagerRole, [ItemBuild, ItemCancel, ItemDiscover, ItemRead, RunUpdate, RunDelete, ItemWorkspace])
 		return parameters
+	}
+	
+	@Override
+	protected def configureAdditionalPublishers(JobGenerationContext ctx, JobConfig jobConfig){
+
+		//When feature finishes and the code is merged to develop, we trigger the develop branch ci job automatically
+		def downstreamReleaseCIJobName = ctx.jobNameCreator.createJobName(ctx.repositoryName, GitFlowBranchTypes.RELEASE, 'release', ctx.configuration.continuousIntegrationConfig)
+
+		return {
+			buildPipelineTrigger(downstreamReleaseCIJobName)
+		}
+
 	}
 
 
