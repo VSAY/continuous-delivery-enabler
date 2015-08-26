@@ -63,6 +63,8 @@ class NestedViewGenerator extends SectionedJobViewGenerator{
 		def allRepositories = existingRepositories << ctx.scmRepository.repositorySlug
 
 		Configuration config = ctx.configuration
+		
+		
 
 		ctx.generateView(projectName,'nestedView'){
 
@@ -78,6 +80,13 @@ class NestedViewGenerator extends SectionedJobViewGenerator{
 					gitflowJobRegExpConfig[SectionedJobViewGenerator.HOTFIX_JOB_KEY] = createJobInclusionRegExp(repositoryName, config.gitflowHotfixBranchConfig)
 
 					sectionedView (repositoryName, sectionJobViewGenerator.createSectionView(ctx, repositoryName, gitflowJobRegExpConfig))
+					
+					if(ctx.hasDeployable()){
+						buildPipelineView(repositoryName+'-deliveryPipeline'){
+							def selectedJobName = ctx.jobNameCreator.createJobName(ctx.repositoryName, null, null, config.gitflowFeatureBranchConfig.finishConfig, true)
+							selectedJob(selectedJobName)
+						}
+					}
 				}
 
 			}
