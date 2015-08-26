@@ -99,7 +99,7 @@ class SectionedJobViewGenerator implements ViewGenerator{
 				
 				listView listViewGenerator.createView("Release(${repositoryName}) ", releaseBranchJobRegExp)
 				
-				listView listViewGenerator.createView("Hotfix(${repositoryName}) ", "${repositoryName}-hotfix-.*")
+				listView listViewGenerator.createView("Hotfix(${repositoryName}) ", hotfixBranchJobRegexp)
 				
 				listView listViewGenerator.createView("Features(${repositoryName}) ", featureBranchJobRegExp)
 
