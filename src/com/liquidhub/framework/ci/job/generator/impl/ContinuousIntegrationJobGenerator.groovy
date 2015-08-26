@@ -70,8 +70,8 @@ class ContinuousIntegrationJobGenerator extends BaseJobGenerationTemplate{
 				downstreamJobConfig= masterConfig.gitflowReleaseBranchConfig.startConfig
 				break
 
-			case GitFlowBranchTypes.MASTER:
-				downstreamJobConfig= masterConfig.gitflowHotfixBranchConfig.startConfig
+			case GitFlowBranchTypes.MASTER://Breaking this connection for now, affects pipeline visualization
+				//downstreamJobConfig= masterConfig.gitflowHotfixBranchConfig.startConfig
 				break
 		}
 
