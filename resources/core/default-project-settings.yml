@@ -48,7 +48,7 @@ continuousIntegrationConfig: &continuousIntegrationConfig
   jobSuffix: -ci
   generatorClass: com.liquidhub.framework.ci.job.generator.impl.ContinuousIntegrationJobGenerator
   description: The CI job for the repository, fires on every commit to the repository
-  
+  escalationEmailRecipients: jenkinssysadmin@ibx.com,frontofficeprojectadmin@ibx.com
   
 codeQualityConfig:
   disabled: false
