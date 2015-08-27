@@ -136,6 +136,7 @@ deploymentConfig: &deploymentConfig
   snapshotVersionCountToDisplay: 5
   deploymentScriptPath: resources/core/default-deployment-script.sh
   regularEmailRecipients: jenkinssysadmin@ibx.com,frontofficeprojectadmin@ibx.com
+  emailContent: ${JELLY_SCRIPT, template="frontoffice-deployment-template.jelly"}
        
 buildDiscardPolicy: 
   daysToKeep: 7
