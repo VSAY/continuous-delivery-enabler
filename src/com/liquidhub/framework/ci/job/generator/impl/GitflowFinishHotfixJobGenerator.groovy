@@ -53,7 +53,7 @@ class GitflowFinishHotfixJobGenerator extends GitflowFinishReleaseJobGenerator{
 		elementType: ViewElementTypes.SINGLE_SELECT_CHOICES)
 
 		parameters << new GitflowJobParameter(name: DEVELOPMENT_VERSION,description : 'What do you want the next development version to be(post hotfix merge)?', elementType:TEXT)
-		parameters << new GitflowJobParameter(name: KEEP_HOTFIX_BRANCH,elementType:BOOLEAN_CHOICE, defaultValue:false)
+		parameters << new GitflowJobParameter(name: KEEP_HOTFIX_BRANCH,elementType:READ_ONLY_BOOLEAN_CHOICE, defaultValue:true)//Has to be a read only flag because if the branch is not kept the job fails.Need to investigate
 		parameters << new GitflowJobParameter(name: SQUASH_COMMITS, elementType:BOOLEAN_CHOICE, defaultValue:false)
 
 		parameters << [ALLOW_SNAPSHOTS_WHILE_FINISHING_HOTFIX].collect{
