@@ -39,8 +39,8 @@ healthConfig: &healthConfig
   jobSuffix: -health
   generatorClass: com.liquidhub.framework.ci.job.generator.impl.BranchHealthMonitor
   description: Monitors the health of the branch. Fails only if the code does not compile and test
-  
-      
+  regularEmailRecipients: jenkinssysadmin@ibx.com,fopsateam@ibx.com,frontofficeprojectadmin@ibx.com
+        
       
 continuousIntegrationConfig: &continuousIntegrationConfig
   goals: deploy -P ci
@@ -63,7 +63,7 @@ milestoneReleaseConfig: &milestoneReleaseConfig
   projectDescriptionTemplatePath: resources/core/gitflow-finish-release-description.template  
   generatorClass: com.liquidhub.framework.ci.job.generator.impl.MilestoneReleaseJobGenerator
   activeMavenProfiles: release
-  regularEmailRecipients: jenkinssysadmin@ibx.com,a@b.com,c@d.com
+  regularEmailRecipients: jenkinssysadmin@ibx.com,fopsateam@ibx.com,frontofficeprojectadmin@ibx.com
   
 gitflowFeatureBranchConfig: &gitflowFeatureBranchConfig
   startConfig:
@@ -73,7 +73,7 @@ gitflowFeatureBranchConfig: &gitflowFeatureBranchConfig
     projectDescriptionTemplatePath: resources/core/gitflow-start-feature-description.template
     generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowStartFeatureJobGenerator
     emailContent: ${JELLY_SCRIPT, template="frontoffice-feature-start-email-template.jelly"}
-    regularEmailRecipients: jenkinssysadmin@ibx.com,a@b.com,c@d.com
+    regularEmailRecipients: jenkinssysadmin@ibx.com,fopsateam@ibx.com,frontofficeprojectadmin@ibx.com
   finishConfig: 
     goals: verify jgitflow:feature-finish -B -Pgitflow
     goalArgs: {keepBranch: $keepBranch,  featureName: $featureName, noFeatureMerge: $skipFeatureMergeToDevelop, squash: $squashCommits}
@@ -81,7 +81,7 @@ gitflowFeatureBranchConfig: &gitflowFeatureBranchConfig
     jobPrefix: FinishFeature_
     generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowFinishFeatureJobGenerator
     emailContent: ${JELLY_SCRIPT, template="frontoffice-feature-finish-email-template.jelly"}
-    regularEmailRecipients: jenkinssysadmin@ibx.com
+    regularEmailRecipients: jenkinssysadmin@ibx.com,fopsateam@ibx.com,frontofficeprojectadmin@ibx.com
   
   
 gitflowReleaseBranchConfig: &gitflowReleaseBranchConfig
@@ -92,7 +92,7 @@ gitflowReleaseBranchConfig: &gitflowReleaseBranchConfig
     projectDescriptionTemplatePath: resources/core/gitflow-start-release-description.template
     generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowStartReleaseJobGenerator
     emailContent: ${JELLY_SCRIPT, template="frontoffice-release-start-email-template.jelly"}
-    regularEmailRecipients: jenkinssysadmin@ibx.com
+    regularEmailRecipients: jenkinssysadmin@ibx.com,fopsateam@ibx.com,frontofficeprojectadmin@ibx.com
       
   finishConfig:
     goals: verify jgitflow:release-finish deploy -B
@@ -102,7 +102,7 @@ gitflowReleaseBranchConfig: &gitflowReleaseBranchConfig
     generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowFinishReleaseJobGenerator
     activeMavenProfiles: release,gitflow,ci
     emailContent: ${JELLY_SCRIPT, template="frontoffice-release-finish-email-template.jelly"}
-    regularEmailRecipients: jenkinssysadmin@ibx.com
+    regularEmailRecipients: jenkinssysadmin@ibx.com,fopsateam@ibx.com,frontofficeprojectadmin@ibx.com
   
   
 gitflowHotfixBranchConfig: &gitflowHotfixBranchConfig
@@ -113,7 +113,7 @@ gitflowHotfixBranchConfig: &gitflowHotfixBranchConfig
     jobPrefix: StartHotfix_
     projectDescriptionTemplatePath: resources/core/gitflow-start-hotfix-description.template
     generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowStartHotfixJobGenerator
-    regularEmailRecipients: jenkinssysadmin@ibx.com
+    regularEmailRecipients: jenkinssysadmin@ibx.com,fopsateam@ibx.com,frontofficeprojectadmin@ibx.com
   finishConfig:
     goals: verify jgitflow:hotfix-finish -B -Pgitflow
     goalArgs:
@@ -121,12 +121,12 @@ gitflowHotfixBranchConfig: &gitflowHotfixBranchConfig
     jobPrefix: FinishHotfix_
     projectDescriptionTemplatePath: resources/core/gitflow-finish-hotfix-description.template
     generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowFinishHotfixJobGenerator
-    regularEmailRecipients: jenkinssysadmin@ibx.com
+    regularEmailRecipients: jenkinssysadmin@ibx.com,fopsateam@ibx.com,frontofficeprojectadmin@ibx.com
     activeMavenProfiles: release
   
   
 deploymentConfig: &deploymentConfig
-  artifactRepositoryUrl: http://repo.test.ibx.com/
+  artifactRepositoryUrl: http://repo.ibx.com/
   serverTemplate: WEBSPHERE
   artifactRepository: NEXUS
   appConfigurationArtifactIdentificationPattern: .*conf.*
@@ -135,7 +135,7 @@ deploymentConfig: &deploymentConfig
   releaseVersionCountToDisplay: 5
   snapshotVersionCountToDisplay: 5
   deploymentScriptPath: resources/core/default-deployment-script.sh
-  regularEmailRecipients: jenkinssysadmin@ibx.com
+  regularEmailRecipients: jenkinssysadmin@ibx.com,frontofficeprojectadmin@ibx.com
        
 buildDiscardPolicy: 
   daysToKeep: 7
