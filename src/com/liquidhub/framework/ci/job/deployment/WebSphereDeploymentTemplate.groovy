@@ -11,6 +11,7 @@ import com.liquidhub.framework.config.model.DeploymentJobConfig
 import com.liquidhub.framework.config.model.JobConfig
 import com.liquidhub.framework.config.model.RoleConfig
 import com.liquidhub.framework.providers.jenkins.JenkinsJobViewSupport
+
 import static com.liquidhub.framework.ci.model.JobPermissions.ItemBuild
 import static com.liquidhub.framework.ci.model.JobPermissions.ItemCancel
 import static com.liquidhub.framework.ci.model.JobPermissions.ItemConfigure
@@ -55,6 +56,17 @@ class WebSphereDeploymentTemplate extends BaseJobGenerationTemplate{
 		if(environmentConfig.enforceRoleBasedAccess){
 			[(roleConfig.deploymentManagerRole):  [ItemBuild, ItemCancel, ItemDiscover, ItemRead, RunUpdate, ItemWorkspace]]
 		}
+	}
+	
+	
+	@Override
+	protected def determineRegularEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
+		'${ENV, var="artifactId"} Version ${ENV, var="version"} deployed to '+this.environmentConfig.name.toUpperCase()+' environment'
+	}
+
+	@Override
+	protected def determineFailureEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
+		'Action Required !!! Failed to deploy ${ENV, var="artifactId"} Version ${ENV, var="version"} to '+this.environmentConfig.name.toUpperCase()+' environment'
 	}
 
 
