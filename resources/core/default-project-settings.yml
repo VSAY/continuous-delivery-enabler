@@ -110,6 +110,7 @@ gitflowHotfixBranchConfig: &gitflowHotfixBranchConfig
     goals: verify jgitflow:hotfix-start -B -Pgitflow
     goalArgs:
       autoVersionSubmodules: true
+      pushHotfixes: true
     jobPrefix: StartHotfix_
     projectDescriptionTemplatePath: resources/core/gitflow-start-hotfix-description.template
     generatorClass: com.liquidhub.framework.ci.job.generator.impl.GitflowStartHotfixJobGenerator
