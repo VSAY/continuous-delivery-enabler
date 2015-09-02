@@ -1,17 +1,5 @@
 package com.liquidhub.framework.ci.job.deployment
 
-import com.liquidhub.framework.ci.EmbeddedScriptProvider
-import com.liquidhub.framework.ci.job.generator.impl.BaseJobGenerationTemplate
-import com.liquidhub.framework.ci.model.WebsphereDeploymentJobParameters
-import com.liquidhub.framework.ci.model.JobGenerationContext
-import com.liquidhub.framework.ci.model.ParameterListingScript
-import com.liquidhub.framework.ci.model.SeedJobParameters
-import com.liquidhub.framework.config.model.Configuration
-import com.liquidhub.framework.config.model.DeploymentJobConfig
-import com.liquidhub.framework.config.model.JobConfig
-import com.liquidhub.framework.config.model.RoleConfig
-import com.liquidhub.framework.providers.jenkins.JenkinsJobViewSupport
-
 import static com.liquidhub.framework.ci.model.JobPermissions.ItemBuild
 import static com.liquidhub.framework.ci.model.JobPermissions.ItemCancel
 import static com.liquidhub.framework.ci.model.JobPermissions.ItemConfigure
@@ -21,6 +9,19 @@ import static com.liquidhub.framework.ci.model.JobPermissions.ItemWorkspace
 import static com.liquidhub.framework.ci.model.JobPermissions.RunDelete
 import static com.liquidhub.framework.ci.model.JobPermissions.RunUpdate
 import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_TEXT
+
+import com.liquidhub.framework.ci.EmbeddedScriptProvider
+import com.liquidhub.framework.ci.job.generator.impl.BaseJobGenerationTemplate
+import com.liquidhub.framework.ci.model.JobGenerationContext
+import com.liquidhub.framework.ci.model.ParameterListingScript
+import com.liquidhub.framework.ci.model.SeedJobParameters
+import com.liquidhub.framework.ci.model.WebsphereDeploymentJobParameters
+import com.liquidhub.framework.ci.view.ViewElementTypes
+import com.liquidhub.framework.config.model.Configuration
+import com.liquidhub.framework.config.model.DeploymentJobConfig
+import com.liquidhub.framework.config.model.JobConfig
+import com.liquidhub.framework.config.model.RoleConfig
+import com.liquidhub.framework.providers.jenkins.JenkinsJobViewSupport
 
 
 class WebSphereDeploymentTemplate extends BaseJobGenerationTemplate{
@@ -57,8 +58,8 @@ class WebSphereDeploymentTemplate extends BaseJobGenerationTemplate{
 			[(roleConfig.deploymentManagerRole):  [ItemBuild, ItemCancel, ItemDiscover, ItemRead, RunUpdate, ItemWorkspace]]
 		}
 	}
-	
-	
+
+
 	@Override
 	protected def determineRegularEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
 		'${ENV, var="artifactId"} Version ${ENV, var="version"} deployed to '+this.environmentConfig.name.toUpperCase()+' environment'
@@ -87,13 +88,14 @@ class WebSphereDeploymentTemplate extends BaseJobGenerationTemplate{
 		def mvnGroupId = ctx.deployable.groupId
 		def mvnArtifactId = ctx.deployable.artifactId
 		def packaging = ctx.deployable.packaging
+		
 
 		JenkinsJobViewSupport.logger = ctx.logger
 
-
 		DeploymentJobConfig deploymentConfig = ctx.configuration.deploymentConfig
+		def artifactRepositoryUrl = deploymentConfig.artifactRepositoryUrl
 
-		ctx.logger.debug 'environment config is '+environmentConfig
+		//ctx.logger.debug 'environment config is '+environmentConfig
 
 		def targetJVMName = environmentConfig.targetJVMName
 		def targetCellName=environmentConfig.targetCellName
@@ -102,17 +104,24 @@ class WebSphereDeploymentTemplate extends BaseJobGenerationTemplate{
 
 		EmbeddedScriptProvider scriptProvider = deploymentConfig.getDeploymentArtifactListingProvider()
 
-		def artifactVersionDescription = 'Pick the artifact version you intend to deploy. By default only the last few versions are displayed. If the drop down list is empty,  it implies that we could not find any released versions for the artifact you intend to deploy. Please contact the release manager'
-		def mavenMetadataDownloadScript = scriptProvider.getScript([baseRepositoryUrl: deploymentConfig.artifactRepositoryUrl,groupId: mvnGroupId,artifactId: mvnArtifactId])
-		def scriptBindings = [releaseVersionCountToDisplay: environmentConfig.releaseVersionCountToDisplay, snapshotVersionCountToDisplay: environmentConfig.snapshotVersionCountToDisplay]
+		def bindings = [:]
+		
+		bindings['baseRepositoryUrl'] = "'${artifactRepositoryUrl}'"
+		bindings['groupId']=   "'${mvnGroupId}'"
+		bindings['artifactId']= "'${mvnArtifactId}'"
+		bindings['releaseVersionCountToDisplay']=environmentConfig.releaseVersionCountToDisplay
+		bindings['snapshotVersionCountToDisplay']=environmentConfig.snapshotVersionCountToDisplay
+		bindings['applyFeatureVersionExclusionFilter']=true//TODO Hardcoding for now, lets see if someone needs an override ever
+		
+		def mavenMetadataDownloadScript = scriptProvider.getScript(bindings)
 
 		def deploymentJobParameters = [
 			WebsphereDeploymentJobParameters.GROUP_ID.properties << [defaultValue:  "'${mvnGroupId}'"],
 			WebsphereDeploymentJobParameters.ARTIFACT_ID.properties << [defaultValue: "'${mvnArtifactId}'"],
 			WebsphereDeploymentJobParameters.PACKAGING.properties << [defaultValue: "'${packaging}'"],
-			WebsphereDeploymentJobParameters.ARTIFACT_VERSION.properties << [valueListingScript: new ParameterListingScript(text: mavenMetadataDownloadScript, bindings: scriptBindings)],
+			WebsphereDeploymentJobParameters.ARTIFACT_VERSION.properties << [valueListingScript: new ParameterListingScript(text: mavenMetadataDownloadScript)],
 			WebsphereDeploymentJobParameters.DEPLOYMENT_MANAGER.properties <<  [defaultValue: "'${deploymentManager}'"],
-			WebsphereDeploymentJobParameters.TARGET_JVM_NAME.properties << [defaultValue: "'${targetJVMName}'"],
+			WebsphereDeploymentJobParameters.TARGET_JVM_NAME.properties << [elementType:ViewElementTypes.TEXT, defaultValue: "'${targetJVMName}'"],
 			WebsphereDeploymentJobParameters.TARGET_CELL_NAME.properties << [defaultValue: "'${targetCellName}'"],
 			WebsphereDeploymentJobParameters.APP_CONTEXT_ROOT.properties << [defaultValue: "'${contextRoot}'"],
 			WebsphereDeploymentJobParameters.RESTART.properties << [defaultValue:true]
@@ -142,4 +151,6 @@ class WebSphereDeploymentTemplate extends BaseJobGenerationTemplate{
 
 		return { shell(deploymentScript) }
 	}
+
+	
 }
