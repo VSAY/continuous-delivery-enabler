@@ -1,5 +1,6 @@
 deploymentConfig: &deploymentConfig
   deploymentScriptPath: resources/core/default-deployment-script.sh
+  appContextRoot: /RCA
   environments: 
    - name: Dev
      deploymentManager: wsmgrd20
