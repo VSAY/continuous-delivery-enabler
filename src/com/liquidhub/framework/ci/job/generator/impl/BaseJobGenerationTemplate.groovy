@@ -198,8 +198,8 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 	protected Map grantAdditionalPermissions(JobGenerationContext ctx, RoleConfig roleConfig){
 		[:]
 	}
-	
-	
+
+
 	/**
 	 * @return the name of the branch which should be used to build the source code
 	 */
@@ -240,7 +240,15 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 
 		def mavenPOMVersionExtractorScript = mavenPOMVersionExtractionScript.getScript()
 
-		return configureAdditionalPublishers(ctx, jobConfig) >> { groovyPostBuild(mavenPOMVersionExtractorScript) } >> ctx.configurers('email').configure(ctx, jobConfig, email)
+		if(extractPOMVersionAfterBuild()){
+			return configureAdditionalPublishers(ctx, jobConfig) >> { groovyPostBuild(mavenPOMVersionExtractorScript) } >> ctx.configurers('email').configure(ctx, jobConfig, email)
+		} else {
+			return configureAdditionalPublishers(ctx, jobConfig) >> ctx.configurers('email').configure(ctx, jobConfig, email)
+		}
+	}
+	
+	protected def extractPOMVersionAfterBuild(){
+		true
 	}
 
 
@@ -253,9 +261,9 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 		EmailNotificationContext defaultContext = new EmailNotificationContext(recipientList: regularEmailRecipients, subjectTemplate: emailSubject, contentTemplate: jobConfig.emailContent)
 
 		def escalationEmails = determineEscalationEmailRecipients(ctx, jobConfig)
-		
+
 		Email successEmail = new Email(sendToDevelopers: true,sendToRequestor: true, sendToRecipientList:true ,subject:determineRegularEmailSubject(ctx, jobConfig))
-		
+
 		defaultContext.addEmailForTrigger('Success', successEmail)
 
 		def failureEmailSubject = determineFailureEmailSubject(ctx, jobConfig)
@@ -267,16 +275,15 @@ abstract class BaseJobGenerationTemplate implements JobGenerator{
 		Email failureEmail = new Email(includeCulprits: true,sendToDevelopers: true,sendToRequestor: true, sendToRecipientList:true , subject:failureEmailSubject, recipientList: [regularEmailRecipients, escalationEmails].join(","))
 
 		defaultContext.addEmailForTrigger('Failure', failureEmail)
-		
+
 		//Any configuration registrations here will override what has been done above
 		registerEmailConfigurationForTrigger(ctx, defaultContext, jobConfig)
-		
+
 
 		return defaultContext
 	}
-	
+
 	protected def registerEmailConfigurationForTrigger(JobGenerationContext ctx, EmailNotificationContext emailContext, JobConfig jobConfig){
-		
 	}
 
 

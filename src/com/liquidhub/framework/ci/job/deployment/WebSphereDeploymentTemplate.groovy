@@ -152,5 +152,8 @@ class WebSphereDeploymentTemplate extends BaseJobGenerationTemplate{
 		return { shell(deploymentScript) }
 	}
 
+	protected def extractPOMVersionAfterBuild(){
+		false
+	}
 	
 }
