@@ -1,0 +1,10 @@
+deploymentConfig: &deploymentConfig
+  deploymentScriptPath: resources/core/default-deployment-script.sh
+  appContextRoot: /uatproxy
+  environments: 
+   - name: Dev
+     deploymentManager: wsmgrd20
+     targetJVMName: RCA
+     targetCellName: DevKCell40
+
+     
