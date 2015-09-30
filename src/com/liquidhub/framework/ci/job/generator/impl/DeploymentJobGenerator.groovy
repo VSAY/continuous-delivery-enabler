@@ -1,6 +1,7 @@
 package com.liquidhub.framework.ci.job.generator.impl
 
 
+import com.liquidhub.framework.ci.job.deployment.TomcatDeploymentTemplate
 import com.liquidhub.framework.ci.job.deployment.WebSphereDeploymentTemplate
 import com.liquidhub.framework.ci.job.generator.JobGenerator
 import com.liquidhub.framework.ci.logger.Logger
@@ -54,8 +55,8 @@ class DeploymentJobGenerator implements JobGenerator{
 					deploymentJobs << new WebSphereDeploymentTemplate(thisEnvironmentDeploymentConfig).generateJob(ctx)
 					break
 
-				case 'TOMACAT':
-					logger.debug 'this is tomcat which is not yet configured'
+				case 'TOMCAT':
+					deploymentJobs << new TomcatDeploymentTemplate(thisEnvironmentDeploymentConfig).generateJob(ctx)
 					break
 					
 			    default:
