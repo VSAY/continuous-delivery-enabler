@@ -134,7 +134,8 @@ deploymentConfig: &deploymentConfig
   jobSuffix: Deployer
   generatorClass: com.liquidhub.framework.ci.job.generator.impl.DeploymentJobGenerator
   releaseVersionCountToDisplay: 5
-  snapshotVersionCountToDisplay: 5
+  snapshotVersionCountToDisplay: 8
+  applyFeatureVersionExclusionFilter: false
   deploymentScriptPath: resources/core/default-deployment-script.sh
   regularEmailRecipients: jenkinssysadmin@ibx.com,frontofficeprojectadmin@ibx.com
   emailContent: ${JELLY_SCRIPT, template="frontoffice-deployment-template.jelly"}
