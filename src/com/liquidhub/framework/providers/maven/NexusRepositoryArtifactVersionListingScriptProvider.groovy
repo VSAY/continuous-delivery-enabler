@@ -17,8 +17,12 @@ class NexusRepositoryArtifactVersionListingScriptProvider implements EmbeddedScr
 
 		"""
         | import com.liquidhub.framework.maven.MavenRepositoryExplorer
-        | def snapshotVersions = MavenRepositoryExplorer.listRecentSnapshotVersions($baseRepositoryUrl, $mavenGroupId, $mavenArtifactId,$snapshotVersionCountToDisplay,$applyFeatureVersionExclusionFilter)
-		| def releaseVersions = MavenRepositoryExplorer.listRecentReleaseVersions($baseRepositoryUrl, $mavenGroupId, $mavenArtifactId,$releaseVersionCountToDisplay)
+		| def snapshotVersions = []
+		| def releaseVersions = []
+		| try{
+        |  snapshotVersions = MavenRepositoryExplorer.listRecentSnapshotVersions($baseRepositoryUrl, $mavenGroupId, $mavenArtifactId,$snapshotVersionCountToDisplay,$applyFeatureVersionExclusionFilter)
+		|  releaseVersions = MavenRepositoryExplorer.listRecentReleaseVersions($baseRepositoryUrl, $mavenGroupId, $mavenArtifactId,$releaseVersionCountToDisplay)
+		|    } catch(Exception e) { }
 		| def allVersions = [] << releaseVersions << snapshotVersions
 		| allVersions.flatten()
 	    """.stripMargin()
