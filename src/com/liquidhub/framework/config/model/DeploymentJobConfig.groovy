@@ -32,7 +32,7 @@ class DeploymentJobConfig extends JobConfig {
 
 	def appConfigurationArtifactIdentificationPattern //The pattern by which we identify the configuration artifact for the deployable
 
-	def targetJVMName,targetCellName, appContextRoot,deploymentManager
+	def targetJVMName,targetCellName, appContextRoot,deploymentManager,deployDirPath
 
 	private DeploymentJobConfig parentConfig //A reference to the parent deployment configuration
 
@@ -81,7 +81,8 @@ class DeploymentJobConfig extends JobConfig {
 			'artifactRepositoryUrl',
 			'releaseVersionCountToDisplay',
 			'snapshotVersionCountToDisplay',
-			'appConfigurationArtifactIdentificationPattern'
+			'appConfigurationArtifactIdentificationPattern',
+			'deployDirPath'
 		].each{property ->
 			this[property] = deploymentConfig[property] ?:  this[property]
 		}
