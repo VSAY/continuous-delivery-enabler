@@ -15,7 +15,7 @@ import com.liquidhub.framework.ci.job.generator.impl.BaseJobGenerationTemplate
 import com.liquidhub.framework.ci.model.JobGenerationContext
 import com.liquidhub.framework.ci.model.ParameterListingScript
 import com.liquidhub.framework.ci.model.SeedJobParameters
-import com.liquidhub.framework.ci.model.WebsphereDeploymentJobParameters
+import com.liquidhub.framework.ci.model.DeploymentJobParameters
 import com.liquidhub.framework.ci.view.ViewElementTypes
 import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.config.model.DeploymentJobConfig
@@ -111,20 +111,20 @@ class WebSphereDeploymentTemplate extends BaseJobGenerationTemplate{
 		bindings['artifactId']= "'${mvnArtifactId}'"
 		bindings['releaseVersionCountToDisplay']=environmentConfig.releaseVersionCountToDisplay
 		bindings['snapshotVersionCountToDisplay']=environmentConfig.snapshotVersionCountToDisplay
-		bindings['applyFeatureVersionExclusionFilter']=true//TODO Hardcoding for now, lets see if someone needs an override ever
+		bindings['applyFeatureVersionExclusionFilter']=environmentConfig.applyFeatureVersionExclusionFilter
 		
 		def mavenMetadataDownloadScript = scriptProvider.getScript(bindings)
 
 		def deploymentJobParameters = [
-			WebsphereDeploymentJobParameters.GROUP_ID.properties << [defaultValue:  "'${mvnGroupId}'"],
-			WebsphereDeploymentJobParameters.ARTIFACT_ID.properties << [defaultValue: "'${mvnArtifactId}'"],
-			WebsphereDeploymentJobParameters.PACKAGING.properties << [defaultValue: "'${packaging}'"],
-			WebsphereDeploymentJobParameters.ARTIFACT_VERSION.properties << [valueListingScript: new ParameterListingScript(text: mavenMetadataDownloadScript)],
-			WebsphereDeploymentJobParameters.DEPLOYMENT_MANAGER.properties <<  [defaultValue: "'${deploymentManager}'"],
-			WebsphereDeploymentJobParameters.TARGET_JVM_NAME.properties << [elementType:ViewElementTypes.TEXT, defaultValue: "'${targetJVMName}'"],
-			WebsphereDeploymentJobParameters.TARGET_CELL_NAME.properties << [defaultValue: "'${targetCellName}'"],
-			WebsphereDeploymentJobParameters.APP_CONTEXT_ROOT.properties << [defaultValue: "'${contextRoot}'"],
-			WebsphereDeploymentJobParameters.RESTART.properties << [defaultValue:true]
+			DeploymentJobParameters.GROUP_ID.properties << [defaultValue:  "'${mvnGroupId}'"],
+			DeploymentJobParameters.ARTIFACT_ID.properties << [defaultValue: "'${mvnArtifactId}'"],
+			DeploymentJobParameters.PACKAGING.properties << [defaultValue: "'${packaging}'"],
+			DeploymentJobParameters.ARTIFACT_VERSION.properties << [valueListingScript: new ParameterListingScript(text: mavenMetadataDownloadScript)],
+			DeploymentJobParameters.DEPLOYMENT_MANAGER.properties <<  [defaultValue: "'${deploymentManager}'"],
+			DeploymentJobParameters.TARGET_JVM_NAME.properties << [elementType:ViewElementTypes.TEXT, defaultValue: "'${targetJVMName}'"],
+			DeploymentJobParameters.TARGET_CELL_NAME.properties << [defaultValue: "'${targetCellName}'"],
+			DeploymentJobParameters.APP_CONTEXT_ROOT.properties << [defaultValue: "'${contextRoot}'"],
+			DeploymentJobParameters.RESTART.properties << [defaultValue:true]
 		]
 
 		def parameterDefinitions = {}
