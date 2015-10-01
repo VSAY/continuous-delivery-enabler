@@ -10,29 +10,18 @@ import static com.liquidhub.framework.ci.model.JobPermissions.RunDelete
 import static com.liquidhub.framework.ci.model.JobPermissions.RunUpdate
 import static com.liquidhub.framework.ci.view.ViewElementTypes.READ_ONLY_TEXT
 
-import com.liquidhub.framework.ci.EmbeddedScriptProvider
 import com.liquidhub.framework.ci.job.generator.impl.BaseJobGenerationTemplate
 import com.liquidhub.framework.ci.model.JobGenerationContext
-import com.liquidhub.framework.ci.model.ParameterListingScript
 import com.liquidhub.framework.ci.model.SeedJobParameters
-import com.liquidhub.framework.ci.model.DeploymentJobParameters
-import com.liquidhub.framework.ci.view.ViewElementTypes
 import com.liquidhub.framework.config.model.Configuration
 import com.liquidhub.framework.config.model.DeploymentJobConfig
 import com.liquidhub.framework.config.model.JobConfig
 import com.liquidhub.framework.config.model.RoleConfig
-import com.liquidhub.framework.providers.jenkins.JenkinsJobViewSupport
 
+class GenericDeploymentTemplate extends BaseJobGenerationTemplate{
 
-class WebSphereDeploymentTemplate extends BaseJobGenerationTemplate{
-
-
-	private DeploymentJobConfig environmentConfig
-
-	WebSphereDeploymentTemplate(DeploymentJobConfig environmentConfig){
-		this.environmentConfig = environmentConfig
-	}
-
+	protected DeploymentJobConfig environmentConfig
+	
 	@Override
 	def getJobConfig(Configuration configuration){
 		environmentConfig
@@ -79,60 +68,7 @@ class WebSphereDeploymentTemplate extends BaseJobGenerationTemplate{
 			ctx.templateEngine.withContentFromTemplatePath(environmentConfig.projectDescriptionTemplatePath, templateArgs)
 		}
 	}
-
-
-	protected def configureJobParameterExtensions(JobGenerationContext ctx, JobConfig jobConfig){
-
-		def parameters = []
-
-		def mvnGroupId = ctx.deployable.groupId
-		def mvnArtifactId = ctx.deployable.artifactId
-		def packaging = ctx.deployable.packaging
-		
-
-		JenkinsJobViewSupport.logger = ctx.logger
-
-		DeploymentJobConfig deploymentConfig = ctx.configuration.deploymentConfig
-		def artifactRepositoryUrl = deploymentConfig.artifactRepositoryUrl
-
-		//ctx.logger.debug 'environment config is '+environmentConfig
-
-		def targetJVMName = environmentConfig.targetJVMName
-		def targetCellName=environmentConfig.targetCellName
-		def contextRoot=environmentConfig.appContextRoot
-		def deploymentManager = environmentConfig.deploymentManager
-
-		EmbeddedScriptProvider scriptProvider = deploymentConfig.getDeploymentArtifactListingProvider()
-
-		def bindings = [:]
-		
-		bindings['baseRepositoryUrl'] = "'${artifactRepositoryUrl}'"
-		bindings['groupId']=   "'${mvnGroupId}'"
-		bindings['artifactId']= "'${mvnArtifactId}'"
-		bindings['releaseVersionCountToDisplay']=environmentConfig.releaseVersionCountToDisplay
-		bindings['snapshotVersionCountToDisplay']=environmentConfig.snapshotVersionCountToDisplay
-		bindings['applyFeatureVersionExclusionFilter']=environmentConfig.applyFeatureVersionExclusionFilter
-		
-		def mavenMetadataDownloadScript = scriptProvider.getScript(bindings)
-
-		def deploymentJobParameters = [
-			DeploymentJobParameters.GROUP_ID.properties << [defaultValue:  "'${mvnGroupId}'"],
-			DeploymentJobParameters.ARTIFACT_ID.properties << [defaultValue: "'${mvnArtifactId}'"],
-			DeploymentJobParameters.PACKAGING.properties << [defaultValue: "'${packaging}'"],
-			DeploymentJobParameters.ARTIFACT_VERSION.properties << [valueListingScript: new ParameterListingScript(text: mavenMetadataDownloadScript)],
-			DeploymentJobParameters.DEPLOYMENT_MANAGER.properties <<  [defaultValue: "'${deploymentManager}'"],
-			DeploymentJobParameters.TARGET_JVM_NAME.properties << [elementType:ViewElementTypes.TEXT, defaultValue: "'${targetJVMName}'"],
-			DeploymentJobParameters.TARGET_CELL_NAME.properties << [defaultValue: "'${targetCellName}'"],
-			DeploymentJobParameters.APP_CONTEXT_ROOT.properties << [defaultValue: "'${contextRoot}'"],
-			DeploymentJobParameters.RESTART.properties << [defaultValue:true]
-		]
-
-		def parameterDefinitions = {}
-		deploymentJobParameters.reverse().each{ parameterDefinitions = parameterDefinitions <<  ctx.viewHelper.defineParameter(it) }
-
-		return parameterDefinitions
-	}
-
+	
 	/**
 	 * Configure the build steps for this job, by default we assume a maven step and directly use the goals configured
 	 *
@@ -155,5 +91,4 @@ class WebSphereDeploymentTemplate extends BaseJobGenerationTemplate{
 	protected def extractPOMVersionAfterBuild(){
 		false
 	}
-	
 }

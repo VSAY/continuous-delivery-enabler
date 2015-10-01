@@ -24,64 +24,13 @@ import com.liquidhub.framework.config.model.RoleConfig
 import com.liquidhub.framework.providers.jenkins.JenkinsJobViewSupport
 
 
-class WebSphereDeploymentTemplate extends BaseJobGenerationTemplate{
+class TomcatDeploymentTemplate extends GenericDeploymentTemplate{
 
-
-	private DeploymentJobConfig environmentConfig
-
-	WebSphereDeploymentTemplate(DeploymentJobConfig environmentConfig){
-		this.environmentConfig = environmentConfig
+	TomcatDeploymentTemplate(DeploymentJobConfig environmentConfig){
+		super.environmentConfig = environmentConfig
 	}
 
-	@Override
-	def getJobConfig(Configuration configuration){
-		environmentConfig
-	}
-
-
-	@Override
-	protected def requiresSCMConfiguration(){
-		false
-	}
-
-	@Override
-	protected def requiresTriggerConfiguration(){
-		false
-	}
-
-
-	/**
-	 * Grant the deployment manager all sort of permissions on the deployment job, except the permission to configure it
-	 */
-	protected Map grantAdditionalPermissions(JobGenerationContext ctx,RoleConfig roleConfig){
-		if(environmentConfig.enforceRoleBasedAccess){
-			[(roleConfig.deploymentManagerRole):  [ItemBuild, ItemCancel, ItemDiscover, ItemRead, RunUpdate, ItemWorkspace]]
-		}
-	}
-
-
-	@Override
-	protected def determineRegularEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
-		'${ENV, var="artifactId"} Version ${ENV, var="version"} deployed to '+this.environmentConfig.name.toUpperCase()+' environment'
-	}
-
-	@Override
-	protected def determineFailureEmailSubject(JobGenerationContext ctx, JobConfig jobConfig){
-		'Action Required !!! Failed to deploy ${ENV, var="artifactId"} Version ${ENV, var="version"} to '+this.environmentConfig.name.toUpperCase()+' environment'
-	}
-
-
-	protected def configureDescription(JobGenerationContext ctx,JobConfig jobConfig){
-
-		def templateArgs = [:] << ctx.deployable.properties << ['envName':environmentConfig.name]
-
-		if(environmentConfig.projectDescriptionTemplatePath){
-			ctx.templateEngine.withContentFromTemplatePath(environmentConfig.projectDescriptionTemplatePath, templateArgs)
-		}
-	}
-
-
-	protected def configureJobParameterExtensions(JobGenerationContext ctx, JobConfig jobConfig){
+		protected def configureJobParameterExtensions(JobGenerationContext ctx, JobConfig jobConfig){
 
 		def parameters = []
 
@@ -97,10 +46,9 @@ class WebSphereDeploymentTemplate extends BaseJobGenerationTemplate{
 
 		//ctx.logger.debug 'environment config is '+environmentConfig
 
-		def targetJVMName = environmentConfig.targetJVMName
-		def targetCellName=environmentConfig.targetCellName
 		def contextRoot=environmentConfig.appContextRoot
-		def deploymentManager = environmentConfig.deploymentManager
+		def deploymentHost = environmentConfig.deploymentHost
+		def deployDirPath = environmentConfig.deployDirPath
 
 		EmbeddedScriptProvider scriptProvider = deploymentConfig.getDeploymentArtifactListingProvider()
 
@@ -120,11 +68,8 @@ class WebSphereDeploymentTemplate extends BaseJobGenerationTemplate{
 			DeploymentJobParameters.ARTIFACT_ID.properties << [defaultValue: "'${mvnArtifactId}'"],
 			DeploymentJobParameters.PACKAGING.properties << [defaultValue: "'${packaging}'"],
 			DeploymentJobParameters.ARTIFACT_VERSION.properties << [valueListingScript: new ParameterListingScript(text: mavenMetadataDownloadScript)],
-			DeploymentJobParameters.DEPLOYMENT_MANAGER.properties <<  [defaultValue: "'${deploymentManager}'"],
-			DeploymentJobParameters.TARGET_JVM_NAME.properties << [elementType:ViewElementTypes.TEXT, defaultValue: "'${targetJVMName}'"],
-			DeploymentJobParameters.TARGET_CELL_NAME.properties << [defaultValue: "'${targetCellName}'"],
-			DeploymentJobParameters.APP_CONTEXT_ROOT.properties << [defaultValue: "'${contextRoot}'"],
-			DeploymentJobParameters.RESTART.properties << [defaultValue:true]
+			DeploymentJobParameters.DEPLOYMENT_HOST.properties <<  [defaultValue: "'${deploymentHost}'"],
+			DeploymentJobParameters.DEPLOY_DIR_PATH.properties <<  [defaultValue: "'${deployDirPath}'"],
 		]
 
 		def parameterDefinitions = {}
@@ -132,28 +77,5 @@ class WebSphereDeploymentTemplate extends BaseJobGenerationTemplate{
 
 		return parameterDefinitions
 	}
-
-	/**
-	 * Configure the build steps for this job, by default we assume a maven step and directly use the goals configured
-	 *
-	 *
-	 * @param ctx
-	 * @param jobConfig
-	 *
-	 * @return
-	 */
-	@Override
-	protected def configureSteps(JobGenerationContext ctx, JobConfig jobConfig){
-
-		def deploymentScriptPath = [ctx.getVariable(SeedJobParameters.FRAMEWORK_CONFIG_BASE_MOUNT), environmentConfig.deploymentScriptPath].join(File.separator)
-
-		def deploymentScript = ctx.workspaceUtils.fileReader(deploymentScriptPath)
-
-		return { shell(deploymentScript) }
-	}
-
-	protected def extractPOMVersionAfterBuild(){
-		false
-	}
-	
+			
 }

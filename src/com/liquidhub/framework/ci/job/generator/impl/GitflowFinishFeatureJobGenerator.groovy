@@ -71,7 +71,6 @@ class GitflowFinishFeatureJobGenerator extends BaseGitflowJobGenerationTemplateS
 
 		parameters << new GitflowJobParameter(name: KEEP_FEATURE_BRANCH,elementType: BOOLEAN_CHOICE, defaultValue:false)
 		parameters << new GitflowJobParameter(name: SQUASH_COMMITS, elementType: BOOLEAN_CHOICE, defaultValue:false)
-		parameters << new GitflowJobParameter(name: UPDATE_INTERNAL_POM_DEPENDENCIES_TO_LATEST_VERSIONS,elementType: BOOLEAN_CHOICE, defaultValue:true)
 	}
 
 	@Override

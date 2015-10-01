@@ -32,13 +32,15 @@ class DeploymentJobConfig extends JobConfig {
 
 	def appConfigurationArtifactIdentificationPattern //The pattern by which we identify the configuration artifact for the deployable
 
-	def targetJVMName,targetCellName, appContextRoot,deploymentManager
+	def targetJVMName,targetCellName, appContextRoot,deploymentManager,deployDirPath,deploymentHost
 
 	private DeploymentJobConfig parentConfig //A reference to the parent deployment configuration
 
 	DeploymentJobConfig [] environments //An array of environments
 
 	boolean enforceRoleBasedAccess=true //By default all environment deployments have restricted access unless overriden
+	
+	boolean applyFeatureVersionExclusionFilter //Determines if we should exclude displaying feature versions in the version listing
 
 	static Logger logger
 
@@ -81,7 +83,10 @@ class DeploymentJobConfig extends JobConfig {
 			'artifactRepositoryUrl',
 			'releaseVersionCountToDisplay',
 			'snapshotVersionCountToDisplay',
-			'appConfigurationArtifactIdentificationPattern'
+			'appConfigurationArtifactIdentificationPattern',
+			'deployDirPath',
+			'deploymentHost',
+			'applyFeatureVersionExclusionFilter'
 		].each{property ->
 			this[property] = deploymentConfig[property] ?:  this[property]
 		}

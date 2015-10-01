@@ -10,7 +10,7 @@ import com.liquidhub.framework.ci.view.ViewElementTypes
  * @author Rahul Mishra,LiquidHub
  *
  */
-enum WebsphereDeploymentJobParameters {
+enum DeploymentJobParameters {
 
 	GROUP_ID(new JobParameter(name: 'groupId',description: 'The group id of the artifact which needs to be deployed', elementType : ViewElementTypes.READ_ONLY_TEXT)),
 	ARTIFACT_ID(new JobParameter(name: 'artifactId',description: 'The unique identifier of the artifact which needs to be deployed.',elementType: ViewElementTypes.READ_ONLY_TEXT)),
@@ -22,10 +22,12 @@ enum WebsphereDeploymentJobParameters {
 	APP_CONTEXT_ROOT(new JobParameter(name:'ctxroot',description: 'The Web Application context root', elementType: ViewElementTypes.TEXT)),
 	RESTART(new JobParameter(name: 'restart', description:'Select this flag if you want the server to be restarted after deployment', elementType:ViewElementTypes.BOOLEAN_CHOICE)),
 	REPLACEMENT_VERSION(new JobParameter(name:'replacementVersion',description: 'Sepcify the artifact version which this version should replace(if any)', elementType: ViewElementTypes.TEXT)),
-	MULTIPLE(new JobParameter(name:'multiple',description: 'Select this flag to support multiple deployments on the same JVM. If additional WAR files are deployed on this JVM and you intend to retain those deployments, select this flag', elementType: ViewElementTypes.BOOLEAN_CHOICE))
+	MULTIPLE(new JobParameter(name:'multiple',description: 'Select this flag to support multiple deployments on the same JVM. If additional WAR files are deployed on this JVM and you intend to retain those deployments, select this flag', elementType: ViewElementTypes.BOOLEAN_CHOICE)),
+	DEPLOY_DIR_PATH(new JobParameter(name:'deployDir',description: 'Specify the deployment directory path.', elementType: ViewElementTypes.TEXT)),
+	DEPLOYMENT_HOST(new JobParameter(name:'deploymentHost',description: 'The server which will host/run the artifact', elementType: ViewElementTypes.TEXT))
 	
-
-	public WebsphereDeploymentJobParameters(parameter){
+	
+	public DeploymentJobParameters(parameter){
 		this.properties = parameter.properties
 	}
 
