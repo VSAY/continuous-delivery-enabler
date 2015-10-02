@@ -108,10 +108,10 @@ class ContinuousIntegrationJobGenerator extends BaseJobGenerationTemplate{
 		def deploymentConfig = ctx.configuration.deploymentConfig.environments.findResult {it.name =~ 'Dev|dev' ? it: null}
 
 		if(GitFlowBranchTypes.DEVELOP.equals(ctx.scmRepository.branchType) && deploymentConfig!=null){
-			return {
+			return linkBuildToDevDeployment(ctx, jobConfig, deploymentConfig) << {
 				maven ctx.configurers('maven').configure(ctx, jobConfig)
-				groovyCommand(mavenPOMVersionExtractionScript.getScript())
-			}  <<linkBuildToDevDeployment(ctx, jobConfig, deploymentConfig)
+				systemGroovyCommand(mavenPOMVersionExtractionScript.getScript())
+			} 
 		}else{
 			return super.configureSteps(ctx, jobConfig)
 		}
