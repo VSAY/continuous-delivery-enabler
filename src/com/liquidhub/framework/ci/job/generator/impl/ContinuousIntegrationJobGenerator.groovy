@@ -118,8 +118,8 @@ class ContinuousIntegrationJobGenerator extends BaseJobGenerationTemplate{
 			return {
 				maven ctx.configurers('maven').configure(ctx, jobConfig)
 				groovyCommand(mavenPOMVersionExtractionScript.getScript())
-				linkBuildToDevDeployment(ctx, jobConfig, deploymentConfig)
-			} 
+				
+			}  <<linkBuildToDevDeployment(ctx, jobConfig, deploymentConfig)
 		}
 		
 		return steps
