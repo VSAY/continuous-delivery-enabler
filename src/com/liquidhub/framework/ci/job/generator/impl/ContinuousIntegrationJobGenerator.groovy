@@ -105,42 +105,34 @@ class ContinuousIntegrationJobGenerator extends BaseJobGenerationTemplate{
 	@Override
 	protected def configureSteps(JobGenerationContext ctx, JobConfig jobConfig){
 
-
-		def steps = super.configureSteps(ctx, jobConfig)
-
 		def deploymentConfig = ctx.configuration.deploymentConfig.environments.findResult {it.name =~ 'Dev|dev' ? it: null}
-		
-		ctx.logger.debug ('branch type equals ? '+(GitFlowBranchTypes.DEVELOP.equals(ctx.scmRepository.branchType)))
-		ctx.logger.debug ('deployment config is'+deploymentConfig)
 
 		if(GitFlowBranchTypes.DEVELOP.equals(ctx.scmRepository.branchType) && deploymentConfig!=null){
-			ctx.logger.debug 'configuring additional steps for develop branch'
 			return {
 				maven ctx.configurers('maven').configure(ctx, jobConfig)
 				groovyCommand(mavenPOMVersionExtractionScript.getScript())
-				
 			}  <<linkBuildToDevDeployment(ctx, jobConfig, deploymentConfig)
+		}else{
+			return super.configureSteps(ctx, jobConfig)
 		}
-		
-		return steps
 	}
 
 	protected def linkBuildToDevDeployment(JobGenerationContext ctx, JobConfig jobConfig, deploymentConfig){
-		
-		return	{ conditionalSteps{
+
+		return	{
+			conditionalSteps{
 				condition{ shell(ContinuousIntegrationJobGenerator.CHECK_FOR_DEPLOYMENT_INSTRUCTION) }
 				runner(ContinuousIntegrationJobGenerator.DO_NOT_RUN_IF_CONDITION_NOT_MET) //For any other values, look at runner classes of Run Condition Plugin. Basically means, do not run if condition is not met
 				downstreamParameterized{
 					def downstreamJobName = ctx.jobNameCreator.createJobName(ctx.repositoryName, null, null, deploymentConfig)
-					ctx.logger.debug ('downstream job name is'+downstreamJobName)
-					trigger(ctx.jobSeederName,'ALWAYS'){
+					trigger(downstreamJobName,'ALWAYS'){
 						//TODO Investigate why this has to be 'ALWAYS', it should be SUCCESS but that value does not work
 						predefinedProps(['version':'${PROJECT_VERSION}'])
 					}
 				}
 			}
 		}
-		
+
 	}
 
 	protected def extractPOMVersionAfterBuild(){
