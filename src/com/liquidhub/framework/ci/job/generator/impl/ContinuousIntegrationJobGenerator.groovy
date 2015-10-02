@@ -127,7 +127,7 @@ class ContinuousIntegrationJobGenerator extends BaseJobGenerationTemplate{
 
 	protected def linkBuildToDevDeployment(JobGenerationContext ctx, JobConfig jobConfig, deploymentConfig){
 		
-		return	conditionalSteps{
+		return	{ conditionalSteps{
 				condition{ shell(ContinuousIntegrationJobGenerator.CHECK_FOR_DEPLOYMENT_INSTRUCTION) }
 				runner(ContinuousIntegrationJobGenerator.DO_NOT_RUN_IF_CONDITION_NOT_MET) //For any other values, look at runner classes of Run Condition Plugin. Basically means, do not run if condition is not met
 				downstreamParameterized{
@@ -138,6 +138,7 @@ class ContinuousIntegrationJobGenerator extends BaseJobGenerationTemplate{
 					}
 				}
 			}
+		}
 		
 	}
 
