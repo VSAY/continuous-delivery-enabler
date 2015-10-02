@@ -115,19 +115,19 @@ class ContinuousIntegrationJobGenerator extends BaseJobGenerationTemplate{
 
 		if(GitFlowBranchTypes.DEVELOP.equals(ctx.scmRepository.branchType) && deploymentConfig!=null){
 			ctx.logger.debug 'configuring additional steps for develop branch'
-			steps << {
+			return {
+				maven ctx.configurers('maven').configure(ctx, jobConfig)
 				groovyCommand(mavenPOMVersionExtractionScript.getScript())
-				
-			} << linkBuildToDevDeployment(ctx, jobConfig, deploymentConfig)
+				linkBuildToDevDeployment(ctx, jobConfig, deploymentConfig)
+			} 
 		}
 		
 		return steps
 	}
 
 	protected def linkBuildToDevDeployment(JobGenerationContext ctx, JobConfig jobConfig, deploymentConfig){
-
-		return {
-			conditionalSteps{
+		
+		return	conditionalSteps{
 				condition{ shell(ContinuousIntegrationJobGenerator.CHECK_FOR_DEPLOYMENT_INSTRUCTION) }
 				runner(ContinuousIntegrationJobGenerator.DO_NOT_RUN_IF_CONDITION_NOT_MET) //For any other values, look at runner classes of Run Condition Plugin. Basically means, do not run if condition is not met
 				downstreamParameterized{
@@ -138,7 +138,7 @@ class ContinuousIntegrationJobGenerator extends BaseJobGenerationTemplate{
 					}
 				}
 			}
-		}
+		
 	}
 
 	protected def extractPOMVersionAfterBuild(){
