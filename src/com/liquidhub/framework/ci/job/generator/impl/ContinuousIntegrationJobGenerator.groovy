@@ -131,7 +131,7 @@ class ContinuousIntegrationJobGenerator extends BaseJobGenerationTemplate{
 				condition{ shell(ContinuousIntegrationJobGenerator.CHECK_FOR_DEPLOYMENT_INSTRUCTION) }
 				runner(ContinuousIntegrationJobGenerator.DO_NOT_RUN_IF_CONDITION_NOT_MET) //For any other values, look at runner classes of Run Condition Plugin. Basically means, do not run if condition is not met
 				downstreamParameterized{
-					def downstreamJobName = ctx.jobNameCreator.createJobName(ctx.repositoryName, null, null, deploymentConfig, true)
+					def downstreamJobName = ctx.jobNameCreator.createJobName(ctx.repositoryName, null, null, deploymentConfig)
 					ctx.logger.debug ('downstream job name is'+downstreamJobName)
 					trigger(ctx.jobSeederName,'ALWAYS'){
 						//TODO Investigate why this has to be 'ALWAYS', it should be SUCCESS but that value does not work

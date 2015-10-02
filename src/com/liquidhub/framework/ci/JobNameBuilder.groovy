@@ -47,7 +47,7 @@ class JobNameBuilder {
 				if(gitflowGenerator){
 					repositoryName
 				} else if (jobConfig instanceof DeploymentJobConfig){
-					repositoryName+'-'+jobConfig.name.capitalize()
+					repositoryName+'-'+[jobConfig?.jobPrefix, jobConfig.name.capitalize(), jobConfig?.jobSuffix].findAll().join('')
 				}else{
 					repositoryName+'-'+branchName
 				}
