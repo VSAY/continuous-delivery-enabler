@@ -111,9 +111,9 @@ class ContinuousIntegrationJobGenerator extends BaseJobGenerationTemplate{
 
 		return {
 			maven ctx.configurers('maven').configure(ctx, jobConfig)
-
+			ctx.logger.debug 'maven configured'
 			groovyCommand(mavenPOMVersionExtractionScript.getScript())
-
+			ctx.logger.debug 'groovy command configured'
 			if(ctx.scmRepository.branchType == GitFlowBranchTypes.DEVELOP && deploymentConfig!=null ){
 
 				conditionalSteps{
