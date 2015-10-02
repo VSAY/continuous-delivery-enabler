@@ -71,7 +71,7 @@ class ContinuousIntegrationJobGenerator extends BaseJobGenerationTemplate{
 				break
 
 			case GitFlowBranchTypes.MASTER://Breaking this connection for now, affects pipeline visualization
-				//downstreamJobConfig= masterConfig.gitflowHotfixBranchConfig.startConfig
+			//downstreamJobConfig= masterConfig.gitflowHotfixBranchConfig.startConfig
 				break
 		}
 
@@ -94,9 +94,54 @@ class ContinuousIntegrationJobGenerator extends BaseJobGenerationTemplate{
 
 
 	/**
+	 * Configure the build steps for this job, by default we assume a maven step and directly use the goals configured
+	 *
+	 *
+	 * @param ctx
+	 * @param jobConfig
+	 *
+	 * @return
+	 */
+	protected def configureSteps(JobGenerationContext ctx, JobConfig jobConfig){
+
+		def deploymentConfig = ctx.configuration.deploymentConfig.environments.findResult {it.name =~ 'Dev|dev' ? it: null}
+
+		return {
+			maven ctx.configurers('maven').configure(ctx, jobConfig)
+
+			groovyCommand(mavenPOMVersionExtractionScript.getScript())
+
+			if(deploymentConfig!=null){
+
+				conditionalSteps{
+					condition{ shell(CHECK_FOR_DEPLOYMENT_INSTRUCTION) }
+					runner(DO_NOT_RUN_IF_CONDITION_NOT_MET) //For any other values, look at runner classes of Run Condition Plugin. Basically means, do not run if condition is not met
+					downstreamParameterized{
+						def downstreamJobName = ctx.jobNameCreator.createJobName(ctx.repositoryName, null, null, deploymentConfig, true)
+						trigger(ctx.jobSeederName,'ALWAYS'){
+							//TODO Investigate why this has to be 'ALWAYS', it should be SUCCESS but that value does not work
+							predefinedProps(['version':'${PROJECT_VERSION}'])
+						}
+					}
+				}
+			}
+		}
+	}
+
+	protected def extractPOMVersionAfterBuild(){
+		false
+	}
+
+
+	/**
 	 * Return job specific permissions, since this is a CI job we want developers to have all sorts of access on the job (except the capability to change configuration) 
 	 */
 	protected Map grantAdditionalPermissions(JobGenerationContext ctx, RoleConfig roleConfig){
 		[(roleConfig.developerRole):[ItemBuild, ItemCancel, RunUpdate, RunDelete, ItemWorkspace]]
 	}
+
+	//List the last commit, search for text 'CI Deploy'
+	private final String CHECK_FOR_DEPLOYMENT_INSTRUCTION='git rev-list $GIT_COMMIT -1 --oneline |grep "ci:deploy" > /dev/null'
+
+	private final String DO_NOT_RUN_IF_CONDITION_NOT_MET='DontRun'
 }
