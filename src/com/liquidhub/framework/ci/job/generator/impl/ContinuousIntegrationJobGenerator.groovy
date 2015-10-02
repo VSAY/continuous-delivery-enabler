@@ -114,8 +114,8 @@ class ContinuousIntegrationJobGenerator extends BaseJobGenerationTemplate{
 			if(deploymentConfig!=null){
 
 				conditionalSteps{
-					condition{ shell(CHECK_FOR_DEPLOYMENT_INSTRUCTION) }
-					runner(DO_NOT_RUN_IF_CONDITION_NOT_MET) //For any other values, look at runner classes of Run Condition Plugin. Basically means, do not run if condition is not met
+					condition{ shell(ContinuousIntegrationJobGenerator.CHECK_FOR_DEPLOYMENT_INSTRUCTION) }
+					runner(ContinuousIntegrationJobGenerator.DO_NOT_RUN_IF_CONDITION_NOT_MET) //For any other values, look at runner classes of Run Condition Plugin. Basically means, do not run if condition is not met
 					downstreamParameterized{
 						def downstreamJobName = ctx.jobNameCreator.createJobName(ctx.repositoryName, null, null, deploymentConfig, true)
 						trigger(ctx.jobSeederName,'ALWAYS'){
