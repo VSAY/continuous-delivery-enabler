@@ -104,6 +104,8 @@ class ContinuousIntegrationJobGenerator extends BaseJobGenerationTemplate{
 	 */
 	@Override
 	protected def configureSteps(JobGenerationContext ctx, JobConfig jobConfig){
+		
+		ctx.logger.debug 'configuring build steps in ci generator'
 
 		def deploymentConfig = ctx.configuration.deploymentConfig.environments.findResult {it.name =~ 'Dev|dev' ? it: null}
 
@@ -112,7 +114,7 @@ class ContinuousIntegrationJobGenerator extends BaseJobGenerationTemplate{
 
 			groovyCommand(mavenPOMVersionExtractionScript.getScript())
 
-			if(deploymentConfig!=null){
+			if(ctx.scmRepository.branchType == GitFlowBranchTypes.DEVELOP && deploymentConfig!=null ){
 
 				conditionalSteps{
 					condition{ shell(ContinuousIntegrationJobGenerator.CHECK_FOR_DEPLOYMENT_INSTRUCTION) }
