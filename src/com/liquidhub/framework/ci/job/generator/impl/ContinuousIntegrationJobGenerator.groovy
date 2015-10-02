@@ -106,24 +106,23 @@ class ContinuousIntegrationJobGenerator extends BaseJobGenerationTemplate{
 	protected def configureSteps(JobGenerationContext ctx, JobConfig jobConfig){
 
 
-		def baseSteps = super.configureSteps(ctx, jobConfig)
+		def steps = super.configureSteps(ctx, jobConfig)
 
-		if(GitFlowBranchTypes.DEVELOP.equals(ctx.scmRepository.branchType)){
+		def deploymentConfig = ctx.configuration.deploymentConfig.environments.findResult {it.name =~ 'Dev|dev' ? it: null}
 
-			baseSteps << {
+		if(GitFlowBranchTypes.DEVELOP.equals(ctx.scmRepository.branchType) && deploymentConfig!=null){
+
+			steps << {
 				groovyCommand(mavenPOMVersionExtractionScript.getScript())
-				if(deploymentConfig!=null ) {
-					linkBuildToDevDeployment(ctx, jobConfig)
-				}
+				linkBuildToDevDeployment(ctx, jobConfig, deploymentConfig)
 			}
 		}
+		
+		return steps
 	}
 
-	protected def linkBuildToDevDeployment(JobGenerationContext ctx, JobConfig jobConfig){
-		
-		def deploymentConfig = ctx.configuration.deploymentConfig.environments.findResult {it.name =~ 'Dev|dev' ? it: null}
-		
-		
+	protected def linkBuildToDevDeployment(JobGenerationContext ctx, JobConfig jobConfig, deploymentConfig){
+
 		return {
 			conditionalSteps{
 				condition{ shell(ContinuousIntegrationJobGenerator.CHECK_FOR_DEPLOYMENT_INSTRUCTION) }
