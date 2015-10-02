@@ -141,7 +141,7 @@ class ContinuousIntegrationJobGenerator extends BaseJobGenerationTemplate{
 	}
 
 	//List the last commit, search for text 'CI Deploy'
-	private final String CHECK_FOR_DEPLOYMENT_INSTRUCTION='git rev-list $GIT_COMMIT -1 --oneline |grep "ci:deploy" > /dev/null'
+	private static final String CHECK_FOR_DEPLOYMENT_INSTRUCTION='git rev-list $GIT_COMMIT -1 --oneline |grep "ci:deploy" > /dev/null'
 
-	private final String DO_NOT_RUN_IF_CONDITION_NOT_MET='DontRun'
+	private static final String DO_NOT_RUN_IF_CONDITION_NOT_MET='DontRun'
 }
