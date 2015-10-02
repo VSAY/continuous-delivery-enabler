@@ -104,27 +104,35 @@ class ContinuousIntegrationJobGenerator extends BaseJobGenerationTemplate{
 	 */
 	@Override
 	protected def configureSteps(JobGenerationContext ctx, JobConfig jobConfig){
+
+
+		def baseSteps = super.configureSteps(ctx, jobConfig)
+
+		if(GitFlowBranchTypes.DEVELOP.equals(ctx.scmRepository.branchType)){
+
+			baseSteps << {
+				groovyCommand(mavenPOMVersionExtractionScript.getScript())
+				if(deploymentConfig!=null ) {
+					linkBuildToDevDeployment(ctx, jobConfig)
+				}
+			}
+		}
+	}
+
+	protected def linkBuildToDevDeployment(JobGenerationContext ctx, JobConfig jobConfig){
 		
-		ctx.logger.debug 'configuring build steps in ci generator'
-
 		def deploymentConfig = ctx.configuration.deploymentConfig.environments.findResult {it.name =~ 'Dev|dev' ? it: null}
-
+		
+		
 		return {
-			maven ctx.configurers('maven').configure(ctx, jobConfig)
-			ctx.logger.debug 'maven configured'
-			groovyCommand(mavenPOMVersionExtractionScript.getScript())
-			ctx.logger.debug 'groovy command configured'
-			if(ctx.scmRepository.branchType == GitFlowBranchTypes.DEVELOP && deploymentConfig!=null ){
-
-				conditionalSteps{
-					condition{ shell(ContinuousIntegrationJobGenerator.CHECK_FOR_DEPLOYMENT_INSTRUCTION) }
-					runner(ContinuousIntegrationJobGenerator.DO_NOT_RUN_IF_CONDITION_NOT_MET) //For any other values, look at runner classes of Run Condition Plugin. Basically means, do not run if condition is not met
-					downstreamParameterized{
-						def downstreamJobName = ctx.jobNameCreator.createJobName(ctx.repositoryName, null, null, deploymentConfig, true)
-						trigger(ctx.jobSeederName,'ALWAYS'){
-							//TODO Investigate why this has to be 'ALWAYS', it should be SUCCESS but that value does not work
-							predefinedProps(['version':'${PROJECT_VERSION}'])
-						}
+			conditionalSteps{
+				condition{ shell(ContinuousIntegrationJobGenerator.CHECK_FOR_DEPLOYMENT_INSTRUCTION) }
+				runner(ContinuousIntegrationJobGenerator.DO_NOT_RUN_IF_CONDITION_NOT_MET) //For any other values, look at runner classes of Run Condition Plugin. Basically means, do not run if condition is not met
+				downstreamParameterized{
+					def downstreamJobName = ctx.jobNameCreator.createJobName(ctx.repositoryName, null, null, deploymentConfig, true)
+					trigger(ctx.jobSeederName,'ALWAYS'){
+						//TODO Investigate why this has to be 'ALWAYS', it should be SUCCESS but that value does not work
+						predefinedProps(['version':'${PROJECT_VERSION}'])
 					}
 				}
 			}
