@@ -109,6 +109,9 @@ class ContinuousIntegrationJobGenerator extends BaseJobGenerationTemplate{
 		def steps = super.configureSteps(ctx, jobConfig)
 
 		def deploymentConfig = ctx.configuration.deploymentConfig.environments.findResult {it.name =~ 'Dev|dev' ? it: null}
+		
+		ctx.logger.debug ('branch type equals ? '+(GitFlowBranchTypes.DEVELOP.equals(ctx.scmRepository.branchType)))
+		ctx.logger.debug ('deployment config is'+deploymentConfig)
 
 		if(GitFlowBranchTypes.DEVELOP.equals(ctx.scmRepository.branchType) && deploymentConfig!=null){
 
