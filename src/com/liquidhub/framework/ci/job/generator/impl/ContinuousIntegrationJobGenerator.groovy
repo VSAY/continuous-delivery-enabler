@@ -102,6 +102,7 @@ class ContinuousIntegrationJobGenerator extends BaseJobGenerationTemplate{
 	 *
 	 * @return
 	 */
+	@Override
 	protected def configureSteps(JobGenerationContext ctx, JobConfig jobConfig){
 
 		def deploymentConfig = ctx.configuration.deploymentConfig.environments.findResult {it.name =~ 'Dev|dev' ? it: null}
