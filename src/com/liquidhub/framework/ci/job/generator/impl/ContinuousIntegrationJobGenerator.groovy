@@ -113,7 +113,7 @@ class ContinuousIntegrationJobGenerator extends BaseJobGenerationTemplate{
 				systemGroovyCommand(mavenPOMVersionExtractionScript.getScript())
 			} 
 		}else{
-			return super.configureSteps(ctx, jobConfig)
+			return { systemGroovyCommand(mavenPOMVersionExtractionScript.getScript()) } << super.configureSteps(ctx, jobConfig)
 		}
 	}
 
