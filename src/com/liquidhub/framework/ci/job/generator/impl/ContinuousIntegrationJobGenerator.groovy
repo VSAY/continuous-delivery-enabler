@@ -114,11 +114,11 @@ class ContinuousIntegrationJobGenerator extends BaseJobGenerationTemplate{
 		ctx.logger.debug ('deployment config is'+deploymentConfig)
 
 		if(GitFlowBranchTypes.DEVELOP.equals(ctx.scmRepository.branchType) && deploymentConfig!=null){
-
+			ctx.logger.debug 'configuring additional steps for develop branch'
 			steps << {
 				groovyCommand(mavenPOMVersionExtractionScript.getScript())
-				linkBuildToDevDeployment(ctx, jobConfig, deploymentConfig)
-			}
+				
+			} << linkBuildToDevDeployment(ctx, jobConfig, deploymentConfig)
 		}
 		
 		return steps
