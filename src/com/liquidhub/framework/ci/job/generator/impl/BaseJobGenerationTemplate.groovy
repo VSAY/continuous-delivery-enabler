@@ -39,7 +39,7 @@ import com.liquidhub.framework.providers.jenkins.MavenPOMVersionExtractionScript
  */
 abstract class BaseJobGenerationTemplate implements JobGenerator{
 
-	private EmbeddedScriptProvider mavenPOMVersionExtractionScript = new MavenPOMVersionExtractionScriptProvider([:])
+	EmbeddedScriptProvider mavenPOMVersionExtractionScript = new MavenPOMVersionExtractionScriptProvider([:])
 
 
 	/**
