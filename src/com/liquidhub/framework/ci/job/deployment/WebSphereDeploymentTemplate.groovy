@@ -113,8 +113,6 @@ class WebSphereDeploymentTemplate extends BaseJobGenerationTemplate{
 		bindings['snapshotVersionCountToDisplay']=environmentConfig.snapshotVersionCountToDisplay
 		bindings['applyFeatureVersionExclusionFilter']=environmentConfig.applyFeatureVersionExclusionFilter
 		
-		ctx.logger.debug('filter value is '+environmentConfig.applyFeatureVersionExclusionFilter)
-		
 		def mavenMetadataDownloadScript = scriptProvider.getScript(bindings)
 
 		def deploymentJobParameters = [
