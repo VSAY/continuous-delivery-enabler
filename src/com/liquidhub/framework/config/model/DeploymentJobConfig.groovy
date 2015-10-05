@@ -40,7 +40,7 @@ class DeploymentJobConfig extends JobConfig {
 
 	boolean enforceRoleBasedAccess=true //By default all environment deployments have restricted access unless overriden
 	
-	boolean applyFeatureVersionExclusionFilter //Determines if we should exclude displaying feature versions in the version listing
+	def applyFeatureVersionExclusionFilter //Determines if we should exclude displaying feature versions in the version listing
 
 	static Logger logger
 
