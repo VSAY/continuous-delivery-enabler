@@ -141,8 +141,8 @@ deploymentConfig: &deploymentConfig
   emailContent: ${JELLY_SCRIPT, template="frontoffice-deployment-template.jelly"}
        
 buildDiscardPolicy: 
-  daysToKeep: 7
-  numToKeep: 7
+  daysToKeep: 15
+  numToKeep: 20
   artifactDaysToKeep: 7
   artifactNumToKeep: 7
     
