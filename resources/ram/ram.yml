@@ -1,11 +1,13 @@
 deploymentConfig: &deploymentConfig
-  
- appContextRoot:/web-ramportal  
-     DEV:deploymentManager:wsmgrd20
-     targetJVMName:RAM
-     targetCellName:DevCell40
-     
-     QA:deploymentManager:wsmgrq20
-     targetJVMName:RAM
-     targetCellName:QaCell40
+  deploymentScriptPath: resources/core/default-deployment-script.sh
+  appContextRoot: /web-ramportal
+  environments: 
+   - name: Dev
+     deploymentManager: wsmgrd20
+     targetJVMName: RAM
+     targetCellName: DevCell40
+   - name: QA
+     deploymentManager: wsmgrq20
+     targetJVMName: RAM
+     targetCellName: QaCell40
      
