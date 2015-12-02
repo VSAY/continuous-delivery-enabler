@@ -1,0 +1,10 @@
+deploymentConfig: &deploymentConfig
+  deploymentScriptPath: resources/core/liferay-hot-deployment-script.sh
+  serverTemplate: TOMCAT
+  environments: 
+   - name: Dev
+     deploymentHost: liferayd01
+     deployDirPath: /opt/apps/liferay-8081/deploy
+   - name: Test
+     deploymentHost: liferayd01
+     deployDirPath: /opt/apps/liferay-tst/liferay-portal-6.2-ee-sp10/deploy
