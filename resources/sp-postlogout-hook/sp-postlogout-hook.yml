@@ -5,4 +5,9 @@ deploymentConfig: &deploymentConfig
    - name: Dev
      deploymentHost: liferayd01
      deployDirPath: /opt/apps/liferay-8081/deploy
-     
+   - name: Test
+     deploymentHost: liferayd01
+     deployDirPath: /opt/apps/liferay-tst/liferay-portal-6.2-ee-sp10/deploy
+   - name: QA
+     deploymentHost: liferayq01
+     deployDirPath: /opt/apps/liferay01/deploy
