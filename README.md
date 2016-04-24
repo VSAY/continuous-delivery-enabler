@@ -10,10 +10,7 @@ The above file path is configured in Jenkins.
 <ol>
 <li>Configuration Manager: Allows us to load configuration files found in the Jenkins Job Workspace. The current implementation reads YAML files. 
 
-<li>JobSectionConfigurer: A Jenkins job configuration has logically distinct sections(for the most part), each implementation of the configurer must provide an XML snippet for such a section. Current supported implementations in the framework are
-       - MavenSectionConfigurer
-       - ExtendedEmailNotificationSectionConfigurer (Requires the email ext plugin in Jenkins)
-       - GenericSCMSectionConfigurer
+<li>JobSectionConfigurer: A Jenkins job configuration has logically distinct sections(for the most part), each implementation of the configurer must provide an XML snippet for such a section. 
 
 <li>StashConfigurationManager: Manages and abstracts the stash repository configuration which is controlled by Jenkins when the project is onboarded
 
